@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { G, Y, YD } from "../constants/data";
 
 // ── Toast individual ──────────────────────────────────────────────────────────
 function Toast({ msg, type, onDone }) {
@@ -8,18 +7,17 @@ function Toast({ msg, type, onDone }) {
     return () => clearTimeout(t);
   }, [onDone]);
 
-  const bg = type === "error" ? "#991b1b" : type === "warning" ? YD : G;
+  const bgClass =
+    type === "error"   ? "bg-danger"  :
+    type === "warning" ? "bg-warning" :
+    "bg-success";
+
+  const textClass = type === "warning" ? "text-dark" : "text-white";
 
   return (
     <div
-      className="tin"
-      style={{
-        background: bg, color: "#fff",
-        padding: "10px 18px", borderRadius: 10,
-        fontSize: 13, fontWeight: 700,
-        boxShadow: "0 4px 16px rgba(0,0,0,.18)",
-        maxWidth: 280,
-      }}
+      className={`${bgClass} ${textClass} rounded-3 px-3 py-2 fw-bold shadow`}
+      style={{ fontSize: 13, maxWidth: 280 }}
     >
       {msg}
     </div>
@@ -30,10 +28,8 @@ function Toast({ msg, type, onDone }) {
 export default function ToastContainer({ toasts, remove }) {
   return (
     <div
-      style={{
-        position: "fixed", bottom: 24, right: 24,
-        zIndex: 9999, display: "flex", flexDirection: "column", gap: 8,
-      }}
+      className="position-fixed bottom-0 end-0 p-4 d-flex flex-column gap-2"
+      style={{ zIndex: 9999 }}
     >
       {toasts.map(t => (
         <Toast key={t.id} msg={t.msg} type={t.type} onDone={() => remove(t.id)} />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { G, GL, ALL_POINTS, MAT_COLORS } from "../constants/data";
+import { ALL_POINTS, MAT_COLORS } from "../constants/data";
 
 export default function Mapa({ showToast }) {
   const [search,   setSearch]   = useState("");
@@ -15,18 +15,42 @@ export default function Mapa({ showToast }) {
     return ms && mo;
   });
 
-  const selPoint   = selected ? ALL_POINTS.find(p => p.id === selected) : null;
-  const toggleFav  = (id, e) => { e?.stopPropagation(); setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]); };
+  const selPoint  = selected ? ALL_POINTS.find(p => p.id === selected) : null;
+  const toggleFav = (id, e) => { e?.stopPropagation(); setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]); };
 
   return (
     <div>
-      <h4 className="page-title">📍 Puntos de Reciclaje</h4>
+      <h4 className="fw-bold mb-4">📍 Puntos de Reciclaje</h4>
 
       {/* Stats */}
       <div className="row g-3 mb-4">
-        <div className="col-md-4"><div className="stat-card green"><div className="stat-label">Puntos abiertos</div><div className="stat-value">{openCount}</div><div className="stat-change">disponibles ahora</div></div></div>
-        <div className="col-md-4"><div className="stat-card"><div className="stat-label" style={{ color: "#9ca3af" }}>Más cercano</div><div className="stat-value" style={{ color: G }}>0.4 km</div><div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>Punto Verde Centro</div></div></div>
-        <div className="col-md-4"><div className="stat-card yellow"><div className="stat-label">Favoritos</div><div className="stat-value">{favs.length}</div><div className="stat-change">guardados</div></div></div>
+        <div className="col-md-4">
+          <div className="card shadow-sm h-100 border-0 bg-success text-white">
+            <div className="card-body py-3">
+              <div className="small fw-semibold opacity-75 mb-1">Puntos abiertos</div>
+              <div className="fw-bold" style={{ fontSize: 28 }}>{openCount}</div>
+              <div className="opacity-75 small mt-1">disponibles ahora</div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card shadow-sm h-100">
+            <div className="card-body py-3">
+              <div className="text-muted small fw-semibold mb-1">Más cercano</div>
+              <div className="fw-bold text-success" style={{ fontSize: 28 }}>0.4 km</div>
+              <div className="text-muted small mt-1">Punto Verde Centro</div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card shadow-sm h-100 border-0" style={{ background: "#fef9c3" }}>
+            <div className="card-body py-3">
+              <div className="small fw-semibold mb-1" style={{ color: "#854d0e", opacity: .85 }}>Favoritos</div>
+              <div className="fw-bold" style={{ fontSize: 28, color: "#854d0e" }}>{favs.length}</div>
+              <div className="small mt-1" style={{ color: "#854d0e", opacity: .75 }}>guardados</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="row g-3">
@@ -34,22 +58,22 @@ export default function Mapa({ showToast }) {
         <div className="col-md-5">
           {/* Buscador */}
           <div className="input-group mb-2">
-            <span className="input-group-text bg-white border-end-0" style={{ borderRadius: "8px 0 0 8px" }}>🔍</span>
+            <span className="input-group-text bg-white border-end-0 rounded-start-3">🔍</span>
             <input
-              className="form-control border-start-0"
+              className="form-control border-start-0 rounded-end-3"
               placeholder="Buscar punto..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ borderRadius: "0 8px 8px 0", fontSize: 13 }}
+              style={{ fontSize: 13 }}
             />
           </div>
 
           {/* Tabs */}
           <div className="btn-group mb-3 w-100" role="group">
-            {["Todos","Abiertos","Cerrados"].map(f => (
+            {["Todos", "Abiertos", "Cerrados"].map(f => (
               <button
                 key={f}
-                className={`btn btn-sm ${filter === f ? "btn-eco-primary" : "btn-outline-secondary"}`}
+                className={`btn btn-sm ${filter === f ? "btn-success" : "btn-outline-secondary"}`}
                 onClick={() => setFilter(f)}
                 style={{ fontSize: 12, fontWeight: 600 }}
               >
@@ -59,28 +83,51 @@ export default function Mapa({ showToast }) {
           </div>
 
           {/* Tarjetas */}
-          <div style={{ maxHeight: 520, overflowY: "auto" }} className="d-flex flex-column gap-2 pe-1">
+          <div className="d-flex flex-column gap-2 pe-1" style={{ maxHeight: 520, overflowY: "auto" }}>
             {filtered.length === 0 ? (
-              <div className="text-center py-5" style={{ color: "#9ca3af" }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>Sin resultados
+              <div className="text-center py-5 text-muted">
+                <div className="fs-2 mb-2">📍</div>
+                Sin resultados
               </div>
             ) : filtered.map(p => (
-              <div key={p.id} className={`point-card ${selected === p.id ? "selected" : ""}`} onClick={() => setSelected(p.id)}>
-                <div style={{ width: 44, height: 44, borderRadius: "50%", background: p.open ? GL : "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>📍</div>
+              <div
+                key={p.id}
+                className={`card shadow-sm border-2 d-flex flex-row align-items-start gap-3 p-3 ${selected === p.id ? "border-success" : "border-transparent"}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelected(p.id)}
+              >
+                <div
+                  className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${p.open ? "bg-success-subtle" : "bg-light"}`}
+                  style={{ width: 44, height: 44, fontSize: 20 }}
+                >
+                  📍
+                </div>
                 <div className="flex-fill" style={{ minWidth: 0 }}>
                   <div className="d-flex align-items-center justify-content-between mb-1">
-                    <span style={{ fontWeight: 700, fontSize: 14, color: "#1f2937" }}>{p.name}</span>
-                    <span className={`eco-badge ${p.open ? "eco-badge-success" : "eco-badge-gray"}`}>{p.open ? "Abierto" : "Cerrado"}</span>
+                    <span className="fw-bold small text-dark">{p.name}</span>
+                    <span className={`badge rounded-pill ${p.open ? "bg-success" : "bg-secondary"}`} style={{ fontSize: 10 }}>
+                      {p.open ? "Abierto" : "Cerrado"}
+                    </span>
                   </div>
-                  <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 6 }}>{p.address}</div>
+                  <div className="text-muted mb-2" style={{ fontSize: 12 }}>{p.address}</div>
                   <div className="d-flex flex-wrap gap-1 mb-1">
                     {p.materials.slice(0, 3).map(m => (
-                      <span key={m} className="mat-tag" style={{ background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
+                      <span
+                        key={m}
+                        className="badge rounded-pill fw-semibold"
+                        style={{ fontSize: 10, background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}
+                      >
+                        {m}
+                      </span>
                     ))}
                   </div>
-                  <div style={{ fontSize: 12, color: "#9ca3af" }}>⭐ {p.rating} &nbsp; 📍 {p.distance}</div>
+                  <div className="text-muted" style={{ fontSize: 12 }}>⭐ {p.rating} &nbsp; 📍 {p.distance}</div>
                 </div>
-                <button onClick={e => toggleFav(p.id, e)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, flexShrink: 0 }}>
+                <button
+                  className="btn btn-sm border-0 bg-transparent p-0 flex-shrink-0"
+                  style={{ fontSize: 20 }}
+                  onClick={e => toggleFav(p.id, e)}
+                >
                   {favs.includes(p.id) ? "❤️" : "🤍"}
                 </button>
               </div>
@@ -91,55 +138,75 @@ export default function Mapa({ showToast }) {
         {/* Detalle */}
         <div className="col-md-7">
           {selPoint ? (
-            <div className="eco-card" style={{ position: "sticky", top: 80 }}>
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 18, color: "#1f2937", marginBottom: 2 }}>{selPoint.name}</div>
-                  <div style={{ fontSize: 13, color: "#9ca3af" }}>{selPoint.address}</div>
-                </div>
-                <span className={`eco-badge ${selPoint.open ? "eco-badge-success" : "eco-badge-gray"}`} style={{ fontSize: 13, padding: "5px 12px" }}>
-                  {selPoint.open ? "🟢 Abierto" : "⚪ Cerrado"}
-                </span>
-              </div>
-
-              <div style={{ background: "#f3f4f6", borderRadius: 12, height: 180, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, marginBottom: 14 }}>🗺️</div>
-
-              <div className="row g-2 mb-3">
-                {[
-                  ["HORARIO",     selPoint.hours],
-                  ["TELÉFONO",    selPoint.phone],
-                  ["DISTANCIA",   `📍 ${selPoint.distance}`],
-                  ["CALIFICACIÓN",`⭐ ${selPoint.rating} / 5.0`],
-                ].map(([l, v]) => (
-                  <div key={l} className="col-6">
-                    <div style={{ background: "#f9fafb", borderRadius: 10, padding: "12px" }}>
-                      <div style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600, marginBottom: 4 }}>{l}</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{v}</div>
-                    </div>
+            <div className="card shadow-sm" style={{ position: "sticky", top: 80 }}>
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <div className="fw-bold fs-5 text-dark mb-1">{selPoint.name}</div>
+                    <div className="text-muted small">{selPoint.address}</div>
                   </div>
-                ))}
-              </div>
+                  <span className={`badge rounded-pill px-3 py-2 ${selPoint.open ? "bg-success" : "bg-secondary"}`} style={{ fontSize: 12 }}>
+                    {selPoint.open ? "🟢 Abierto" : "⚪ Cerrado"}
+                  </span>
+                </div>
 
-              <div className="mb-3">
-                <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Materiales aceptados</div>
-                <div className="d-flex flex-wrap gap-2">
-                  {selPoint.materials.map(m => (
-                    <span key={m} className="mat-tag" style={{ fontSize: 13, fontWeight: 600, padding: "5px 14px", background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
+                {/* Mapa placeholder */}
+                <div
+                  className="bg-light rounded-3 d-flex align-items-center justify-content-center mb-3"
+                  style={{ height: 180, fontSize: 40 }}
+                >
+                  🗺️
+                </div>
+
+                <div className="row g-2 mb-3">
+                  {[
+                    ["HORARIO",      selPoint.hours],
+                    ["TELÉFONO",     selPoint.phone],
+                    ["DISTANCIA",    `📍 ${selPoint.distance}`],
+                    ["CALIFICACIÓN", `⭐ ${selPoint.rating} / 5.0`],
+                  ].map(([l, v]) => (
+                    <div key={l} className="col-6">
+                      <div className="bg-light rounded-3 p-3">
+                        <div className="text-muted fw-semibold mb-1 text-uppercase" style={{ fontSize: 11 }}>{l}</div>
+                        <div className="fw-semibold small">{v}</div>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="d-flex gap-2">
-                <button className="btn btn-eco-primary rounded-3 flex-fill" onClick={() => showToast("🧭 Abriendo navegación...")}>🧭 Cómo llegar</button>
-                <button className="btn btn-eco-outline rounded-3" onClick={e => toggleFav(selPoint.id, e)}>{favs.includes(selPoint.id) ? "❤️" : "🤍"}</button>
-                <button className="btn btn-eco-secondary rounded-3" onClick={() => setSelected(null)}>✕</button>
+                <div className="mb-3">
+                  <div className="text-muted fw-semibold text-uppercase mb-2" style={{ fontSize: 12 }}>Materiales aceptados</div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {selPoint.materials.map(m => (
+                      <span
+                        key={m}
+                        className="badge rounded-pill fw-semibold px-3 py-2"
+                        style={{ fontSize: 12, background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="d-flex gap-2">
+                  <button className="btn btn-success rounded-3 flex-fill" onClick={() => showToast("🧭 Abriendo navegación...")}>
+                    🧭 Cómo llegar
+                  </button>
+                  <button className="btn btn-outline-secondary rounded-3" onClick={e => toggleFav(selPoint.id, e)}>
+                    {favs.includes(selPoint.id) ? "❤️" : "🤍"}
+                  </button>
+                  <button className="btn btn-secondary rounded-3" onClick={() => setSelected(null)}>✕</button>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="eco-card d-flex flex-column align-items-center justify-content-center text-center" style={{ minHeight: 400 }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🗺️</div>
-              <h5 style={{ color: "#6b7280", marginBottom: 8 }}>Selecciona un punto</h5>
-              <p style={{ fontSize: 14, color: "#9ca3af" }}>Haz clic en cualquier punto de reciclaje para ver su detalle, horario, materiales y más.</p>
+            <div className="card shadow-sm d-flex flex-column align-items-center justify-content-center text-center" style={{ minHeight: 400 }}>
+              <div className="card-body d-flex flex-column align-items-center justify-content-center">
+                <div style={{ fontSize: 64, marginBottom: 16 }}>🗺️</div>
+                <h5 className="text-secondary mb-2">Selecciona un punto</h5>
+                <p className="text-muted small mb-0">Haz clic en cualquier punto de reciclaje para ver su detalle, horario, materiales y más.</p>
+              </div>
             </div>
           )}
         </div>
