@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ADMIN_PROFILE } from "../constants/data";
-import { RolBadge } from "./Usuarios";
+import { RolBadge } from "./UserShared";
 
 export default function Perfil({ state, showToast }) {
   const [editMode, setEditMode] = useState(false);

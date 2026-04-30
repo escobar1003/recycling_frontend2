@@ -1,18 +1,20 @@
 import { useReducer, useCallback, useState } from "react";
 import { INITIAL_STATE } from "./constants/data";
 
-import Sidebar        from "./components/Sidebar";
-import Topbar         from "./components/Topbar";
-import ToastContainer from "./components/ToastContainer";
-import Dashboard      from "./components/Dashboard";
-import Entregas       from "./components/Entregas";
-import ClasificadorIA from "./components/ClasificadorIA";
-import Recompensas    from "./components/Recompensas";
-import MisPuntos      from "./components/MisPuntos";
-import Mapa           from "./components/Mapa";
-import ImpactoEco     from "./components/ImpactoEco";
-import Usuarios       from "./components/Usuarios";
-import Perfil         from "./components/Perfil";
+import Sidebar           from "./components/Sidebar";
+import Topbar            from "./components/Topbar";
+import ToastContainer    from "./components/ToastContainer";
+import Dashboard         from "./components/Dashboard";
+import Entregas          from "./components/Entregas";
+import ClasificadorIA    from "./components/ClasificadorIA";
+import Recompensas       from "./components/Recompensas";
+import MisPuntos         from "./components/MisPuntos";
+import Mapa              from "./components/Mapa";
+import ImpactoEco        from "./components/ImpactoEco";
+import Usuarios          from "./components/Usuarios";        // solo rol "Usuario"
+import Administradores   from "./components/Administradores"; // solo rol "Admin"
+import Afiliados         from "./components/Afiliados";       // roles "Afiliado" + "Encargado"
+import Perfil            from "./components/Perfil";
 
 // ── Reducer ───────────────────────────────────────────────────────────────────
 function reducer(state, { type, payload }) {
@@ -30,7 +32,17 @@ function reducer(state, { type, payload }) {
     case "ADD_USER":
       return { ...state, usuarios: [...state.usuarios, payload] };
     case "TOGGLE_USER":
-      return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+      return {
+        ...state,
+        usuarios: state.usuarios.map(u =>
+          u.id === payload ? { ...u, activo: !u.activo } : u
+        ),
+      };
+    case "DEL_USER":
+      return {
+        ...state,
+        usuarios: state.usuarios.filter(u => u.id !== payload),
+      };
     default:
       return state;
   }
@@ -43,7 +55,10 @@ function useToast() {
     const id = Date.now();
     setToasts(t => [...t, { id, msg, type }]);
   }, []);
-  const remove = useCallback(id => setToasts(t => t.filter(x => x.id !== id)), []);
+  const remove = useCallback(
+    id => setToasts(t => t.filter(x => x.id !== id)),
+    []
+  );
   return { toasts, showToast, remove };
 }
 
@@ -56,15 +71,17 @@ export default function App() {
   const shared = { state, dispatch, showToast, setView };
 
   const pages = {
-    dashboard:  <Dashboard   {...shared} />,
-    entregas:   <Entregas    {...shared} />,
-    ia:         <ClasificadorIA {...shared} />,
-    recompensas:<Recompensas {...shared} />,
-    puntos:     <MisPuntos   state={state} />,
-    mapa:       <Mapa        showToast={showToast} />,
-    eco:        <ImpactoEco  state={state} />,
-    usuarios:   <Usuarios    {...shared} />,
-    perfil:     <Perfil      state={state} showToast={showToast} />,
+    dashboard:   <Dashboard      {...shared} />,
+    entregas:    <Entregas       {...shared} />,
+    ia:          <ClasificadorIA {...shared} />,
+    recompensas: <Recompensas    {...shared} />,
+    puntos:      <MisPuntos      state={state} />,
+    mapa:        <Mapa           showToast={showToast} />,
+    eco:         <ImpactoEco     state={state} />,
+    usuarios:    <Usuarios       {...shared} />,     // rol "Usuario"
+    admins:      <Administradores {...shared} />,    // rol "Admin"
+    afiliados:   <Afiliados      {...shared} />,     // roles "Afiliado" + "Encargado"
+    perfil:      <Perfil         state={state} showToast={showToast} />,
   };
 
   return (
@@ -73,11 +90,10 @@ export default function App() {
       <div className="main-content">
         <Topbar pts={state.pts} setView={setView} />
         <div className="page-area">
-          {pages[view] || pages.dashboard}
+          {pages[view] ?? pages.dashboard}
         </div>
       </div>
       <ToastContainer toasts={toasts} remove={remove} />
     </div>
   );
 }
-//dfsf

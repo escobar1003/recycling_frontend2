@@ -1,13 +1,15 @@
 const NAV = [
-  { view: "dashboard",   icon: "bi-house-fill",    title: "Dashboard",          color: "#16a34a" },
-  { view: "entregas",    icon: "bi-box-seam-fill", title: "Entregas",           color: "#2563eb" },
-  { view: "ia",          icon: "bi-camera-fill",   title: "Clasificar IA",      color: "#7c3aed" },
-  { view: "recompensas", icon: "bi-gift-fill",     title: "Recompensas",        color: "#db2777" },
-  { view: "puntos",      icon: "bi-trophy-fill",   title: "Mis Puntos",         color: "#d97706" },
-  { view: "mapa",        icon: "bi-geo-alt-fill",  title: "Puntos Cercanos",    color: "#0891b2" },
-  { view: "eco",         icon: "bi-tree-fill",     title: "Impacto Ecológico",  color: "#16a34a" },
-  { view: "usuarios",    icon: "bi-people-fill",   title: "Usuarios",           color: "#64748b" },
-  { view: "perfil",      icon: "bi-person-circle", title: "Mi Perfil",          color: "#374151" },
+  { view: "dashboard",   icon: "bi-house-fill",        title: "Dashboard",          color: "#16a34a" },
+  { view: "entregas",    icon: "bi-box-seam-fill",      title: "Entregas",           color: "#2563eb" },
+  { view: "ia",          icon: "bi-camera-fill",        title: "Clasificar IA",      color: "#7c3aed" },
+  { view: "recompensas", icon: "bi-gift-fill",          title: "Recompensas",        color: "#db2777" },
+  { view: "puntos",      icon: "bi-trophy-fill",        title: "Mis Puntos",         color: "#d97706" },
+  { view: "mapa",        icon: "bi-geo-alt-fill",       title: "Puntos Cercanos",    color: "#0891b2" },
+  { view: "eco",         icon: "bi-tree-fill",          title: "Impacto Ecológico",  color: "#16a34a" },
+  { view: "usuarios",    icon: "bi-people-fill",        title: "Usuarios",           color: "#16a34a" },
+  { view: "afiliados",   icon: "bi-shop",               title: "Afiliados",          color: "#b45309" },
+  { view: "admins",      icon: "bi-shield-lock-fill",   title: "Administradores",    color: "#2563eb" },
+  { view: "perfil",      icon: "bi-person-circle",      title: "Mi Perfil",          color: "#374151" },
 ];
 
 export default function Sidebar({ view, setView }) {
