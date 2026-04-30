@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
+import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api"; // ← nuevo
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -13,6 +14,19 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [loading,  setLoading]  = useState(true); // ← nuevo
+
+  // ── Cargar usuarios del backend al abrir la pantalla ─────────────────────
+  useEffect(() => {
+    getUsuarios()
+      .then(data => {
+        dispatch({ type: "SET_USUARIOS", payload: data });
+      })
+      .catch(() => {
+        showToast("⚠️ No se pudieron cargar los usuarios del servidor", "error");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
@@ -27,37 +41,61 @@ export default function Usuarios({ state, dispatch, showToast }) {
     return e;
   };
 
-  const guardar = () => {
+  // ── Guardar: llama al backend y luego actualiza el estado local ───────────
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
-        telefono: form.telefono.trim(), rol: "Usuario", zona: form.zona,
-        puntoAsignado: form.puntoAsignado, pts: 0, activo: form.activo,
-        av: initials, fechaAlta: new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`✅ Usuario "${form.nombre.trim()}" registrado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+
+    try {
+      const nuevo = await crearUsuario({
+        nombre_completo: form.nombre.trim(),
+        correo:          form.email.trim(),
+        rol:             "Usuario",
+      });
+
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_USER",
+        payload: {
+          id:            nuevo.id ?? Date.now(),
+          nombre:        form.nombre.trim(),
+          email:         form.email.trim(),
+          telefono:      form.telefono.trim(),
+          rol:           "Usuario",
+          zona:          form.zona,
+          puntoAsignado: form.puntoAsignado,
+          pts:           0,
+          activo:        form.activo,
+          av:            initials,
+          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+        },
+      });
+
+      showToast(`✅ Usuario "${form.nombre.trim()}" registrado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("❌ Error al registrar: " + err.message, "error");
+    }
   };
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
-  // ── Toggle con toast de activado/desactivado ──────────────────────────────
-  const handleToggle = (id, nombre, estadoActual) => {
-    dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(
-      estadoActual
-        ? `🔴 ${nombre} ha sido desactivado`
-        : `🟢 ${nombre} ha sido activado`,
-      estadoActual ? "error" : "success"
-    );
+  // ── Toggle: llama al backend y luego actualiza el estado local ────────────
+  const handleToggle = async (id, nombre, estadoActual) => {
+    try {
+      await cambiarEstadoUsuario(id, !estadoActual);
+      dispatch({ type: "TOGGLE_USER", payload: id });
+      showToast(
+        estadoActual
+          ? `🔴 ${nombre} ha sido desactivado`
+          : `🟢 ${nombre} ha sido activado`,
+        estadoActual ? "error" : "success"
+      );
+    } catch (err) {
+      showToast("❌ Error al cambiar estado: " + err.message, "error");
+    }
   };
 
-  // ── Guardar cambios desde el modal de edición ─────────────────────────────
   const handleSave = (updatedUser) => {
     dispatch({ type: "UPDATE_USER", payload: updatedUser });
   };
@@ -105,6 +143,13 @@ export default function Usuarios({ state, dispatch, showToast }) {
           />
         </div>
       </div>
+
+      {/* Indicador de carga */}
+      {loading && (
+        <div className="text-center py-3" style={{ color: "#9ca3af", fontSize: 13 }}>
+          ⏳ Cargando usuarios del servidor...
+        </div>
+      )}
 
       {/* Tabla */}
       <TablaUsuarios

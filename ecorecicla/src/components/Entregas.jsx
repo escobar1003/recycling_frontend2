@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { G, GL, MAT_CFG, ALL_POINTS } from "../constants/data";
+import { useState, useEffect } from "react";
+import { G, GL, MAT_CFG } from "../constants/data";
+import { getPuntos } from "../services/api";  // ← importamos del api.js
 
 const selStyle = {
   width: "100%", padding: "9px 12px",
@@ -9,32 +10,77 @@ const selStyle = {
 
 export default function Entregas({ state, dispatch, showToast }) {
   const [modal, setModal] = useState(false);
-  const [mat, setMat]     = useState(Object.keys(MAT_CFG)[0]);
-  const [punto, setPunto] = useState(ALL_POINTS[0].name);
+  const [mat,   setMat]   = useState(Object.keys(MAT_CFG)[0]);
   const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
-  const [peso, setPeso]   = useState("");
+  const [peso,  setPeso]  = useState("");
+
+  // ── Puntos de reciclaje venidos del backend ───────────────────────────────
+  const [puntosBackend, setPuntosBackend] = useState([]);
+
+  useEffect(() => {
+    // Al cargar el componente, traemos los puntos reales del backend
+    getPuntos()
+      .then(data => setPuntosBackend(data))
+      .catch(() => {
+        // Si falla, no pasa nada: el selector quedará vacío y mostramos aviso
+        showToast("⚠️ No se cargaron los puntos de reciclaje del servidor", "error");
+      });
+  }, []);
+
+  // El selector usa los puntos del backend; si aún no llegaron, muestra "Cargando..."
+  const opcionesPuntos = puntosBackend.length > 0
+    ? puntosBackend
+    : [{ id: 0, nombre: "Cargando puntos..." }];
+
+  const [puntoSeleccionado, setPuntoSeleccionado] = useState("");
+
+  // Cuando lleguen los puntos del backend, seleccionamos el primero por defecto
+  useEffect(() => {
+    if (puntosBackend.length > 0) {
+      setPuntoSeleccionado(puntosBackend[0].nombre);
+    }
+  }, [puntosBackend]);
 
   const registrar = () => {
     const p = parseFloat(peso);
     if (!p || p <= 0) { showToast("❌ Ingresa un peso válido", "error"); return; }
+    if (!puntoSeleccionado) { showToast("❌ Selecciona un punto de entrega", "error"); return; }
+
     const cfg = MAT_CFG[mat] || { pts: 20, icon: "♻️" };
     const pts = Math.round(p * cfg.pts);
+
+    // Guardamos localmente en el reducer (el backend de acumulación aún no tiene ruta registrada)
     dispatch({
       type: "ADD_ENTREGA",
-      payload: { id: Date.now(), material: mat, icon: cfg.icon, punto, fecha, peso: p, pts, estado: "Pendiente" },
+      payload: {
+        id:       Date.now(),
+        material: mat,
+        icon:     cfg.icon,
+        punto:    puntoSeleccionado,
+        fecha,
+        peso:     p,
+        pts,
+        estado:   "Pendiente",
+      },
     });
     dispatch({
       type: "ADD_HISTORIAL",
-      payload: { id: Date.now(), desc: `Ganaste ${pts} puntos`, sub: `Entrega de ${mat}`, tiempo: "Ahora", icon: "⭐" },
+      payload: {
+        id:     Date.now(),
+        desc:   `Ganaste ${pts} puntos`,
+        sub:    `Entrega de ${mat}`,
+        tiempo: "Ahora",
+        icon:   "⭐",
+      },
     });
     dispatch({ type: "ADD_PTS", payload: pts });
     showToast(`✅ Entrega registrada — +${pts} pts`);
-    setModal(false); setPeso("");
+    setModal(false);
+    setPeso("");
   };
 
   return (
     <div>
-      {/* Encabezado */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4 className="page-title m-0">📦 Entregas</h4>
         <button className="btn btn-eco-primary rounded-3" onClick={() => setModal(true)}>
@@ -42,7 +88,6 @@ export default function Entregas({ state, dispatch, showToast }) {
         </button>
       </div>
 
-      {/* Tabla Bootstrap */}
       <div className="eco-card p-0 overflow-hidden">
         <div className="table-responsive">
           <table className="table table-hover mb-0" style={{ fontSize: 13 }}>
@@ -54,7 +99,11 @@ export default function Entregas({ state, dispatch, showToast }) {
               </tr>
             </thead>
             <tbody>
-              {state.entregas.map(e => (
+              {state.entregas.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-5" style={{ color: "#9ca3af" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>Sin entregas registradas
+                </td></tr>
+              ) : state.entregas.map(e => (
                 <tr key={e.id}>
                   <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                     <div className="d-flex align-items-center gap-2">
@@ -92,12 +141,28 @@ export default function Entregas({ state, dispatch, showToast }) {
                     {Object.keys(MAT_CFG).map(m => <option key={m}>{m}</option>)}
                   </select>
                 </div>
+
+                {/* Selector de puntos — datos reales del backend */}
                 <div className="mb-3">
-                  <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Punto de entrega</label>
-                  <select className="form-select" value={punto} onChange={e => setPunto(e.target.value)} style={selStyle}>
-                    {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
+                  <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>
+                    Punto de entrega
+                    {puntosBackend.length === 0 && (
+                      <span style={{ color: "#9ca3af", fontWeight: 400 }}> (cargando...)</span>
+                    )}
+                  </label>
+                  <select
+                    className="form-select"
+                    value={puntoSeleccionado}
+                    onChange={e => setPuntoSeleccionado(e.target.value)}
+                    style={selStyle}
+                    disabled={puntosBackend.length === 0}
+                  >
+                    {opcionesPuntos.map(p => (
+                      <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                    ))}
                   </select>
                 </div>
+
                 <div className="mb-3">
                   <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Fecha</label>
                   <input type="date" className="form-control" value={fecha} onChange={e => setFecha(e.target.value)} style={selStyle} />

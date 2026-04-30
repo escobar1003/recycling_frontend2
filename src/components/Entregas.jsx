@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { G, GL, MAT_CFG, ALL_POINTS } from "../constants/data";
+import { useState, useEffect } from "react";
+import { G, GL, MAT_CFG } from "../constants/data";
+import { getPuntos } from "../services/api"; // ← nuevo
 
 const selStyle = {
   width: "100%", padding: "9px 12px",
@@ -9,10 +10,24 @@ const selStyle = {
 
 export default function Entregas({ state, dispatch, showToast }) {
   const [modal, setModal] = useState(false);
-  const [mat, setMat]     = useState(Object.keys(MAT_CFG)[0]);
-  const [punto, setPunto] = useState(ALL_POINTS[0].name);
+  const [mat,   setMat]   = useState(Object.keys(MAT_CFG)[0]);
   const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
-  const [peso, setPeso]   = useState("");
+  const [peso,  setPeso]  = useState("");
+
+  // ── Puntos de reciclaje del backend ──────────────────────────────────────
+  const [puntos,          setPuntos]          = useState([]);
+  const [puntoSeleccionado, setPuntoSeleccionado] = useState("");
+
+  useEffect(() => {
+    getPuntos()
+      .then(data => {
+        setPuntos(data);
+        if (data.length > 0) setPuntoSeleccionado(data[0].nombre);
+      })
+      .catch(() => {
+        showToast("⚠️ No se cargaron los puntos del servidor", "error");
+      });
+  }, []);
 
   const registrar = () => {
     const p = parseFloat(peso);
@@ -21,7 +36,7 @@ export default function Entregas({ state, dispatch, showToast }) {
     const pts = Math.round(p * cfg.pts);
     dispatch({
       type: "ADD_ENTREGA",
-      payload: { id: Date.now(), material: mat, icon: cfg.icon, punto, fecha, peso: p, pts, estado: "Pendiente" },
+      payload: { id: Date.now(), material: mat, icon: cfg.icon, punto: puntoSeleccionado, fecha, peso: p, pts, estado: "Pendiente" },
     });
     dispatch({
       type: "ADD_HISTORIAL",
@@ -93,9 +108,21 @@ export default function Entregas({ state, dispatch, showToast }) {
                   </select>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Punto de entrega</label>
-                  <select className="form-select" value={punto} onChange={e => setPunto(e.target.value)} style={selStyle}>
-                    {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
+                  <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>
+                    Punto de entrega
+                    {puntos.length === 0 && <span style={{ color: "#9ca3af", fontWeight: 400 }}> (cargando...)</span>}
+                  </label>
+                  <select
+                    className="form-select"
+                    value={puntoSeleccionado}
+                    onChange={e => setPuntoSeleccionado(e.target.value)}
+                    style={selStyle}
+                    disabled={puntos.length === 0}
+                  >
+                    {puntos.length === 0
+                      ? <option>Cargando puntos...</option>
+                      : puntos.map(p => <option key={p.id} value={p.nombre}>{p.nombre}</option>)
+                    }
                   </select>
                 </div>
                 <div className="mb-3">

@@ -1,5 +1,9 @@
-import { useState } from "react";
+// ============================================================
+//  src/components/Usuarios.jsx  —  Con fetch real al backend
+// ============================================================
+import { useState, useEffect } from "react";
 import { G, GL, GS, ALL_POINTS, ROLES_CFG, ZONAS } from "../constants/data";
+import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api";
 
 const selStyle = {
   width: "100%", padding: "9px 12px",
@@ -7,7 +11,6 @@ const selStyle = {
   fontSize: 13, fontFamily: "inherit", background: "#f9fafb",
 };
 
-// ── Badge de rol ───────────────────────────────────────────────────────────────
 function RolBadge({ rol }) {
   const cfg = ROLES_CFG[rol] || { color: "#6b7280", bg: "#f3f4f6", icon: "👤" };
   return (
@@ -27,6 +30,30 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const [filterRol, setFilterRol] = useState("Todos");
   const [viewUser,  setViewUser]  = useState(null);
 
+  // ── Estado de carga ──────────────────────────────────────────
+  const [loading,   setLoading]   = useState(true);
+  const [apiError,  setApiError]  = useState(null);
+
+  // ── Cargar usuarios desde el backend al montar ───────────────
+  useEffect(() => {
+    cargarUsuarios();
+  }, []);
+
+  async function cargarUsuarios() {
+    setLoading(true);
+    setApiError(null);
+    try {
+      const data = await getUsuarios();
+      // Sincronizamos el estado global del reducer con los datos reales
+      dispatch({ type: "SET_USUARIOS", payload: data });
+    } catch (err) {
+      setApiError(err.message);
+      showToast("⚠️ No se pudo cargar usuarios: " + err.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
   const validate = () => {
@@ -38,28 +65,61 @@ export default function Usuarios({ state, dispatch, showToast }) {
     return e;
   };
 
-  const guardar = () => {
+  // ── Guardar usuario: llama al backend y luego actualiza el estado ──
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
-        telefono: form.telefono.trim(), rol: form.rol, zona: form.zona,
-        puntoAsignado: form.puntoAsignado, pts: 0, activo: form.activo, av: initials,
-        fechaAlta: new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`✅ Usuario "${form.nombre.trim()}" creado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+
+    try {
+      const nuevoUsuario = await crearUsuario({
+        nombre_completo: form.nombre.trim(),
+        correo:          form.email.trim(),
+        rol:             form.rol,
+      });
+
+      // Construimos el objeto local a partir de la respuesta del backend
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_USER",
+        payload: {
+          id:             nuevoUsuario.id ?? Date.now(),
+          nombre:         form.nombre.trim(),
+          email:          form.email.trim(),
+          telefono:       form.telefono.trim(),
+          rol:            form.rol,
+          zona:           form.zona,
+          puntoAsignado:  form.puntoAsignado,
+          pts:            0,
+          activo:         form.activo,
+          av:             initials,
+          fechaAlta:      new Date().toLocaleDateString("es-CO"),
+        },
+      });
+
+      showToast(`✅ Usuario "${form.nombre.trim()}" creado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("❌ Error al crear usuario: " + err.message, "error");
+    }
+  };
+
+  // ── Toggle estado: llama al backend y luego actualiza el estado ──
+  const toggleEstado = async (usuario) => {
+    const nuevoEstado = !usuario.activo;
+    try {
+      await cambiarEstadoUsuario(usuario.id, nuevoEstado);
+      dispatch({ type: "TOGGLE_USER", payload: usuario.id });
+      showToast(nuevoEstado ? "✅ Usuario activado" : "⏸️ Usuario desactivado");
+    } catch (err) {
+      showToast("❌ Error al cambiar estado: " + err.message, "error");
+    }
   };
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
   const filtered = state.usuarios.filter(u => {
     const q = search.toLowerCase();
-    const matchQ = u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.zona || "").toLowerCase().includes(q);
+    const matchQ = u.nombre?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q) || (u.zona || "").toLowerCase().includes(q);
     const matchR = filterRol === "Todos" || u.rol === filterRol;
     return matchQ && matchR;
   });
@@ -79,10 +139,22 @@ export default function Usuarios({ state, dispatch, showToast }) {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4 className="page-title m-0">👥 Gestión de usuarios</h4>
-        <button className="btn btn-eco-primary rounded-3" onClick={() => setModal(true)}>
-          <i className="bi bi-person-plus me-1"></i> Nuevo usuario
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-outline-secondary rounded-3" onClick={cargarUsuarios} disabled={loading}>
+            {loading ? "⏳" : "🔄"} Recargar
+          </button>
+          <button className="btn btn-eco-primary rounded-3" onClick={() => setModal(true)}>
+            <i className="bi bi-person-plus me-1"></i> Nuevo usuario
+          </button>
+        </div>
       </div>
+
+      {/* Error de API */}
+      {apiError && (
+        <div className="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+          ⚠️ <span>{apiError} — Los datos mostrados pueden ser locales.</span>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="row g-3 mb-4">
@@ -130,56 +202,61 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
       {/* Tabla */}
       <div className="eco-card p-0 overflow-hidden">
-        <div className="table-responsive">
-          <table className="table table-hover mb-0" style={{ fontSize: 13 }}>
-            <thead style={{ background: "#f9fafb" }}>
-              <tr>
-                {["Usuario","Email","Rol","Zona","Puntos","Estado","Acciones"].map(h => (
-                  <th key={h} className="text-uppercase" style={{ padding: "10px 16px", fontSize: 11, color: "#9ca3af", fontWeight: 600, border: "none" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-5" style={{ color: "#9ca3af" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>👤</div>Sin usuarios que coincidan
-                </td></tr>
-              ) : filtered.map(u => (
-                <tr key={u.id} style={{ opacity: u.activo ? 1 : .55, transition: ".15s" }}>
-                  <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
-                    <div className="d-flex align-items-center gap-2">
-                      <div style={{ width: 34, height: 34, borderRadius: "50%", background: u.activo ? GL : "#f3f4f6", border: `2px solid ${u.activo ? G : "#9ca3af"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 11, color: u.activo ? G : "#9ca3af", flexShrink: 0 }}>{u.av}</div>
-                      <div>
-                        <div style={{ fontWeight: 700 }}>{u.nombre}</div>
-                        {u.fechaAlta && <div style={{ fontSize: 10, color: "#9ca3af" }}>Alta: {u.fechaAlta}</div>}
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 16px", color: "#6b7280", verticalAlign: "middle" }}>{u.email}</td>
-                  <td style={{ padding: "12px 16px", verticalAlign: "middle" }}><RolBadge rol={u.rol} /></td>
-                  <td style={{ padding: "12px 16px", color: "#6b7280", fontSize: 12, verticalAlign: "middle" }}>{u.zona || "—"}</td>
-                  <td style={{ padding: "12px 16px", fontWeight: 800, color: G, verticalAlign: "middle" }}>{u.pts.toLocaleString()}</td>
-                  <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
-                    <div
-                      className="eco-switch"
-                      style={{ background: u.activo ? GS : "#d1d5db" }}
-                      onClick={() => dispatch({ type: "TOGGLE_USER", payload: u.id })}
-                    >
-                      <div className="knob" style={{ left: u.activo ? 20 : 4 }} />
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
-                    <div className="d-flex gap-1">
-                      <button title="Ver detalle" style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${GL}`, background: GL, cursor: "pointer", fontSize: 13 }} onClick={() => setViewUser(u)}>👁</button>
-                      <button title="Eliminar"    style={{ width: 30, height: 30, borderRadius: 6, border: "1px solid #fca5a5", background: "#fff", cursor: "pointer", fontSize: 13 }}
-                        onClick={() => { dispatch({ type: "DEL_USER", payload: u.id }); showToast("🗑️ Usuario eliminado", "error"); if (viewUser?.id === u.id) setViewUser(null); }}>🗑</button>
-                    </div>
-                  </td>
+        {loading ? (
+          <div className="text-center py-5" style={{ color: "#9ca3af" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
+            Cargando usuarios desde el servidor...
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="table table-hover mb-0" style={{ fontSize: 13 }}>
+              <thead style={{ background: "#f9fafb" }}>
+                <tr>
+                  {["Usuario","Email","Rol","Zona","Puntos","Estado","Acciones"].map(h => (
+                    <th key={h} className="text-uppercase" style={{ padding: "10px 16px", fontSize: 11, color: "#9ca3af", fontWeight: 600, border: "none" }}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={7} className="text-center py-5" style={{ color: "#9ca3af" }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>👤</div>Sin usuarios que coincidan
+                  </td></tr>
+                ) : filtered.map(u => (
+                  <tr key={u.id} style={{ opacity: u.activo ? 1 : .55, transition: ".15s" }}>
+                    <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
+                      <div className="d-flex align-items-center gap-2">
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: u.activo ? GL : "#f3f4f6", border: `2px solid ${u.activo ? G : "#9ca3af"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 11, color: u.activo ? G : "#9ca3af", flexShrink: 0 }}>{u.av}</div>
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{u.nombre}</div>
+                          {u.fechaAlta && <div style={{ fontSize: 10, color: "#9ca3af" }}>Alta: {u.fechaAlta}</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 16px", color: "#6b7280", verticalAlign: "middle" }}>{u.email}</td>
+                    <td style={{ padding: "12px 16px", verticalAlign: "middle" }}><RolBadge rol={u.rol} /></td>
+                    <td style={{ padding: "12px 16px", color: "#6b7280", fontSize: 12, verticalAlign: "middle" }}>{u.zona || "—"}</td>
+                    <td style={{ padding: "12px 16px", fontWeight: 800, color: G, verticalAlign: "middle" }}>{(u.pts || 0).toLocaleString()}</td>
+                    <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
+                      <div
+                        className="eco-switch"
+                        style={{ background: u.activo ? GS : "#d1d5db", cursor: "pointer" }}
+                        onClick={() => toggleEstado(u)}
+                      >
+                        <div className="knob" style={{ left: u.activo ? 20 : 4 }} />
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
+                      <div className="d-flex gap-1">
+                        <button title="Ver detalle" style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${GL}`, background: GL, cursor: "pointer", fontSize: 13 }} onClick={() => setViewUser(u)}>👁</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modal detalle */}
@@ -201,7 +278,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                 {[
                   ["📍 Zona",     viewUser.zona || "Sin asignar"],
                   ["📞 Teléfono", viewUser.telefono || "Sin registrar"],
-                  ["⭐ Puntos",   `${viewUser.pts.toLocaleString()} pts`],
+                  ["⭐ Puntos",   `${(viewUser.pts || 0).toLocaleString()} pts`],
                   ["📅 Alta",     viewUser.fechaAlta || "—"],
                   ["🏪 Punto",    viewUser.puntoAsignado || "Sin asignar"],
                   ["Estado",      viewUser.activo ? "🟢 Activo" : "⚪ Inactivo"],
@@ -236,7 +313,6 @@ export default function Usuarios({ state, dispatch, showToast }) {
               </div>
 
               <div className="modal-body">
-                {/* Avatar preview */}
                 <div className="text-center mb-3">
                   <div style={{ width: 56, height: 56, borderRadius: "50%", background: GL, border: `2px solid ${G}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: G, margin: "0 auto" }}>
                     {form.nombre.trim().split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("") || "?"}
@@ -244,41 +320,26 @@ export default function Usuarios({ state, dispatch, showToast }) {
                 </div>
 
                 <div className="row g-3">
-                  {/* Nombre */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Nombre completo *</label>
                     <input value={form.nombre} onChange={e => set("nombre", e.target.value)} placeholder="Ej: Carlos Ruiz" className={`form-control ${errors.nombre ? "is-invalid" : ""}`} style={selStyle} />
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
-                  {/* Email */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Correo electrónico *</label>
                     <input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="correo@ejemplo.com" className={`form-control ${errors.email ? "is-invalid" : ""}`} style={selStyle} />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
-                  {/* Teléfono */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Teléfono</label>
                     <input value={form.telefono} onChange={e => set("telefono", e.target.value)} placeholder="Ej: 300 123 4567" className="form-control" style={selStyle} />
                   </div>
-                  {/* Rol */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Tipo / Rol *</label>
                     <select value={form.rol} onChange={e => set("rol", e.target.value)} className="form-select" style={selStyle}>
                       {Object.keys(ROLES_CFG).map(r => <option key={r}>{r}</option>)}
                     </select>
                   </div>
-
-                  {/* Descripción rol */}
-                  {form.rol && (
-                    <div className="col-12">
-                      <div style={{ background: ROLES_CFG[form.rol]?.bg || GL, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: ROLES_CFG[form.rol]?.color || G, fontWeight: 600 }}>
-                        {ROLES_CFG[form.rol]?.icon} {rolDesc[form.rol]}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Zona */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Zona</label>
                     <select value={form.zona} onChange={e => set("zona", e.target.value)} className="form-select" style={selStyle}>
@@ -286,29 +347,12 @@ export default function Usuarios({ state, dispatch, showToast }) {
                       {ZONAS.map(z => <option key={z}>{z}</option>)}
                     </select>
                   </div>
-                  {/* Punto */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold" style={{ fontSize: 12, color: "#4b5563" }}>Punto asignado</label>
                     <select value={form.puntoAsignado} onChange={e => set("puntoAsignado", e.target.value)} className="form-select" style={selStyle}>
                       <option value="">Sin asignar</option>
                       {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
                     </select>
-                  </div>
-
-                  {/* Estado inicial */}
-                  <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between p-3 rounded-3" style={{ background: "#f9fafb" }}>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 13 }}>Estado inicial</div>
-                        <div style={{ fontSize: 11, color: "#9ca3af" }}>El usuario podrá acceder de inmediato si está activo</div>
-                      </div>
-                      <div className="d-flex align-items-center gap-2">
-                        <span style={{ fontSize: 12, color: form.activo ? G : "#9ca3af", fontWeight: 600 }}>{form.activo ? "Activo" : "Inactivo"}</span>
-                        <div className="eco-switch" style={{ background: form.activo ? GS : "#d1d5db" }} onClick={() => set("activo", !form.activo)}>
-                          <div className="knob" style={{ left: form.activo ? 20 : 4 }} />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -325,5 +369,4 @@ export default function Usuarios({ state, dispatch, showToast }) {
   );
 }
 
-// Exportar también RolBadge para uso en Perfil
 export { RolBadge };

@@ -1,22 +1,55 @@
-import { useState } from "react";
-import { G, GL, ALL_POINTS, MAT_COLORS } from "../constants/data";
+import { useState, useEffect } from "react";
+import { G, GL, MAT_COLORS } from "../constants/data";
+import { getPuntos } from "../services/api";  // ← importamos del api.js
 
 export default function Mapa({ showToast }) {
   const [search,   setSearch]   = useState("");
   const [filter,   setFilter]   = useState("Todos");
   const [selected, setSelected] = useState(null);
-  const [favs,     setFavs]     = useState([1, 3]);
+  const [favs,     setFavs]     = useState([]);
 
-  const openCount = ALL_POINTS.filter(p => p.open).length;
+  // ── Puntos del backend ────────────────────────────────────────────────────
+  const [puntos,   setPuntos]   = useState([]);
+  const [loading,  setLoading]  = useState(true);
 
-  const filtered = ALL_POINTS.filter(p => {
-    const ms = p.name.toLowerCase().includes(search.toLowerCase()) || p.address.toLowerCase().includes(search.toLowerCase());
+  useEffect(() => {
+    getPuntos()
+      .then(data => {
+        // El backend devuelve { id, nombre, direccion }
+        // Adaptamos al formato que usa el componente
+        const adaptados = data.map(p => ({
+          id:        p.id,
+          name:      p.nombre,
+          address:   p.direccion ?? "Sin dirección",
+          open:      true,           // El backend no tiene este campo aún
+          materials: [],             // El backend no tiene este campo aún
+          rating:    "—",
+          distance:  "—",
+          hours:     "Consultar",
+          phone:     "—",
+        }));
+        setPuntos(adaptados);
+      })
+      .catch(() => {
+        showToast("⚠️ No se cargaron los puntos del servidor", "error");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const openCount = puntos.filter(p => p.open).length;
+
+  const filtered = puntos.filter(p => {
+    const ms = p.name.toLowerCase().includes(search.toLowerCase()) ||
+               p.address.toLowerCase().includes(search.toLowerCase());
     const mo = filter === "Todos" || (filter === "Abiertos" ? p.open : !p.open);
     return ms && mo;
   });
 
-  const selPoint   = selected ? ALL_POINTS.find(p => p.id === selected) : null;
-  const toggleFav  = (id, e) => { e?.stopPropagation(); setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]); };
+  const selPoint  = selected ? puntos.find(p => p.id === selected) : null;
+  const toggleFav = (id, e) => {
+    e?.stopPropagation();
+    setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
+  };
 
   return (
     <div>
@@ -24,15 +57,32 @@ export default function Mapa({ showToast }) {
 
       {/* Stats */}
       <div className="row g-3 mb-4">
-        <div className="col-md-4"><div className="stat-card green"><div className="stat-label">Puntos abiertos</div><div className="stat-value">{openCount}</div><div className="stat-change">disponibles ahora</div></div></div>
-        <div className="col-md-4"><div className="stat-card"><div className="stat-label" style={{ color: "#9ca3af" }}>Más cercano</div><div className="stat-value" style={{ color: G }}>0.4 km</div><div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>Punto Verde Centro</div></div></div>
-        <div className="col-md-4"><div className="stat-card yellow"><div className="stat-label">Favoritos</div><div className="stat-value">{favs.length}</div><div className="stat-change">guardados</div></div></div>
+        <div className="col-md-4">
+          <div className="stat-card green">
+            <div className="stat-label">Puntos abiertos</div>
+            <div className="stat-value">{loading ? "..." : openCount}</div>
+            <div className="stat-change">disponibles ahora</div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="stat-card">
+            <div className="stat-label" style={{ color: "#9ca3af" }}>Total puntos</div>
+            <div className="stat-value" style={{ color: G }}>{loading ? "..." : puntos.length}</div>
+            <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>en el sistema</div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="stat-card yellow">
+            <div className="stat-label">Favoritos</div>
+            <div className="stat-value">{favs.length}</div>
+            <div className="stat-change">guardados</div>
+          </div>
+        </div>
       </div>
 
       <div className="row g-3">
         {/* Lista */}
         <div className="col-md-5">
-          {/* Buscador */}
           <div className="input-group mb-2">
             <span className="input-group-text bg-white border-end-0" style={{ borderRadius: "8px 0 0 8px" }}>🔍</span>
             <input
@@ -44,7 +94,6 @@ export default function Mapa({ showToast }) {
             />
           </div>
 
-          {/* Tabs */}
           <div className="btn-group mb-3 w-100" role="group">
             {["Todos","Abiertos","Cerrados"].map(f => (
               <button
@@ -58,11 +107,16 @@ export default function Mapa({ showToast }) {
             ))}
           </div>
 
-          {/* Tarjetas */}
           <div style={{ maxHeight: 520, overflowY: "auto" }} className="d-flex flex-column gap-2 pe-1">
-            {filtered.length === 0 ? (
+            {loading ? (
               <div className="text-center py-5" style={{ color: "#9ca3af" }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>Sin resultados
+                <div style={{ fontSize: 36, marginBottom: 8 }}>⏳</div>
+                Cargando puntos...
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-5" style={{ color: "#9ca3af" }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>
+                Sin resultados
               </div>
             ) : filtered.map(p => (
               <div key={p.id} className={`point-card ${selected === p.id ? "selected" : ""}`} onClick={() => setSelected(p.id)}>
@@ -73,12 +127,13 @@ export default function Mapa({ showToast }) {
                     <span className={`eco-badge ${p.open ? "eco-badge-success" : "eco-badge-gray"}`}>{p.open ? "Abierto" : "Cerrado"}</span>
                   </div>
                   <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 6 }}>{p.address}</div>
-                  <div className="d-flex flex-wrap gap-1 mb-1">
-                    {p.materials.slice(0, 3).map(m => (
-                      <span key={m} className="mat-tag" style={{ background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
-                    ))}
-                  </div>
-                  <div style={{ fontSize: 12, color: "#9ca3af" }}>⭐ {p.rating} &nbsp; 📍 {p.distance}</div>
+                  {p.materials.length > 0 && (
+                    <div className="d-flex flex-wrap gap-1 mb-1">
+                      {p.materials.slice(0, 3).map(m => (
+                        <span key={m} className="mat-tag" style={{ background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button onClick={e => toggleFav(p.id, e)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, flexShrink: 0 }}>
                   {favs.includes(p.id) ? "❤️" : "🤍"}
@@ -108,8 +163,8 @@ export default function Mapa({ showToast }) {
                 {[
                   ["HORARIO",     selPoint.hours],
                   ["TELÉFONO",    selPoint.phone],
-                  ["DISTANCIA",   `📍 ${selPoint.distance}`],
-                  ["CALIFICACIÓN",`⭐ ${selPoint.rating} / 5.0`],
+                  ["DISTANCIA",   selPoint.distance],
+                  ["ID EN SISTEMA", `#${selPoint.id}`],
                 ].map(([l, v]) => (
                   <div key={l} className="col-6">
                     <div style={{ background: "#f9fafb", borderRadius: 10, padding: "12px" }}>
@@ -120,14 +175,16 @@ export default function Mapa({ showToast }) {
                 ))}
               </div>
 
-              <div className="mb-3">
-                <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Materiales aceptados</div>
-                <div className="d-flex flex-wrap gap-2">
-                  {selPoint.materials.map(m => (
-                    <span key={m} className="mat-tag" style={{ fontSize: 13, fontWeight: 600, padding: "5px 14px", background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
-                  ))}
+              {selPoint.materials.length > 0 && (
+                <div className="mb-3">
+                  <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Materiales aceptados</div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {selPoint.materials.map(m => (
+                      <span key={m} className="mat-tag" style={{ fontSize: 13, fontWeight: 600, padding: "5px 14px", background: `${MAT_COLORS[m] || "#6b7280"}20`, color: MAT_COLORS[m] || "#6b7280" }}>{m}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="d-flex gap-2">
                 <button className="btn btn-eco-primary rounded-3 flex-fill" onClick={() => showToast("🧭 Abriendo navegación...")}>🧭 Cómo llegar</button>
@@ -139,7 +196,7 @@ export default function Mapa({ showToast }) {
             <div className="eco-card d-flex flex-column align-items-center justify-content-center text-center" style={{ minHeight: 400 }}>
               <div style={{ fontSize: 64, marginBottom: 16 }}>🗺️</div>
               <h5 style={{ color: "#6b7280", marginBottom: 8 }}>Selecciona un punto</h5>
-              <p style={{ fontSize: 14, color: "#9ca3af" }}>Haz clic en cualquier punto de reciclaje para ver su detalle, horario, materiales y más.</p>
+              <p style={{ fontSize: 14, color: "#9ca3af" }}>Haz clic en cualquier punto de reciclaje para ver su detalle.</p>
             </div>
           )}
         </div>
