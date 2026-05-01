@@ -16,28 +16,23 @@ import Administradores   from "./components/Administradores";
 import Afiliados         from "./components/Afiliados";
 import Perfil            from "./components/Perfil";
 import Materiales        from "./components/Materiales";
+import Login             from "./components/Login";
 
 // ── Reducer ───────────────────────────────────────────────────────────────────
 function reducer(state, { type, payload }) {
   switch (type) {
     case "ADD_ENTREGA":
       return { ...state, entregas: [payload, ...state.entregas] };
-
     case "ADD_HISTORIAL":
       return { ...state, historial: [payload, ...state.historial] };
-
     case "ADD_PTS":
       return { ...state, pts: state.pts + payload };
-
     case "ADD_IA_HIST":
       return { ...state, iaHist: [payload, ...state.iaHist] };
-
     case "SET_IA_RESULT":
       return { ...state, iaResult: payload };
-
     case "ADD_USER":
       return { ...state, usuarios: [...state.usuarios, payload] };
-
     case "TOGGLE_USER":
       return {
         ...state,
@@ -45,15 +40,13 @@ function reducer(state, { type, payload }) {
           u.id === payload ? { ...u, activo: !u.activo } : u
         ),
       };
-
     case "DEL_USER":
       return {
         ...state,
         usuarios: state.usuarios.filter(u => u.id !== payload),
       };
-
     default:
-      console.warn("Acción no reconocida:", type); // 👈 ayuda a debug
+      console.warn("Acción no reconocida:", type);
       return state;
   }
 }
@@ -61,17 +54,14 @@ function reducer(state, { type, payload }) {
 // ── Toast hook ────────────────────────────────────────────────────────────────
 function useToast() {
   const [toasts, setToasts] = useState([]);
-
   const showToast = useCallback((msg, type = "success") => {
     const id = Date.now();
     setToasts(t => [...t, { id, msg, type }]);
   }, []);
-
   const remove = useCallback(
     id => setToasts(t => t.filter(x => x.id !== id)),
     []
   );
-
   return { toasts, showToast, remove };
 }
 
@@ -79,31 +69,41 @@ function useToast() {
 export default function App() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [view, setView]   = useState("dashboard");
-  const { toasts, showToast, remove } = useToast();
 
+  const [isAuth, setIsAuth] = useState(false); // ✅ siempre empieza en login
+
+  const login  = () => setIsAuth(true);
+  const logout = () => setIsAuth(false);
+
+  const { toasts, showToast, remove } = useToast();
   const shared = { state, dispatch, showToast, setView };
 
   const pages = {
-    dashboard:   <Dashboard      {...shared} />,
-    entregas:    <Entregas       {...shared} />,
-    ia:          <ClasificadorIA {...shared} />,
-    recompensas: <Recompensas    {...shared} />,
-    puntos:      <MisPuntos      state={state} />,
-    mapa:        <Mapa           showToast={showToast} />,
-    eco:         <ImpactoEco     state={state} />,
-    usuarios:    <Usuarios       {...shared} />,
+    dashboard:   <Dashboard       {...shared} />,
+    entregas:    <Entregas        {...shared} />,
+    ia:          <ClasificadorIA  {...shared} />,
+    recompensas: <Recompensas     {...shared} />,
+    puntos:      <MisPuntos       state={state} />,
+    mapa:        <Mapa            showToast={showToast} />,
+    eco:         <ImpactoEco      state={state} />,
+    usuarios:    <Usuarios        {...shared} />,
     admins:      <Administradores {...shared} />,
-    afiliados:   <Afiliados      {...shared} />,
-    perfil:      <Perfil         state={state} showToast={showToast} />,
-    materiales:  <Materiales     {...shared} /> // 👈 ya integrado
+    afiliados:   <Afiliados       {...shared} />,
+    perfil:      <Perfil          state={state} showToast={showToast} />,
+    materiales:  <Materiales      {...shared} />,
   };
+
+  // 👇 MUESTRA LOGIN COMPLETO SI NO ESTÁ AUTENTICADO
+  if (!isAuth) {
+    return <Login onLogin={login} />;
+  }
 
   return (
     <div className="app-shell">
       <Sidebar view={view} setView={setView} />
 
       <div className="main-content">
-        <Topbar pts={state.pts} setView={setView} />
+        <Topbar pts={state.pts} setView={setView} logout={logout} />
 
         <div className="page-area">
           {pages[view] ?? pages.dashboard}

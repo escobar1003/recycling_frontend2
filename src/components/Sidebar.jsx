@@ -10,7 +10,8 @@ const NAV = [
   { view: "afiliados",   icon: "bi-shop",               title: "Afiliados",          color: "#b45309" },
   { view: "admins",      icon: "bi-shield-lock-fill",   title: "Administradores",    color: "#2563eb" },
   { view: "perfil",      icon: "bi-person-circle",      title: "Mi Perfil",          color: "#374151" },
-  { view: "materiales",  icon: "bi-box-seam-fill",      title: "Materiales",         color: "#7c3aed" }, // 👈 corregido
+  { view: "materiales",  icon: "bi-box-seam-fill",      title: "Materiales",         color: "#7c3aed" }, 
+
 ];
 
 export default function Sidebar({ view, setView }) {
