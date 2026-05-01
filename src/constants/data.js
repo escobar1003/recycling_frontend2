@@ -86,12 +86,9 @@ export const ADMIN_PROFILE = {
 
 // ── Recompensas ───────────────────────────────────────────────────────────────
 export const REWARDS = [
-  { id: 1, titulo: "Café gratis",         empresa: "Juan Valdez",       pts: 500,  icon: "☕", color: "#854d0e" },
-  { id: 2, titulo: "10% descuento",       empresa: "Éxito Supermercado",pts: 1000, icon: "🛒", color: "#16a34a" },
-  { id: 3, titulo: "Entrada cine",        empresa: "Cinépolis",          pts: 2000, icon: "🎬", color: "#7c3aed" },
-  { id: 4, titulo: "Transporte gratis",   empresa: "TransMilenio",       pts: 800,  icon: "🚌", color: "#0f766e" },
-  { id: 5, titulo: "Descuento farmacia",  empresa: "Farmatodo",          pts: 1200, icon: "💊", color: "#1e40af" },
-  { id: 6, titulo: "Bono restaurante",    empresa: "Crepes & Waffles",   pts: 1500, icon: "🥞", color: "#c2410c" },
+  { id: 1, titulo: "Descuento 10% Supermercado", empresa: "EcoMarket", pts: 500,  icon: "🛒", color: "#16a34a", activo: true },
+  { id: 2, titulo: "Bono transporte",            empresa: "MoviGreen",  pts: 800,  icon: "🚌", color: "#2563eb", activo: true },
+  { id: 3, titulo: "Entrada cine",               empresa: "CineVerde",  pts: 1200, icon: "🎬", color: "#9333ea", activo: true },
 ];
 
 // ── Datos gráfica dashboard ────────────────────────────────────────────────────
@@ -108,6 +105,7 @@ export const CHART_DATA = [
 // ── Estado inicial de la app ───────────────────────────────────────────────────
 export const INITIAL_STATE = {
   pts: 3250,
+  rewards: REWARDS,   // ← esto es lo que faltaba
   entregas: [
     { id: 1, material: "Plástico (PET)", icon: "🧴", punto: "Punto Verde Centro",   fecha: "2025-07-10", peso: 2.5, pts: 75,  estado: "Validada"  },
     { id: 2, material: "Cartón",         icon: "📦", punto: "EcoPunto Norte",        fecha: "2025-07-08", peso: 3.0, pts: 60,  estado: "Pendiente" },
