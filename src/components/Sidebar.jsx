@@ -10,6 +10,7 @@ const NAV = [
   { view: "afiliados",   icon: "bi-shop",               title: "Afiliados",          color: "#b45309" },
   { view: "admins",      icon: "bi-shield-lock-fill",   title: "Administradores",    color: "#2563eb" },
   { view: "perfil",      icon: "bi-person-circle",      title: "Mi Perfil",          color: "#374151" },
+  { view: "materiales",  icon: "bi-box-seam-fill",      title: "Materiales",         color: "#7c3aed" }, // 👈 corregido
 ];
 
 export default function Sidebar({ view, setView }) {
@@ -26,14 +27,16 @@ export default function Sidebar({ view, setView }) {
         <i className="bi bi-recycle fs-5" />
       </div>
 
-      {/* Botones de navegación */}
+      {/* Navegación */}
       <div className="d-flex flex-column align-items-center gap-1 w-100">
         {NAV.map(n => {
           const isActive = view === n.view;
+
           return (
             <button
               key={n.view}
               title={n.title}
+              onClick={() => setView(n.view)}
               className="btn rounded-3 p-0 d-flex align-items-center justify-content-center border-0"
               style={{
                 width: 42,
@@ -42,7 +45,6 @@ export default function Sidebar({ view, setView }) {
                 color: isActive ? n.color : "#9ca3af",
                 transition: "background .15s, color .15s",
               }}
-              onClick={() => setView(n.view)}
             >
               <i className={`bi ${n.icon} fs-5`} />
             </button>
@@ -52,11 +54,16 @@ export default function Sidebar({ view, setView }) {
 
       <div className="flex-fill" />
 
-      {/* Salir */}
+      {/* Botón salir */}
       <button
         title="Salir"
         className="btn border-0 rounded-3 d-flex align-items-center justify-content-center"
-        style={{ width: 42, height: 42, color: "#ef4444", background: "#fff1f1" }}
+        style={{
+          width: 42,
+          height: 42,
+          color: "#ef4444",
+          background: "#fff1f1"
+        }}
       >
         <i className="bi bi-box-arrow-right fs-5" />
       </button>
