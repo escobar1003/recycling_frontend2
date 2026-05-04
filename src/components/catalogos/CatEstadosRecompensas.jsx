@@ -1,16 +1,25 @@
+// src/components/catalogos/CatEstadosRecompensas.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Disponible" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Disponible",   descripcion: "Recompensa activa y canjeable" },
+  { id: 2, nombre: "Agotada",      descripcion: "Recompensa sin stock disponible" },
+  { id: 3, nombre: "Suspendida",   descripcion: "Recompensa pausada temporalmente" },
+  { id: 4, nombre: "Vencida",      descripcion: "Recompensa fuera de fecha de vigencia" },
+];
+
 export default function CatEstadosRecompensas() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-gift-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados recompensas</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-gift-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados recompensas</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de recompensas"
+      icono="bi-gift-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

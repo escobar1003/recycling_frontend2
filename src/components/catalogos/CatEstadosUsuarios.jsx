@@ -1,16 +1,26 @@
+// src/components/catalogos/CatEstadosUsuarios.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Activo" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Activo",      descripcion: "Usuario habilitado para usar la plataforma" },
+  { id: 2, nombre: "Inactivo",    descripcion: "Usuario deshabilitado temporalmente" },
+  { id: 3, nombre: "Suspendido",  descripcion: "Usuario suspendido por mal uso" },
+  { id: 4, nombre: "Pendiente",   descripcion: "Usuario en espera de verificación de cuenta" },
+  { id: 5, nombre: "Eliminado",   descripcion: "Usuario dado de baja definitivamente" },
+];
+
 export default function CatEstadosUsuarios() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-person-check-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados usuarios</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-person-check-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados usuarios</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de usuarios"
+      icono="bi-person-check-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

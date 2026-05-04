@@ -1,16 +1,25 @@
+// src/components/catalogos/CatEstadosPuntos.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Activo" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Activo",    descripcion: "Puntos disponibles para canje" },
+  { id: 2, nombre: "Inactivo",  descripcion: "Puntos bloqueados temporalmente" },
+  { id: 3, nombre: "Expirado",  descripcion: "Puntos que han vencido" },
+  { id: 4, nombre: "Canjeado",  descripcion: "Puntos ya utilizados en un canje" },
+];
+
 export default function CatEstadosPuntos() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-geo-alt-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados puntos</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-geo-alt-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados puntos</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de puntos"
+      icono="bi-geo-alt-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

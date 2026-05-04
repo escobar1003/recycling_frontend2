@@ -1,16 +1,25 @@
-export default function CatRoles() {
+// src/components/catalogos/CatRoles.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del rol",  placeholder: "Ej: Administrador" },
+  { key: "descripcion", label: "Descripción",      placeholder: "Describe el rol", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Administrador",  descripcion: "Acceso total al sistema" },
+  { id: 2, nombre: "Encargado",      descripcion: "Gestión de puntos de reciclaje" },
+  { id: 3, nombre: "Usuario",        descripcion: "Usuario final de la plataforma" },
+  { id: 4, nombre: "Aliado",         descripcion: "Empresa o entidad aliada" },
+];
+
+export default function CatRoles(props) {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-key-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Roles</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-key-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Roles</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Roles"
+      icono="bi-key-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

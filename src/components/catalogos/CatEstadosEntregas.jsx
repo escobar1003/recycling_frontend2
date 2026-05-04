@@ -1,16 +1,26 @@
+// src/components/catalogos/CatEstadosEntregas.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Pendiente" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Pendiente",   descripcion: "Entrega registrada, en espera de revisión" },
+  { id: 2, nombre: "En proceso",  descripcion: "Entrega siendo procesada por el encargado" },
+  { id: 3, nombre: "Completada",  descripcion: "Entrega finalizada y puntos asignados" },
+  { id: 4, nombre: "Rechazada",   descripcion: "Entrega no aceptada por incumplir requisitos" },
+  { id: 5, nombre: "Cancelada",   descripcion: "Entrega cancelada por el usuario" },
+];
+
 export default function CatEstadosEntregas() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-box-seam-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados entregas</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-box-seam-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados entregas</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de entregas"
+      icono="bi-box-seam-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

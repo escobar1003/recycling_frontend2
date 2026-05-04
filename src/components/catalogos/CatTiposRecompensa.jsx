@@ -1,16 +1,26 @@
+// src/components/catalogos/CatTiposRecompensa.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Tipo de recompensa", placeholder: "Ej: Descuento" },
+  { key: "descripcion", label: "Descripción",         placeholder: "Describe el tipo", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Descuento",        descripcion: "Porcentaje de descuento en productos aliados" },
+  { id: 2, nombre: "Producto físico",  descripcion: "Artículo físico entregado al usuario" },
+  { id: 3, nombre: "Vale digital",     descripcion: "Cupón o código digital canjeable" },
+  { id: 4, nombre: "Experiencia",      descripcion: "Actividad o evento especial para el usuario" },
+  { id: 5, nombre: "Donación",         descripcion: "Puntos convertidos en donación a causa ambiental" },
+];
+
 export default function CatTiposRecompensa() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-tag-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Tipos de recompensa</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-tag-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Tipos de recompensa</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Tipos de recompensa"
+      icono="bi-tag-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

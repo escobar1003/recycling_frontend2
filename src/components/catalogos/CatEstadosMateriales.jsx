@@ -1,16 +1,25 @@
+// src/components/catalogos/CatEstadosMateriales.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Reciclable" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Reciclable",     descripcion: "Material apto para reciclaje" },
+  { id: 2, nombre: "No reciclable",  descripcion: "Material que no puede reciclarse" },
+  { id: 3, nombre: "Peligroso",      descripcion: "Material con manejo especial requerido" },
+  { id: 4, nombre: "En revisión",    descripcion: "Material pendiente de clasificación" },
+];
+
 export default function CatEstadosMateriales() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-recycle text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados materiales</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-recycle fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados materiales</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de materiales"
+      icono="bi-recycle"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

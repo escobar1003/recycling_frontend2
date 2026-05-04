@@ -1,16 +1,26 @@
+// src/components/catalogos/CatEstadosCanjes.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Solicitado" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Solicitado",  descripcion: "Canje solicitado por el usuario" },
+  { id: 2, nombre: "Aprobado",    descripcion: "Canje aprobado y en proceso de entrega" },
+  { id: 3, nombre: "Entregado",   descripcion: "Recompensa entregada al usuario" },
+  { id: 4, nombre: "Rechazado",   descripcion: "Canje rechazado por falta de puntos o stock" },
+  { id: 5, nombre: "Cancelado",   descripcion: "Canje cancelado por el usuario" },
+];
+
 export default function CatEstadosCanjes() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-arrow-left-right text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados canjes</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-arrow-left-right fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados canjes</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de canjes"
+      icono="bi-arrow-left-right"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

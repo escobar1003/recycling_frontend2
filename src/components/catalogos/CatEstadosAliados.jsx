@@ -1,16 +1,25 @@
+// src/components/catalogos/CatEstadosAliados.jsx
+import CrudCatalogo from "./CrudCatalogo";
+
+const CAMPOS = [
+  { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Activo" },
+  { key: "descripcion", label: "Descripción",        placeholder: "Describe el estado", type: "textarea", fullWidth: true },
+];
+
+const DATOS_INICIALES = [
+  { id: 1, nombre: "Activo",      descripcion: "Aliado habilitado en la plataforma" },
+  { id: 2, nombre: "Inactivo",    descripcion: "Aliado deshabilitado temporalmente" },
+  { id: 3, nombre: "Pendiente",   descripcion: "Aliado en proceso de verificación" },
+  { id: 4, nombre: "Suspendido",  descripcion: "Aliado suspendido por incumplimiento" },
+];
+
 export default function CatEstadosAliados() {
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <i className="bi bi-handshake-fill text-success fs-4" />
-        <h4 className="mb-0 fw-bold">Estados aliados</h4>
-      </div>
-      <div className="card border-0 shadow-sm">
-        <div className="card-body text-center py-5 text-muted">
-          <i className="bi bi-handshake-fill fs-1 text-success opacity-50 d-block mb-3" />
-          <p className="mb-0">Módulo <strong>Estados aliados</strong> listo para implementar.</p>
-        </div>
-      </div>
-    </div>
+    <CrudCatalogo
+      titulo="Estados de aliados"
+      icono="bi-handshake-fill"
+      campos={CAMPOS}
+      datos={DATOS_INICIALES}
+    />
   );
 }

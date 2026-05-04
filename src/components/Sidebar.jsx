@@ -14,13 +14,14 @@ const CATALOGOS = [
 ];
 
 const NAV = [
-  { path: "/dashboard",       icon: "bi-house-fill",       title: "Dashboard" },
-  { path: "/usuarios",        icon: "bi-people-fill",      title: "Gestión usuarios" },
-  { path: "/administradores", icon: "bi-shield-lock-fill", title: "Gestión administradores" },
-  { path: "/aliados",         icon: "bi-handshake-fill",   title: "Aliados" },
-  { path: "/encargados",      icon: "bi-person-badge-fill",title: "Encargados" },
-  { path: "/materiales",      icon: "bi-recycle",          title: "Materiales" },
-  { path: "/entregas",        icon: "bi-box-seam-fill",    title: "Entregas" },
+  { path: "/dashboard",       icon: "bi-house-fill",        title: "Dashboard" },
+  { path: "/usuarios",        icon: "bi-people-fill",       title: "Gestión usuarios" },
+  { path: "/administradores", icon: "bi-shield-lock-fill",  title: "Gestión administradores" },
+  { path: "/aliados",         icon: "bi-handshake-fill",    title: "Aliados" },
+  { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
+  { path: "/materiales",      icon: "bi-recycle",           title: "Materiales" },
+  { path: "/entregas",        icon: "bi-box-seam-fill",     title: "Entregas" },
+  { path: "/perfil",          icon: "bi-person-circle",     title: "Mi Perfil" },  // 👈 NUEVO
 ];
 
 export default function Sidebar() {
@@ -91,9 +92,27 @@ export default function Sidebar() {
         </div>
       </nav>
 
+      {/* Perfil rápido al fondo */}
+      <div className="px-2 pt-2 border-top">
+        <NavLink
+          to="/perfil"
+          className={linkClass}
+          style={{ fontSize: 13 }}
+        >
+          <i className="bi bi-person-circle text-success" style={{ fontSize: 20 }} />
+          <div className="d-flex flex-column lh-1">
+            <span className="fw-semibold text-dark" style={{ fontSize: 13 }}>Administrador</span>
+            <span className="text-muted" style={{ fontSize: 11 }}>Ver perfil</span>
+          </div>
+        </NavLink>
+      </div>
+
       {/* Salir */}
-      <div className="px-2 py-3 border-top">
-        <button className="btn btn-light text-danger d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0" style={{ fontSize: 13 }}>
+      <div className="px-2 py-2 pb-3">
+        <button
+          className="btn btn-light text-danger d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
+          style={{ fontSize: 13 }}
+        >
           <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
           Salir
         </button>
