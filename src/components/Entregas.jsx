@@ -23,15 +23,21 @@ export default function Entregas({ state, dispatch, showToast }) {
   const registrar = () => {
     const p = parseFloat(peso);
     if (!p || p <= 0) { showToast("Ingresa un peso válido", "error"); return; }
-    const cfg = MAT_CFG[mat] || { pts: 20, icon: "♻️" };
+    const cfg = MAT_CFG[mat] || { pts: 20, icon: "bi-recycle" };
     const pts = Math.round(p * cfg.pts);
     dispatch({
       type: "ADD_ENTREGA",
-      payload: { id: Date.now(), material: mat, icon: cfg.icon, punto: puntoSeleccionado, fecha, peso: p, pts, estado: "Pendiente" },
+      payload: {
+        id: Date.now(), material: mat, icon: cfg.icon,
+        punto: puntoSeleccionado, fecha, peso: p, pts, estado: "Pendiente",
+      },
     });
     dispatch({
       type: "ADD_HISTORIAL",
-      payload: { id: Date.now(), desc: `Ganaste ${pts} puntos`, sub: `Entrega de ${mat}`, tiempo: "Ahora", icon: "⭐" },
+      payload: {
+        id: Date.now(), desc: `Ganaste ${pts} puntos`,
+        sub: `Entrega de ${mat}`, tiempo: "Ahora", icon: "bi-star-fill",
+      },
     });
     dispatch({ type: "ADD_PTS", payload: pts });
     showToast(`Entrega registrada — +${pts} pts`);
@@ -41,28 +47,27 @@ export default function Entregas({ state, dispatch, showToast }) {
   return (
     <div className="container-fluid px-0">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h5 className="fw-bold mb-0 text-dark">
-            <i className="bi bi-box-seam me-2 text-success"></i>
-            Entregas
+            <i className="bi bi-box-seam me-2" style={{ color: "#16a34a" }}></i>Entregas
           </h5>
           <small className="text-muted">
             {state.entregas.length} entrega{state.entregas.length !== 1 ? "s" : ""} registrada{state.entregas.length !== 1 ? "s" : ""}
           </small>
         </div>
         <button
-          className="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-2"
+          className="btn btn-sm rounded-3 d-flex align-items-center gap-2 fw-semibold"
+          style={{ background: "#16a34a", color: "#fff", fontSize: 12 }}
           onClick={() => setModal(true)}
         >
-          <i className="bi bi-plus-lg"></i>
-          Nueva entrega
+          <i className="bi bi-plus-lg"></i>Nueva entrega
         </button>
       </div>
 
-      {/* ── Tabla ── */}
-      <div className="card border rounded-3 shadow-none">
+      {/* Tabla */}
+      <div className="card border-0 rounded-3 shadow-sm">
         <div className="card-body p-0">
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
@@ -100,7 +105,7 @@ export default function Entregas({ state, dispatch, showToast }) {
                   <tr key={e.id}>
                     <td className="ps-4">
                       <div className="d-flex align-items-center gap-2">
-                        <span>{e.icon}</span>
+                        <i className={`bi ${e.icon}`} style={{ color: "#16a34a", fontSize: 16 }}></i>
                         <span className="fw-semibold text-dark">{e.material}</span>
                       </div>
                     </td>
@@ -109,14 +114,21 @@ export default function Entregas({ state, dispatch, showToast }) {
                     <td className="fw-semibold text-dark">{e.peso} kg</td>
                     <td>
                       <span
-                        className="badge rounded-pill text-dark fw-semibold"
-                        style={{ background: "#fef08a", fontSize: 11 }}
+                        className="badge rounded-pill fw-semibold"
+                        style={{ background: "#facc15", color: "#111111", fontSize: 11 }}
                       >
                         +{e.pts} pts
                       </span>
                     </td>
                     <td>
-                      <span className={`badge rounded-pill fw-normal ${e.estado === "Validada" ? "bg-success" : "bg-light text-secondary border"}`}>
+                      <span
+                        className="badge rounded-pill fw-normal"
+                        style={{
+                          fontSize: 10,
+                          background: e.estado === "Validada" ? "#16a34a" : "#f3f4f6",
+                          color:      e.estado === "Validada" ? "#fff"    : "#6b7280",
+                        }}
+                      >
                         <i className={`bi ${e.estado === "Validada" ? "bi-check-circle" : "bi-clock"} me-1`}></i>
                         {e.estado}
                       </span>
@@ -129,24 +141,20 @@ export default function Entregas({ state, dispatch, showToast }) {
         </div>
       </div>
 
-      {/* ── Modal nueva entrega ── */}
+      {/* Modal nueva entrega */}
       {modal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow">
 
-              {/* Header */}
               <div className="modal-header border-bottom">
                 <h6 className="modal-title fw-bold text-dark">
-                  <i className="bi bi-box-seam me-2 text-success"></i>
-                  Nueva entrega
+                  <i className="bi bi-box-seam me-2" style={{ color: "#16a34a" }}></i>Nueva entrega
                 </h6>
                 <button type="button" className="btn-close" onClick={() => setModal(false)} />
               </div>
 
-              {/* Body */}
               <div className="modal-body p-4">
-
                 <div className="mb-3">
                   <label className="form-label small fw-semibold text-dark">
                     <i className="bi bi-recycle me-1 text-secondary"></i>Material
@@ -162,8 +170,7 @@ export default function Entregas({ state, dispatch, showToast }) {
 
                 <div className="mb-3">
                   <label className="form-label small fw-semibold text-dark">
-                    <i className="bi bi-geo-alt me-1 text-secondary"></i>
-                    Punto de entrega
+                    <i className="bi bi-geo-alt me-1 text-secondary"></i>Punto de entrega
                     {puntos.length === 0 && (
                       <span className="text-muted fw-normal ms-1" style={{ fontSize: 11 }}>(cargando...)</span>
                     )}
@@ -210,15 +217,21 @@ export default function Entregas({ state, dispatch, showToast }) {
                     <span className="input-group-text rounded-end-3 text-muted">kg</span>
                   </div>
                 </div>
-
               </div>
 
-              {/* Footer */}
               <div className="modal-footer border-top gap-2">
-                <button className="btn btn-outline-secondary btn-sm rounded-3 flex-fill" onClick={() => setModal(false)}>
+                <button
+                  className="btn btn-sm rounded-3 flex-fill fw-semibold"
+                  style={{ background: "#f3f4f6", color: "#111111", border: "1px solid #e5e7eb", fontSize: 12 }}
+                  onClick={() => setModal(false)}
+                >
                   <i className="bi bi-x me-1"></i>Cancelar
                 </button>
-                <button className="btn btn-success btn-sm rounded-3 flex-fill" onClick={registrar}>
+                <button
+                  className="btn btn-sm rounded-3 flex-fill fw-semibold"
+                  style={{ background: "#16a34a", color: "#fff", border: "none", fontSize: 12 }}
+                  onClick={registrar}
+                >
                   <i className="bi bi-check-lg me-1"></i>Registrar entrega
                 </button>
               </div>
