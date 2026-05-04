@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registrarse } from "../services/api";
 
 function Registro() {
   const [nombre, setNombre] = useState("");
@@ -8,31 +10,48 @@ function Registro() {
   const [confirmar, setConfirmar] = useState("");
   const [terminos, setTerminos] = useState(false);
   const [origen, setOrigen] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const validar = () => {
-    if (nombre.trim() === "") return alert("Nombre requerido");
-    if (usuario.trim() === "") return alert("Usuario requerido");
-    if (correo.trim() === "") return alert("Correo requerido");
-    if (password.trim() === "") return alert("Contraseña requerida");
-    if (confirmar.trim() === "") return alert("Confirmación requerida");
+  const validar = async () => {
+    setError("");
+    if (nombre.trim() === "") return setError("Nombre requerido");
+    if (usuario.trim() === "") return setError("Usuario requerido");
+    if (correo.trim() === "") return setError("Correo requerido");
+    if (password.trim() === "") return setError("Contraseña requerida");
+    if (confirmar.trim() === "") return setError("Confirmación requerida");
 
     if (!correo.includes("@") || !correo.includes(".com")) {
-      return alert("Correo inválido");
+      return setError("Correo inválido");
     }
 
     if (password !== confirmar) {
-      return alert("La contraseña no coincide");
+      return setError("La contraseña no coincide");
     }
 
     if (!terminos) {
-      return alert("Debes aceptar términos y condiciones");
+      return setError("Debes aceptar términos y condiciones");
     }
 
     if (origen.trim() === "") {
-      return alert("Selecciona cómo te enteraste de nosotros");
+      return setError("Selecciona cómo te enteraste de nosotros");
     }
 
-    alert("creacion de cuneta correcta ");
+    setLoading(true);
+    try {
+      await registrarse({
+        nombre:   nombre.trim(),
+        correo:   correo.trim(),
+        password: password,
+        telefono: undefined,
+      });
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Error al crear la cuenta");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,7 +74,6 @@ function Registro() {
 
             <ul className="bg-white text-dark p-3 rounded list-unstyled">
 
-              
               <div className="text-center mb-2">
                 <div className="d-inline-flex justify-content-center align-items-center rounded-circle bg-success bg-opacity-10 p-4">
                   <i className="bi bi-person fs-2 text-success"></i>
@@ -71,6 +89,10 @@ function Registro() {
               </h2>
 
               <br />
+
+              {error && (
+                <div className="alert alert-danger py-2 text-center">{error}</div>
+              )}
 
               {/* NOMBRE Y EL USUARIO */}
               <div className="d-flex justify-content-center gap-2">
@@ -203,9 +225,13 @@ function Registro() {
               <button
                 className="btn btn-warning text-white rounded-pill px-5 py-2 w-50"
                 onClick={validar}
+                disabled={loading}
               >
-                CREAR CUENTA
-                <i className="bi bi-leaf-fill ms-2 text-white"></i>
+                {loading ? (
+                  <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Creando...</>
+                ) : (
+                  <>CREAR CUENTA <i className="bi bi-leaf-fill ms-2 text-white"></i></>
+                )}
               </button>
 
               <br />

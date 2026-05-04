@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
+import { cerrarSesion } from "./services/api";
 
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
@@ -34,14 +35,17 @@ import CatTiposRecompensa    from "./components/catalogos/CatTiposRecompensa";
 
 function reducer(state, { type, payload }) {
   switch (type) {
-    case "ADD_ENTREGA":   return { ...state, entregas:  [payload, ...state.entregas] };
-    case "ADD_HISTORIAL": return { ...state, historial: [payload, ...state.historial] };
-    case "ADD_PTS":       return { ...state, pts: state.pts + payload };
-    case "ADD_IA_HIST":   return { ...state, iaHist: [payload, ...state.iaHist] };
-    case "SET_IA_RESULT": return { ...state, iaResult: payload };
-    case "ADD_USER":      return { ...state, usuarios: [...state.usuarios, payload] };
-    case "TOGGLE_USER":   return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
-    case "DEL_USER":      return { ...state, usuarios: state.usuarios.filter(u => u.id !== payload) };
+    case "ADD_ENTREGA":    return { ...state, entregas:  [payload, ...state.entregas] };
+    case "ADD_HISTORIAL":  return { ...state, historial: [payload, ...state.historial] };
+    case "ADD_PTS":        return { ...state, pts: state.pts + payload };
+    case "SET_PTS":        return { ...state, pts: payload };
+    case "ADD_IA_HIST":    return { ...state, iaHist: [payload, ...state.iaHist] };
+    case "SET_IA_RESULT":  return { ...state, iaResult: payload };
+    case "SET_USUARIOS":   return { ...state, usuarios: payload };
+    case "ADD_USER":       return { ...state, usuarios: [...state.usuarios, payload] };
+    case "UPDATE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload.id ? payload : u) };
+    case "TOGGLE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_USER":       return { ...state, usuarios: state.usuarios.filter(u => u.id !== payload) };
     default: return state;
   }
 }
@@ -57,38 +61,44 @@ function useToast() {
 }
 
 export default function App() {
+  // user = objeto { idUsuario, nombre, correo, rol, ... } que devuelve el backend
   const [user, setUser] = useState(null);
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
   const navigate = useNavigate();
 
+  const handleLogin = (usuarioData) => {
+    setUser(usuarioData);
+    navigate("/dashboard");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await cerrarSesion();
+    } catch (_) {
+      // Aunque falle el logout en backend, limpiamos el estado local
+    }
+    setUser(null);
+    navigate("/");
+  };
+
   if (!user) {
     return (
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Login
-              onLogin={(data) => {
-                setUser(data);
-                navigate("/dashboard"); // ← CORRECCIÓN CLAVE
-              }}
-            />
-          }
-        />
+        <Route path="/"         element={<Login    onLogin={handleLogin} />} />
         <Route path="/Registro" element={<Registro />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
-  const shared = { state, dispatch, showToast, navigate };
+  const shared = { state, dispatch, showToast, navigate, user };
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar user={user} onLogout={handleLogout} />
       <div className="main-content">
-        <Topbar pts={state.pts} navigate={navigate} />
+        <Topbar pts={state.pts} navigate={navigate} user={user} onLogout={handleLogout} />
         <div className="page-area">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -113,10 +123,10 @@ export default function App() {
 
             <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas    {...shared} />} />
-            <Route path="/puntos"      element={<MisPuntos       state={state} />} />
-            <Route path="/mapa"        element={<Mapa            showToast={showToast} />} />
-            <Route path="/eco"         element={<ImpactoEco      state={state} />} />
-            <Route path="/perfil"      element={<Perfil          state={state} showToast={showToast} />} />
+            <Route path="/puntos"      element={<MisPuntos      state={state} />} />
+            <Route path="/mapa"        element={<Mapa           showToast={showToast} />} />
+            <Route path="/eco"         element={<ImpactoEco     state={state} />} />
+            <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
