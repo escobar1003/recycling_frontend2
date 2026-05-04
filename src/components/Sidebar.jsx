@@ -21,7 +21,7 @@ const NAV = [
   { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
   { path: "/materiales",      icon: "bi-recycle",           title: "Materiales" },
   { path: "/entregas",        icon: "bi-box-seam-fill",     title: "Entregas" },
-  { path: "/perfil",          icon: "bi-person-circle",     title: "Mi Perfil" },  // 👈 NUEVO
+  { path: "/perfil",          icon: "bi-person-circle",     title: "Mi Perfil" },
 ];
 
 export default function Sidebar() {
@@ -52,7 +52,6 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-grow-1 py-2 px-2 d-flex flex-column gap-1 overflow-y-auto">
-
         {NAV.map(n => (
           <NavLink key={n.path} to={n.path} className={linkClass} style={{ fontSize: 13 }}>
             <i className={`bi ${n.icon}`} style={{ fontSize: 15, width: 18 }} />
