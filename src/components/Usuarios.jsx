@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api"; // ← nuevo
+import { getUsuarios, crearUsuario, cambiarEstadoUsuario, actualizarUsuario, register } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", correo: "", telefono: "",
