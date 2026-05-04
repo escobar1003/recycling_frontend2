@@ -177,15 +177,7 @@ export default function Login({ onLogin }) {
                   style={{ border: "2px solid #c3e8d0", borderLeft: "none", borderRadius: "0 10px 10px 0", fontWeight: 600, fontSize: 14 }}
                 />
               </div>
-
-              <li className="mb-2">
-                <label className="form-label text-dark">Correo electrónico</label>
-                <div className="input-group">
-                  <span className="input-group-text"><i className="bi bi-envelope"></i></span>
-                  <input className="form-control" placeholder="correo electrónico"
-                    value={correo} onChange={(e) => setCorreo(e.target.value)} />
-                </div>
-              </li>
+            </div>
 
               <div className="d-flex justify-content-center gap-2">
                 <li className="mb-2 w-50">
@@ -226,8 +218,6 @@ export default function Login({ onLogin }) {
                 <span className="text-dark">Acepto los términos y condiciones y la política de privacidad</span>
               </li>
 
-            </ul>
-
             <div className="d-flex flex-column align-items-center">
               <button className="btn btn-warning text-white rounded-pill px-5 py-2 w-50" onClick={validar}>
                 CREAR CUENTA <i className="bi bi-leaf-fill ms-2 text-white"></i>
@@ -263,8 +253,7 @@ export default function Login({ onLogin }) {
                 Inicia sesión
               </span>
             </div>
-
-          </div>
+          </form>
         </div>
       </div>
     </div>

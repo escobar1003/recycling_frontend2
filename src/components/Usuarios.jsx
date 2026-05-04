@@ -123,14 +123,14 @@ export default function Usuarios({ state, dispatch, showToast }) {
 };
 
   const handleEliminar = (id) => {
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Usuario eliminado", "error");
-    if (viewUser?.id === id) setViewUser(null);
-
-  } catch (err) {
-    showToast("❌ Error eliminando usuario", "error");
-  }
-};
+    try {
+      dispatch({ type: "DEL_USER", payload: id });
+      showToast("🗑️ Usuario eliminado", "error");
+      if (viewUser?.id === id) setViewUser(null);
+    } catch (err) {
+      showToast("❌ Error eliminando usuario", "error");
+    }
+  };
 
   const filtered = (usuarios || []).filter(u => {
     const q = search.toLowerCase();
