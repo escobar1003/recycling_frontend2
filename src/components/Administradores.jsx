@@ -47,29 +47,20 @@ export default function Administradores({ state, dispatch, showToast }) {
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
-  // ── Toggle con toast de activado/desactivado ──────────────────────────────
   const handleToggle = (id, nombre, estadoActual) => {
     dispatch({ type: "TOGGLE_USER", payload: id });
     showToast(
-      estadoActual
-        ? `🔴 ${nombre} ha sido desactivado`
-        : `🟢 ${nombre} ha sido activado`,
+      estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
       estadoActual ? "error" : "success"
     );
   };
 
-  // ── Guardar cambios desde el modal de edición ─────────────────────────────
-  const handleSave = (updatedUser) => {
-    dispatch({ type: "UPDATE_USER", payload: updatedUser });
-  };
+  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
 
   const handleEliminar = (id) => {
-    if (admins.length <= 1) {
-      showToast("⚠️ Debe existir al menos un administrador", "error");
-      return;
-    }
+    if (admins.length <= 1) { showToast("Debe existir al menos un administrador", "error"); return; }
     dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Administrador eliminado", "error");
+    showToast("Administrador eliminado", "error");
     if (viewUser?.id === id) setViewUser(null);
   };
 
@@ -85,50 +76,64 @@ export default function Administradores({ state, dispatch, showToast }) {
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
 
-  const adminCfg = ROLES_CFG?.["Admin"] || { color: "#1e40af", bg: "#dbeafe", icon: "🛡️" };
-
   return (
-    <div>
-      {/* Header */}
+    <div className="container-fluid px-0">
+
+      {/* ── Header ── */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold m-0">🛡️ Gestión de administradores</h4>
-        <button className="btn btn-primary rounded-3" onClick={() => setModal(true)}>
-          <i className="bi bi-person-plus me-1"></i> Nuevo administrador
+        <div>
+          <h5 className="fw-bold mb-0 text-dark">
+            <i className="bi bi-shield-lock me-2 text-success"></i>
+            Gestión de administradores
+          </h5>
+          <small className="text-muted">
+            {admins.length} administrador{admins.length !== 1 ? "es" : ""} registrado{admins.length !== 1 ? "s" : ""}
+          </small>
+        </div>
+        <button
+          className="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-2"
+          onClick={() => setModal(true)}
+        >
+          <i className="bi bi-person-plus"></i>
+          Nuevo administrador
         </button>
       </div>
 
-      {/* Alerta informativa */}
-      <div
-        className="rounded-3 p-3 mb-4 small fw-semibold d-flex align-items-center gap-2"
-        style={{ background: adminCfg.bg, color: adminCfg.color }}
-      >
-        {adminCfg.icon} Los administradores tienen acceso total al sistema.
-        Asegúrate de otorgar este rol solo a personas de confianza.
+      {/* ── Aviso ── */}
+      <div className="d-flex align-items-center gap-2 rounded-3 border border-success p-3 mb-4 bg-white">
+        <i className="bi bi-info-circle text-success"></i>
+        <span className="small text-secondary">
+          Los administradores tienen acceso total al sistema. Otorga este rol solo a personas de confianza.
+        </span>
       </div>
 
-      {/* Buscador */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group" style={{ maxWidth: 340 }}>
-          <span className="input-group-text bg-white border-end-0 rounded-start-3">🔍</span>
+      {/* ── Buscador ── */}
+      <div className="mb-3">
+        <div className="input-group input-group-sm" style={{ maxWidth: 380 }}>
+          <span className="input-group-text bg-white border-end-0">
+            <i className="bi bi-search text-secondary"></i>
+          </span>
           <input
             className="form-control border-start-0 rounded-end-3"
             placeholder="Buscar por nombre, correo o zona..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: 13 }}
           />
         </div>
       </div>
 
-      {/* Tabla */}
-      <TablaUsuarios
-        lista={filtered}
-        onToggle={handleToggle}
-        onVer={setViewUser}
-        onEliminar={handleEliminar}
-      />
+      {/* ── Tabla ── */}
+      <div className="card border rounded-3 shadow-none">
+        <div className="card-body p-0">
+          <TablaUsuarios
+            lista={filtered}
+            onToggle={handleToggle}
+            onVer={setViewUser}
+            onEliminar={handleEliminar}
+          />
+        </div>
+      </div>
 
-      {/* Modal editar */}
       <ModalDetalle
         user={viewUser}
         onClose={() => setViewUser(null)}
@@ -136,107 +141,133 @@ export default function Administradores({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
-      {/* Modal nuevo administrador */}
+      {/* ── Modal nuevo administrador ── */}
       {modal && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content rounded-4 border-0 shadow-lg p-2"
-              style={{ maxHeight: "90vh", overflowY: "auto" }}>
-              <div className="modal-header border-0">
-                <div>
-                  <h5 className="modal-title fw-bold text-primary">🛡️ Nuevo administrador</h5>
-                  <div className="text-muted" style={{ fontSize: 12 }}>
-                    Este usuario tendrá acceso total al sistema.
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div className="modal-content rounded-4 border-0 shadow">
+
+              {/* Header */}
+              <div className="modal-header border-bottom">
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
+                    style={{ width: 44, height: 44, fontSize: 15 }}
+                  >
+                    {avatarPreview}
+                  </div>
+                  <div>
+                    <h6 className="modal-title fw-bold mb-0 text-dark">
+                      <i className="bi bi-shield-lock me-2 text-success"></i>
+                      Nuevo administrador
+                    </h6>
+                    <small className="text-muted">Acceso total al sistema</small>
                   </div>
                 </div>
                 <button type="button" className="btn-close" onClick={cerrarModal} />
               </div>
 
-              <div className="modal-body">
-                <div className="text-center mb-3">
-                  <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto"
-                    style={{
-                      width: 56, height: 56, fontSize: 18,
-                      background: adminCfg.bg, color: adminCfg.color,
-                      border: `2px solid ${adminCfg.color}`,
-                    }}
-                  >{avatarPreview}</div>
-                  <div className="mt-2"><RolBadge rol="Admin" /></div>
-                </div>
-
+              {/* Body */}
+              <div className="modal-body p-4">
                 <div className="row g-3">
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Nombre completo *</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-person me-1 text-secondary"></i>Nombre completo *
+                    </label>
                     <input
-                      value={form.nombre} onChange={e => set("nombre", e.target.value)}
+                      value={form.nombre}
+                      onChange={e => set("nombre", e.target.value)}
                       placeholder="Ej: Ana García"
-                      className={`form-control form-control-sm bg-light ${errors.nombre ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm rounded-3 ${errors.nombre ? "is-invalid" : ""}`}
                     />
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-envelope me-1 text-secondary"></i>Correo electrónico *
+                    </label>
                     <input
-                      type="email" value={form.email} onChange={e => set("email", e.target.value)}
+                      type="email"
+                      value={form.email}
+                      onChange={e => set("email", e.target.value)}
                       placeholder="admin@ejemplo.com"
-                      className={`form-control form-control-sm bg-light ${errors.email ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm rounded-3 ${errors.email ? "is-invalid" : ""}`}
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono
+                    </label>
                     <input
-                      value={form.telefono} onChange={e => set("telefono", e.target.value)}
+                      value={form.telefono}
+                      onChange={e => set("telefono", e.target.value)}
                       placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm bg-light"
+                      className="form-control form-control-sm rounded-3"
                     />
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Zona</label>
-                    <select value={form.zona} onChange={e => set("zona", e.target.value)}
-                      className="form-select form-select-sm bg-light">
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-geo-alt me-1 text-secondary"></i>Zona
+                    </label>
+                    <select
+                      value={form.zona}
+                      onChange={e => set("zona", e.target.value)}
+                      className="form-select form-select-sm rounded-3"
+                    >
                       <option value="">Sin zona</option>
                       {ZONAS.map(z => <option key={z}>{z}</option>)}
                     </select>
                   </div>
+
                   <div className="col-12">
-                    <label className="form-label fw-bold small text-secondary">Punto asignado</label>
-                    <select value={form.puntoAsignado} onChange={e => set("puntoAsignado", e.target.value)}
-                      className="form-select form-select-sm bg-light">
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-pin-map me-1 text-secondary"></i>Punto asignado
+                    </label>
+                    <select
+                      value={form.puntoAsignado}
+                      onChange={e => set("puntoAsignado", e.target.value)}
+                      className="form-select form-select-sm rounded-3"
+                    >
                       <option value="">Sin asignar</option>
                       {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
                     </select>
                   </div>
+
                   <div className="col-12">
-                    <div className="rounded-3 p-3 small fw-semibold"
-                      style={{ background: adminCfg.bg, color: adminCfg.color }}>
-                      {adminCfg.icon} {rolDesc["Admin"]}
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light">
+                    <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border">
                       <div>
-                        <div className="fw-bold small">Estado inicial</div>
+                        <div className="small fw-semibold text-dark">Estado inicial</div>
                         <div className="text-muted" style={{ fontSize: 11 }}>
-                          El administrador podrá acceder de inmediato si está activo
+                          El administrador podrá acceder si está activo
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
-                        <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
+                        <span className={`badge rounded-pill ${form.activo ? "bg-success" : "bg-secondary"}`}>
                           {form.activo ? "Activo" : "Inactivo"}
                         </span>
                         <Toggle checked={form.activo} onChange={v => set("activo", v)} />
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
 
-              <div className="modal-footer border-0 gap-2">
-                <button className="btn btn-secondary rounded-3 flex-fill" onClick={cerrarModal}>Cancelar</button>
-                <button className="btn btn-primary rounded-3 flex-fill" onClick={guardar}>🛡️ Crear administrador</button>
+              {/* Footer */}
+              <div className="modal-footer border-top gap-2">
+                <button className="btn btn-outline-secondary btn-sm rounded-3 flex-fill" onClick={cerrarModal}>
+                  <i className="bi bi-x me-1"></i>Cancelar
+                </button>
+                <button className="btn btn-success btn-sm rounded-3 flex-fill" onClick={guardar}>
+                  <i className="bi bi-check-lg me-1"></i>Crear administrador
+                </button>
               </div>
+
             </div>
           </div>
         </div>

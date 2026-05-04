@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api"; // ← nuevo
+import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -14,16 +14,15 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
-  const [loading,  setLoading]  = useState(true); // ← nuevo
+  const [loading,  setLoading]  = useState(true);
 
-  // ── Cargar usuarios del backend al abrir la pantalla ─────────────────────
   useEffect(() => {
     getUsuarios()
       .then(data => {
         dispatch({ type: "SET_USUARIOS", payload: data });
       })
       .catch(() => {
-        showToast("⚠️ No se pudieron cargar los usuarios del servidor", "error");
+        showToast("No se pudieron cargar los usuarios del servidor", "error");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -36,12 +35,11 @@ export default function Usuarios({ state, dispatch, showToast }) {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo invalido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
     return e;
   };
 
-  // ── Guardar: llama al backend y luego actualiza el estado local ───────────
   const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
@@ -71,28 +69,25 @@ export default function Usuarios({ state, dispatch, showToast }) {
         },
       });
 
-      showToast(`✅ Usuario "${form.nombre.trim()}" registrado`);
+      showToast(`Usuario "${form.nombre.trim()}" registrado`);
       setModal(false); setForm(EMPTY_FORM); setErrors({});
     } catch (err) {
-      showToast("❌ Error al registrar: " + err.message, "error");
+      showToast("Error al registrar: " + err.message, "error");
     }
   };
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
-  // ── Toggle: llama al backend y luego actualiza el estado local ────────────
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
       await cambiarEstadoUsuario(id, !estadoActual);
       dispatch({ type: "TOGGLE_USER", payload: id });
       showToast(
-        estadoActual
-          ? `🔴 ${nombre} ha sido desactivado`
-          : `🟢 ${nombre} ha sido activado`,
+        estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
         estadoActual ? "error" : "success"
       );
     } catch (err) {
-      showToast("❌ Error al cambiar estado: " + err.message, "error");
+      showToast("Error al cambiar estado: " + err.message, "error");
     }
   };
 
@@ -102,7 +97,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
   const handleEliminar = (id) => {
     dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Usuario eliminado", "error");
+    showToast("Usuario eliminado", "error");
     if (viewUser?.id === id) setViewUser(null);
   };
 
@@ -124,30 +119,34 @@ export default function Usuarios({ state, dispatch, showToast }) {
     <div>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold m-0">♻️ Gestión de usuarios</h4>
-        <button className="btn btn-success rounded-3" onClick={() => setModal(true)}>
+        <h4 className="fw-bold m-0">
+          <i className="bi bi-recycle me-2 text-success"></i>Gestion de usuarios
+        </h4>
+        <button className="btn btn-success" onClick={() => setModal(true)}>
           <i className="bi bi-person-plus me-1"></i> Nuevo usuario
         </button>
       </div>
 
       {/* Buscador */}
       <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group" style={{ maxWidth: 340 }}>
-          <span className="input-group-text bg-white border-end-0 rounded-start-3">🔍</span>
+        <div className="input-group w-auto">
+          <span className="input-group-text bg-white">
+            <i className="bi bi-search"></i>
+          </span>
           <input
-            className="form-control border-start-0 rounded-end-3"
+            className="form-control"
             placeholder="Buscar por nombre, correo o zona..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: 13 }}
           />
         </div>
       </div>
 
       {/* Indicador de carga */}
       {loading && (
-        <div className="text-center py-3" style={{ color: "#9ca3af", fontSize: 13 }}>
-          ⏳ Cargando usuarios del servidor...
+        <div className="text-center py-3 text-muted small">
+          <div className="spinner-border spinner-border-sm text-success me-2"></div>
+          Cargando usuarios del servidor...
         </div>
       )}
 
@@ -169,24 +168,25 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
       {/* Modal nuevo usuario */}
       {modal && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}>
+        <div className="modal d-block" style={{background:"rgba(0,0,0,.45)",zIndex:9000}}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content rounded-4 border-0 shadow-lg p-2"
-              style={{ maxHeight: "90vh", overflowY: "auto" }}>
-              <div className="modal-header border-0">
+            <div className="modal-content border shadow-lg">
+
+              <div className="modal-header border-bottom">
                 <div>
-                  <h5 className="modal-title fw-bold" style={{ color: cfg.color }}>♻️ Nuevo usuario</h5>
-                  <div className="text-muted" style={{ fontSize: 12 }}>Registra un nuevo usuario reciclador.</div>
+                  <h5 className="modal-title fw-bold text-success">
+                    <i className="bi bi-recycle me-1"></i> Nuevo usuario
+                  </h5>
+                  <div className="text-muted small">Registra un nuevo usuario reciclador.</div>
                 </div>
                 <button type="button" className="btn-close" onClick={cerrarModal} />
               </div>
 
               <div className="modal-body">
                 <div className="text-center mb-3">
-                  <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto"
-                    style={{ width: 56, height: 56, fontSize: 18, background: cfg.bg, color: cfg.color, border: `2px solid ${cfg.color}` }}
-                  >{avatarPreview}</div>
+                  <div className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success mx-auto fs-4 p-3">
+                    {avatarPreview}
+                  </div>
                 </div>
 
                 <div className="row g-3">
@@ -200,7 +200,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
+                    <label className="form-label fw-bold small text-secondary">Correo electronico *</label>
                     <input
                       type="email" value={form.email} onChange={e => set("email", e.target.value)}
                       placeholder="correo@ejemplo.com"
@@ -209,7 +209,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label fw-bold small text-secondary">Telefono</label>
                     <input
                       value={form.telefono} onChange={e => set("telefono", e.target.value)}
                       placeholder="Ej: 300 123 4567"
@@ -233,16 +233,15 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     </select>
                   </div>
                   <div className="col-12">
-                    <div className="rounded-3 p-3 small fw-semibold"
-                      style={{ background: cfg.bg, color: cfg.color }}>
-                      {cfg.icon} {rolDesc["Usuario"]}
+                    <div className="alert alert-success small fw-semibold mb-0">
+                      <i className="bi bi-info-circle me-1"></i> {rolDesc["Usuario"]}
                     </div>
                   </div>
                   <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light">
+                    <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light border">
                       <div>
                         <div className="fw-bold small">Estado inicial</div>
-                        <div className="text-muted" style={{ fontSize: 11 }}>El usuario podrá acceder de inmediato si está activo</div>
+                        <div className="text-muted small">El usuario podra acceder de inmediato si esta activo</div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
@@ -255,9 +254,13 @@ export default function Usuarios({ state, dispatch, showToast }) {
                 </div>
               </div>
 
-              <div className="modal-footer border-0 gap-2">
-                <button className="btn btn-secondary rounded-3 flex-fill" onClick={cerrarModal}>Cancelar</button>
-                <button className="btn btn-success rounded-3 flex-fill" onClick={guardar}>✅ Registrar usuario</button>
+              <div className="modal-footer border-top gap-2">
+                <button className="btn btn-outline-secondary flex-fill" onClick={cerrarModal}>
+                  <i className="bi bi-x-lg me-1"></i> Cancelar
+                </button>
+                <button className="btn btn-success flex-fill fw-bold" onClick={guardar}>
+                  <i className="bi bi-check2-circle me-1"></i> Registrar usuario
+                </button>
               </div>
             </div>
           </div>
