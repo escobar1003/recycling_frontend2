@@ -1,73 +1,103 @@
-const NAV = [
-  { view: "dashboard",   icon: "bi-house-fill",        title: "Dashboard",          color: "#16a34a" },
-  { view: "entregas",    icon: "bi-box-seam-fill",      title: "Entregas",           color: "#2563eb" },
-  { view: "ia",          icon: "bi-camera-fill",        title: "Clasificar IA",      color: "#7c3aed" },
-  { view: "recompensas", icon: "bi-gift-fill",          title: "Recompensas",        color: "#db2777" },
-  { view: "puntos",      icon: "bi-trophy-fill",        title: "Mis Puntos",         color: "#d97706" },
-  { view: "mapa",        icon: "bi-geo-alt-fill",       title: "Puntos Cercanos",    color: "#0891b2" },
-  { view: "eco",         icon: "bi-tree-fill",          title: "Impacto Ecológico",  color: "#16a34a" },
-  { view: "usuarios",    icon: "bi-people-fill",        title: "Usuarios",           color: "#16a34a" },
-  { view: "afiliados",   icon: "bi-shop",               title: "Afiliados",          color: "#b45309" },
-  { view: "admins",      icon: "bi-shield-lock-fill",   title: "Administradores",    color: "#2563eb" },
-  { view: "perfil",      icon: "bi-person-circle",      title: "Mi Perfil",          color: "#374151" },
-  { view: "materiales",  icon: "bi-box-seam-fill",      title: "Materiales",         color: "#7c3aed" }, 
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
+const CATALOGOS = [
+  { path: "/catalogos/roles",               icon: "bi-key-fill",          title: "Roles" },
+  { path: "/catalogos/estados-puntos",      icon: "bi-geo-alt-fill",      title: "Estados puntos" },
+  { path: "/catalogos/estados-materiales",  icon: "bi-recycle",           title: "Estados materiales" },
+  { path: "/catalogos/estados-entregas",    icon: "bi-box-seam-fill",     title: "Estados entregas" },
+  { path: "/catalogos/estados-aliados",     icon: "bi-handshake-fill",    title: "Estados aliados" },
+  { path: "/catalogos/estados-canjes",      icon: "bi-arrow-left-right",  title: "Estados canjes" },
+  { path: "/catalogos/estados-usuarios",    icon: "bi-person-check-fill", title: "Estados usuarios" },
+  { path: "/catalogos/estados-recompensas", icon: "bi-gift-fill",         title: "Estados recompensas" },
+  { path: "/catalogos/tipos-recompensa",    icon: "bi-tag-fill",          title: "Tipos de recompensa" },
 ];
 
-export default function Sidebar({ view, setView }) {
+const NAV = [
+  { path: "/dashboard",       icon: "bi-house-fill",       title: "Dashboard" },
+  { path: "/usuarios",        icon: "bi-people-fill",      title: "Gestión usuarios" },
+  { path: "/administradores", icon: "bi-shield-lock-fill", title: "Gestión administradores" },
+  { path: "/aliados",         icon: "bi-handshake-fill",   title: "Aliados" },
+  { path: "/encargados",      icon: "bi-person-badge-fill",title: "Encargados" },
+  { path: "/materiales",      icon: "bi-recycle",          title: "Materiales" },
+  { path: "/entregas",        icon: "bi-box-seam-fill",    title: "Entregas" },
+];
+
+export default function Sidebar() {
+  const location = useLocation();
+  const isCatalogActive = location.pathname.startsWith("/catalogos");
+  const [catalogosOpen, setCatalogosOpen] = useState(isCatalogActive);
+
+  const linkClass = ({ isActive }) =>
+    `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
+      isActive ? "btn-success text-white fw-semibold" : "btn-light text-secondary"
+    }`;
+
   return (
-    <nav
-      className="d-flex flex-column align-items-center py-3 px-2 bg-white border-end shadow-sm"
-      style={{ width: 64, minHeight: "100vh", position: "sticky", top: 0 }}
+    <div
+      className="d-flex flex-column bg-white border-end shadow-sm"
+      style={{ width: 235, minHeight: "100vh", flexShrink: 0 }}
     >
       {/* Logo */}
-      <div
-        className="bg-success rounded-3 d-flex align-items-center justify-content-center text-white mb-3 flex-shrink-0"
-        style={{ width: 38, height: 38 }}
-      >
-        <i className="bi bi-recycle fs-5" />
+      <div className="d-flex align-items-center gap-2 px-3 py-3 border-bottom">
+        <div
+          className="bg-success rounded-2 d-flex align-items-center justify-content-center text-white flex-shrink-0"
+          style={{ width: 36, height: 36, fontSize: 18 }}
+        >
+          <i className="bi bi-recycle" />
+        </div>
+        <span className="fw-bold text-success fs-6">EcoRecicla</span>
       </div>
 
-      {/* Navegación */}
-      <div className="d-flex flex-column align-items-center gap-1 w-100">
-        {NAV.map(n => {
-          const isActive = view === n.view;
+      {/* Nav */}
+      <nav className="flex-grow-1 py-2 px-2 d-flex flex-column gap-1 overflow-y-auto">
 
-          return (
-            <button
-              key={n.view}
-              title={n.title}
-              onClick={() => setView(n.view)}
-              className="btn rounded-3 p-0 d-flex align-items-center justify-content-center border-0"
-              style={{
-                width: 42,
-                height: 42,
-                background: isActive ? `${n.color}18` : "transparent",
-                color: isActive ? n.color : "#9ca3af",
-                transition: "background .15s, color .15s",
-              }}
-            >
-              <i className={`bi ${n.icon} fs-5`} />
-            </button>
-          );
-        })}
+        {NAV.map(n => (
+          <NavLink key={n.path} to={n.path} className={linkClass} style={{ fontSize: 13 }}>
+            <i className={`bi ${n.icon}`} style={{ fontSize: 15, width: 18 }} />
+            {n.title}
+          </NavLink>
+        ))}
+
+        {/* Catálogos desplegable */}
+        <div>
+          <button
+            className={`btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 border-0 ${
+              isCatalogActive ? "btn-success text-white fw-semibold" : "btn-light text-secondary"
+            }`}
+            style={{ fontSize: 13 }}
+            onClick={() => setCatalogosOpen(o => !o)}
+          >
+            <i className="bi bi-journals" style={{ fontSize: 15, width: 18 }} />
+            <span className="flex-grow-1">Catálogos</span>
+            <i className={`bi bi-chevron-${catalogosOpen ? "up" : "down"}`} style={{ fontSize: 11 }} />
+          </button>
+
+          {catalogosOpen && (
+            <div className="d-flex flex-column gap-1 mt-1 ms-3 ps-2 border-start border-success border-opacity-25">
+              {CATALOGOS.map(sub => (
+                <NavLink
+                  key={sub.path}
+                  to={sub.path}
+                  className={linkClass}
+                  style={{ fontSize: 12 }}
+                >
+                  <i className={`bi ${sub.icon}`} style={{ fontSize: 13, width: 16 }} />
+                  {sub.title}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Salir */}
+      <div className="px-2 py-3 border-top">
+        <button className="btn btn-light text-danger d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0" style={{ fontSize: 13 }}>
+          <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
+          Salir
+        </button>
       </div>
-
-      <div className="flex-fill" />
-
-      {/* Botón salir */}
-      <button
-        title="Salir"
-        className="btn border-0 rounded-3 d-flex align-items-center justify-content-center"
-        style={{
-          width: 42,
-          height: 42,
-          color: "#ef4444",
-          background: "#fff1f1"
-        }}
-      >
-        <i className="bi bi-box-arrow-right fs-5" />
-      </button>
-    </nav>
+    </div>
   );
 }
