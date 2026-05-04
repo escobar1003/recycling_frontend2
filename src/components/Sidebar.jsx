@@ -47,7 +47,7 @@ export default function Sidebar() {
         >
           <i className="bi bi-recycle" />
         </div>
-        <span className="fw-bold text-success fs-6">EcoRecicla</span>
+        <span className="fw-bold text-success fs-6">Recycling Points</span>
       </div>
 
       {/* Nav */}

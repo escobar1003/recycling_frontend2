@@ -80,7 +80,7 @@ export default function Login({ onLogin }) {
           <div className="d-flex align-items-center gap-2 mb-2">
             <span style={{ fontSize: 32 }}>♻️</span>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#2d6a4f", lineHeight: 1 }}>EcoRecicla</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#2d6a4f", lineHeight: 1 }}>Recycling Points</div>
               <div style={{ fontSize: 12, color: "#74b190", fontWeight: 600 }}>Recicla y gana</div>
             </div>
           </div>

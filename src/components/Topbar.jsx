@@ -6,7 +6,7 @@ export default function Topbar({ pts, setView }) {
       {/* Marca */}
       <div style={{ minWidth: 140 }}>
         <div style={{ fontWeight: 800, fontSize: 17, color: G, letterSpacing: "-.3px" }}>
-          EcoRecicla
+          Recycling Points
         </div>
         <div style={{ fontSize: 11, color: "#9ca3af" }}>Recicla y gana</div>
       </div>
