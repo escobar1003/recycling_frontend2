@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { G, GL, MAT_CFG } from "../constants/data";
-import { getPuntos } from "../services/api"; // ← nuevo
+import { getAliados } from '../services/api';
 
 const selStyle = {
   width: "100%", padding: "9px 12px",
@@ -19,7 +19,7 @@ export default function Entregas({ state, dispatch, showToast }) {
   const [puntoSeleccionado, setPuntoSeleccionado] = useState("");
 
   useEffect(() => {
-    getPuntos()
+    getAliados()
       .then(data => {
         setPuntos(data);
         if (data.length > 0) setPuntoSeleccionado(data[0].nombre);

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ZONAS, ALL_POINTS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
+import { getAliados } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -17,7 +18,7 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
-  const aliados = state.usuarios.filter(u => u.rol === "Afiliado");
+  const aliados = state.aliados || [];
 
   const validate = () => {
     const e = {};

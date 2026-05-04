@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api"; // ← nuevo
+
+import {
+  getUsuarios,
+  eliminarUsuario,
+  actualizarUsuario,
+  register
+} from '../services/api';
+
 
 const EMPTY_FORM = {
-  nombre: "", email: "", telefono: "",
+  nombre: "", correo: "", telefono: "",
   rol: "Usuario", zona: "", puntoAsignado: "", activo: true,
 };
 
@@ -18,72 +25,113 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
   // ── Cargar usuarios del backend al abrir la pantalla ─────────────────────
   useEffect(() => {
-    getUsuarios()
-      .then(data => {
-        dispatch({ type: "SET_USUARIOS", payload: data });
-      })
-      .catch(() => {
-        showToast("⚠️ No se pudieron cargar los usuarios del servidor", "error");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const cargar = async () => {
+    try {
+      // 1. Primero intenta cargar desde localStorage
+      const cache = localStorage.getItem("usuarios");
+
+      if (cache) {
+        dispatch({
+          type: "SET_USUARIOS",
+          payload: JSON.parse(cache),
+        });
+      }
+
+      // 2. Luego fuerza actualización desde backend
+      const data = await getUsuarios();
+
+      const usuariosBackend = data.usuarios || [];
+
+      dispatch({
+        type: "SET_USUARIOS",
+        payload: usuariosBackend,
+      });
+
+      // 3. Guardar en localStorage
+      localStorage.setItem("usuarios", JSON.stringify(usuariosBackend));
+
+    } catch (error) {
+      console.error("Error getUsuarios:", error);
+
+      showToast(
+        "⚠️ Error cargando usuarios. Revisa token o backend",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  cargar();
+}, []);
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
-  const usuarios = state.usuarios.filter(u => u.rol === "Usuario");
+  const usuarios = (state?.usuarios || []).filter(
+  u => (u?.rol || "").toLowerCase() === "usuario"
+);
 
   const validate = () => {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
-    if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
-    else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (!form.correo.trim())  e.correo  = "El correo es obligatorio";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo)) e.correo = "Correo inválido";
+    else if (state.usuarios.some(u => u.correo === form.correo.trim())) e.correo = "Este correo ya existe";
     return e;
   };
 
   // ── Guardar: llama al backend y luego actualiza el estado local ───────────
   const guardar = async () => {
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
+  const e = validate();
+  if (Object.keys(e).length) { setErrors(e); return; }
 
-    try {
-      const nuevo = await crearUsuario({
-        nombre_completo: form.nombre.trim(),
-        correo:          form.email.trim(),
-        rol:             "Usuario",
-      });
+  try {
+    const nuevo = await register({
+      nombre_completo: form.nombre.trim(),
+      correo: form.correo.trim(),
+      password: form.password?.trim() || "123456",
+      telefono: form.telefono?.trim() || ""
+    });
 
-      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-      dispatch({
-        type: "ADD_USER",
-        payload: {
-          id:            nuevo.id ?? Date.now(),
-          nombre:        form.nombre.trim(),
-          email:         form.email.trim(),
-          telefono:      form.telefono.trim(),
-          rol:           "Usuario",
-          zona:          form.zona,
-          puntoAsignado: form.puntoAsignado,
-          pts:           0,
-          activo:        form.activo,
-          av:            initials,
-          fechaAlta:     new Date().toLocaleDateString("es-CO"),
-        },
-      });
+    const initials = form.nombre
+      .trim()
+      .split(" ")
+      .slice(0, 2)
+      .map(w => w[0].toUpperCase())
+      .join("");
 
-      showToast(`✅ Usuario "${form.nombre.trim()}" registrado`);
-      setModal(false); setForm(EMPTY_FORM); setErrors({});
-    } catch (err) {
-      showToast("❌ Error al registrar: " + err.message, "error");
-    }
-  };
+    dispatch({
+      type: "ADD_USER",
+      payload: {
+        id: nuevo.id ?? Date.now(),
+        nombre: form.nombre.trim(),
+        correo: form.correo.trim(),
+        telefono: form.telefono.trim(),
+        rol: "Usuario",
+        zona: form.zona,
+        puntoAsignado: form.puntoAsignado,
+        pts: 0,
+        activo: form.activo,
+        av: initials,
+        fechaAlta: new Date().toLocaleDateString("es-CO"),
+      },
+    });
+
+    showToast(`✅ Usuario "${form.nombre.trim()}" registrado`);
+    setModal(false);
+    setForm(EMPTY_FORM);
+    setErrors({});
+  } catch (err) {
+    showToast("❌ Error al registrar: " + err.message, "error");
+  }
+};
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
   // ── Toggle: llama al backend y luego actualiza el estado local ────────────
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
-      await cambiarEstadoUsuario(id, !estadoActual);
+      await actualizarUsuario(id, { esta_activo: !estadoActual });
       dispatch({ type: "TOGGLE_USER", payload: id });
       showToast(
         estadoActual
@@ -96,21 +144,55 @@ export default function Usuarios({ state, dispatch, showToast }) {
     }
   };
 
-  const handleSave = (updatedUser) => {
-    dispatch({ type: "UPDATE_USER", payload: updatedUser });
-  };
+  const handleSave = async (updatedUser) => {
+  try {
+    await actualizarUsuario(updatedUser.id, updatedUser);
 
-  const handleEliminar = (id) => {
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Usuario eliminado", "error");
+    const updated = (state?.usuarios || []).map(u =>
+      u.id === updatedUser.id ? updatedUser : u
+    );
+
+    dispatch({
+      type: "SET_USUARIOS",
+      payload: updated
+    });
+
+    localStorage.setItem("usuarios", JSON.stringify(updated));
+
+    setViewUser(null);
+
+  } catch (err) {
+    showToast("❌ Error actualizando usuario", "error");
+  }
+};
+
+  const handleEliminar = async (id) => {
+  try {
+    await eliminarUsuario(id);
+
+    const updated = (state?.usuarios || []).filter(u => u.id !== id);
+
+    dispatch({
+      type: "SET_USUARIOS",
+      payload: updated
+    });
+
+    localStorage.setItem("usuarios", JSON.stringify(updated));
+
+    showToast("🗑️ Usuario eliminado", "success");
+
     if (viewUser?.id === id) setViewUser(null);
-  };
 
-  const filtered = usuarios.filter(u => {
+  } catch (err) {
+    showToast("❌ Error eliminando usuario", "error");
+  }
+};
+
+  const filtered = (usuarios || []).filter(u => {
     const q = search.toLowerCase();
     return (
       u.nombre.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
+      u.correo.toLowerCase().includes(q) ||
       (u.zona || "").toLowerCase().includes(q)
     );
   });
@@ -153,7 +235,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
       {/* Tabla */}
       <TablaUsuarios
-        lista={filtered}
+        lista={filtered || []}
         onToggle={handleToggle}
         onVer={setViewUser}
         onEliminar={handleEliminar}
@@ -202,11 +284,11 @@ export default function Usuarios({ state, dispatch, showToast }) {
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
                     <input
-                      type="email" value={form.email} onChange={e => set("email", e.target.value)}
+                      type="correo" value={form.correo} onChange={e => set("correo", e.target.value)}
                       placeholder="correo@ejemplo.com"
-                      className={`form-control form-control-sm bg-light ${errors.email ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm bg-light ${errors.correo ? "is-invalid" : ""}`}
                     />
-                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                    {errors.correo && <div className="invalid-feedback">{errors.correo}</div>}
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Teléfono</label>

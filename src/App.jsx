@@ -1,6 +1,8 @@
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
+import { useEffect } from "react";
+import { getUsuarios } from "./services/api";
 
 import Login          from "./components/Login";
 import Sidebar        from "./components/Sidebar";

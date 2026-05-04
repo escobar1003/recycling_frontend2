@@ -7,7 +7,7 @@ import fondoReciclaje from "./imagenes/fondo_reciclaje.png"; // 👈 agrega esta
 import { useState } from "react";
 
 export default function Login({ onLogin }) {
-  const [email, setEmail]         = useState("");
+  const [correo, setCorreo]         = useState("");
   const [password, setPassword]   = useState("");
   const [showPass, setShowPass]   = useState(false);
   const [remember, setRemember]   = useState(false);
@@ -15,28 +15,39 @@ export default function Login({ onLogin }) {
   const [error, setError]         = useState("");
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    if (!email || !password) { setError("Por favor completa todos los campos."); return; }
-    setLoading(true);
-    // ── Cuando backend esté listo, cambia esta URL ──
-    try {
-      const res = await fetch("https://tu-backend.com/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error("Credenciales incorrectas");
-      const data = await res.json();
-      if (onLogin) onLogin(data);
-    } catch (err) {
-      // Mock: si no hay backend, simula login exitoso
-      console.warn("Backend no disponible, login mock");
-      if (onLogin) onLogin({ email, token: "mock-token" });
-    } finally {
-      setLoading(false);
-    }
+  e.preventDefault();
+  setError("");
+
+  if (!correo || !password) {
+    setError("Por favor completa todos los campos.");
+    return;
   }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch("http://localhost:3333/api/auth/iniciar-sesion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        correo: correo,
+        password: password
+      }),
+    });
+
+    const data = await res.json();
+
+    // 🔥 AQUÍ SÍ existe data
+    localStorage.setItem("token", data.token);
+
+    if (onLogin) onLogin(data);
+
+  } catch (err) {
+    setError("Error al iniciar sesión");
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <div
@@ -172,7 +183,7 @@ export default function Login({ onLogin }) {
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* Email */}
+            {/* correo */}
             <div className="mb-3">
               <label className="form-label fw-bold" style={{ color: "#2d6a4f", fontSize: 14 }}>
                 Correo electrónico
@@ -182,11 +193,11 @@ export default function Login({ onLogin }) {
                   ✉️
                 </span>
                 <input
-                  type="email"
+                  type="correo"
                   className="form-control"
                   placeholder="Ingresa tu correo electrónico"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  value={correo}
+                  onChange={e => setCorreo(e.target.value)}
                   style={{ border: "2px solid #c3e8d0", borderLeft: "none", borderRadius: "0 10px 10px 0", fontWeight: 600, fontSize: 14 }}
                 />
               </div>
