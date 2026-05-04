@@ -49,7 +49,7 @@ export default function Encargados({ state, dispatch, showToast }) {
       },
     });
 
-    showToast(`✅ Encargado "${form.nombre.trim()}" registrado`);
+    showToast(`Encargado "${form.nombre.trim()}" registrado`);
     setModal(false); setForm(EMPTY_FORM); setErrors({});
   };
 
@@ -58,7 +58,7 @@ export default function Encargados({ state, dispatch, showToast }) {
   const handleToggle = (id, nombre, estadoActual) => {
     dispatch({ type: "TOGGLE_USER", payload: id });
     showToast(
-      estadoActual ? `🔴 ${nombre} ha sido desactivado` : `🟢 ${nombre} ha sido activado`,
+      estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
       estadoActual ? "error" : "success"
     );
   };
@@ -69,7 +69,7 @@ export default function Encargados({ state, dispatch, showToast }) {
 
   const handleEliminar = (id) => {
     dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Encargado eliminado", "error");
+    showToast("Encargado eliminado", "error");
     if (viewUser?.id === id) setViewUser(null);
   };
 
@@ -92,27 +92,28 @@ export default function Encargados({ state, dispatch, showToast }) {
     <div>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold m-0">🏪 Gestión de encargados</h4>
-        <button className="btn rounded-3 fw-semibold text-white" style={{ background: cfg.color }}
-          onClick={() => setModal(true)}>
+        <h4 className="fw-bold m-0">
+          <i className="bi bi-shop me-2 text-success"></i>Gestion de encargados
+        </h4>
+        <button className="btn btn-success fw-semibold" onClick={() => setModal(true)}>
           <i className="bi bi-person-badge me-1"></i> Nuevo encargado
         </button>
       </div>
 
       {/* Buscador */}
       <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group" style={{ maxWidth: 380 }}>
-          <span className="input-group-text bg-white border-end-0 rounded-start-3">🔍</span>
+        <div className="input-group w-auto">
+          <span className="input-group-text bg-white">
+            <i className="bi bi-search"></i>
+          </span>
           <input
-            className="form-control border-start-0 rounded-end-3"
+            className="form-control"
             placeholder="Buscar por nombre, correo, zona o punto..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: 13 }}
           />
         </div>
-        <span className="badge rounded-pill align-self-center px-3 py-2"
-          style={{ fontSize: 12, background: cfg.bg, color: cfg.color }}>
+        <span className="badge bg-success-subtle text-success border border-success rounded-pill align-self-center px-3 py-2">
           {encargados.length} encargado{encargados.length !== 1 ? "s" : ""} registrado{encargados.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -135,22 +136,22 @@ export default function Encargados({ state, dispatch, showToast }) {
 
       {/* Modal nuevo encargado */}
       {modal && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}>
+        <div className="modal d-block" style={{background:"rgba(0,0,0,.45)",zIndex:9000}}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content rounded-4 border-0 shadow-lg p-2"
-              style={{ maxHeight: "90vh", overflowY: "auto" }}>
+            <div className="modal-content border shadow-lg">
 
               {/* Header */}
-              <div className="modal-header border-0" style={{ background: cfg.bg }}>
+              <div className="modal-header bg-success-subtle border-bottom">
                 <div className="d-flex align-items-center gap-3">
-                  <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                    style={{ width: 52, height: 52, fontSize: 18, background: "#fff", color: cfg.color, border: `2px solid ${cfg.color}` }}
-                  >{avatarPreview}</div>
+                  <div className="rounded-circle bg-white border border-success d-flex align-items-center justify-content-center fw-bold text-success flex-shrink-0 fs-5 p-3">
+                    {avatarPreview}
+                  </div>
                   <div>
-                    <h5 className="modal-title fw-bold mb-0" style={{ color: cfg.color }}>🏪 Nuevo encargado</h5>
-                    <div className="small mt-1" style={{ color: cfg.color, opacity: 0.75 }}>
-                      Responsable de un punto de recolección
+                    <h5 className="modal-title fw-bold mb-0 text-success">
+                      <i className="bi bi-shop me-1"></i> Nuevo encargado
+                    </h5>
+                    <div className="small text-success opacity-75 mt-1">
+                      Responsable de un punto de recoleccion
                     </div>
                   </div>
                 </div>
@@ -158,50 +159,52 @@ export default function Encargados({ state, dispatch, showToast }) {
               </div>
 
               <div className="modal-body">
-                <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>👤 Información personal</p>
+                <p className="text-uppercase fw-bold text-muted mb-2 small">
+                  <i className="bi bi-person me-1"></i> Informacion personal
+                </p>
                 <div className="row g-3 mb-3">
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Nombre completo *</label>
                     <input
                       value={form.nombre}
                       onChange={e => set("nombre", e.target.value)}
-                      placeholder="Ej: María López"
-                      className={`form-control form-control-sm bg-light rounded-3 ${errors.nombre ? "is-invalid" : ""}`}
+                      placeholder="Ej: Maria Lopez"
+                      className={`form-control form-control-sm bg-light ${errors.nombre ? "is-invalid" : ""}`}
                     />
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
+                    <label className="form-label fw-bold small text-secondary">Correo electronico *</label>
                     <input
                       type="email"
                       value={form.email}
                       onChange={e => set("email", e.target.value)}
                       placeholder="correo@ejemplo.com"
-                      className={`form-control form-control-sm bg-light rounded-3 ${errors.email ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm bg-light ${errors.email ? "is-invalid" : ""}`}
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label fw-bold small text-secondary">Telefono</label>
                     <input
                       value={form.telefono}
                       onChange={e => set("telefono", e.target.value)}
                       placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm bg-light rounded-3"
+                      className="form-control form-control-sm bg-light"
                     />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Zona</label>
                     <select value={form.zona} onChange={e => set("zona", e.target.value)}
-                      className="form-select form-select-sm bg-light rounded-3">
+                      className="form-select form-select-sm bg-light">
                       <option value="">Sin zona</option>
                       {ZONAS.map(z => <option key={z}>{z}</option>)}
                     </select>
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-bold small text-secondary">Punto de recolección asignado</label>
+                    <label className="form-label fw-bold small text-secondary">Punto de recoleccion asignado</label>
                     <select value={form.puntoAsignado} onChange={e => set("puntoAsignado", e.target.value)}
-                      className="form-select form-select-sm bg-light rounded-3">
+                      className="form-select form-select-sm bg-light">
                       <option value="">Sin asignar</option>
                       {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
                     </select>
@@ -209,15 +212,15 @@ export default function Encargados({ state, dispatch, showToast }) {
                 </div>
 
                 {/* Info rol */}
-                <div className="rounded-3 p-3 small fw-semibold mb-3" style={{ background: cfg.bg, color: cfg.color }}>
-                  {cfg.icon} {rolDesc["Encargado"]}
+                <div className="alert alert-success small fw-semibold mb-3">
+                  <i className="bi bi-info-circle me-1"></i> {rolDesc["Encargado"]}
                 </div>
 
                 {/* Estado */}
-                <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light">
+                <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light border">
                   <div>
                     <div className="fw-bold small">Estado inicial</div>
-                    <div className="text-muted" style={{ fontSize: 11 }}>El encargado podrá gestionar su punto si está activo</div>
+                    <div className="text-muted small">El encargado podra gestionar su punto si esta activo</div>
                   </div>
                   <div className="d-flex align-items-center gap-2">
                     <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
@@ -228,12 +231,12 @@ export default function Encargados({ state, dispatch, showToast }) {
                 </div>
               </div>
 
-              <div className="modal-footer border-0 gap-2">
-                <button className="btn btn-secondary rounded-3 flex-fill" onClick={cerrarModal}>Cancelar</button>
-                <button className="btn rounded-3 flex-fill fw-bold text-white"
-                  style={{ background: cfg.color }}
-                  onClick={guardar}>
-                  🏪 Registrar encargado
+              <div className="modal-footer border-top gap-2">
+                <button className="btn btn-outline-secondary flex-fill" onClick={cerrarModal}>
+                  <i className="bi bi-x-lg me-1"></i> Cancelar
+                </button>
+                <button className="btn btn-success flex-fill fw-bold" onClick={guardar}>
+                  <i className="bi bi-shop me-1"></i> Registrar encargado
                 </button>
               </div>
             </div>

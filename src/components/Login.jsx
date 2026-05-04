@@ -1,13 +1,7 @@
-// src/components/Login.jsx
-// Login de EcoRecicla — fiel al diseño de la imagen
-// Bootstrap 5 + Bootstrap Icons + emojis
-import fondoReciclaje from "./imagenes/fondo_reciclaje.png"; // 👈 agrega esta línea
-
-
 import { useState } from "react";
 
 export default function Login({ onLogin }) {
-  const [correo, setCorreo]         = useState("");
+  const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [showPass, setShowPass]   = useState(false);
   const [remember, setRemember]   = useState(false);
@@ -15,146 +9,128 @@ export default function Login({ onLogin }) {
   const [error, setError]         = useState("");
 
   async function handleSubmit(e) {
-  e.preventDefault();
-  setError("");
-
-  if (!correo || !password) {
-    setError("Por favor completa todos los campos.");
-    return;
+    e.preventDefault();
+    setError("");
+    if (!email || !password) { setError("Por favor completa todos los campos."); return; }
+    setLoading(true);
+    // ── Cuando backend esté listo, cambia esta URL ──
+    try {
+      const res = await fetch("https://tu-backend.com/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error("Credenciales incorrectas");
+      const data = await res.json();
+      if (onLogin) onLogin(data);
+    } catch (err) {
+      // Mock: si no hay backend, simula login exitoso
+      console.warn("Backend no disponible, login mock");
+      if (onLogin) onLogin({ email, token: "mock-token" });
+    } finally {
+      setLoading(false);
+    }
   }
-
-  setLoading(true);
-
-  try {
-    const res = await fetch("http://localhost:3333/api/auth/iniciar-sesion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        correo: correo,
-        password: password
-      }),
-    });
-
-    const data = await res.json();
-
-    // 🔥 AQUÍ SÍ existe data
-    localStorage.setItem("token", data.token);
-
-    if (onLogin) onLogin(data);
-
-  } catch (err) {
-    setError("Error al iniciar sesión");
-  } finally {
-    setLoading(false);
-  }
-}
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f4f8f4",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "'Nunito', 'Segoe UI', sans-serif",
-        padding: "16px",
-      }}
-    >
-      {/* Tarjeta contenedor dividida en dos */}
-      <div
-        className="shadow-lg"
-        style={{
-          display: "flex",
-          borderRadius: 24,
-          overflow: "hidden",
-          width: "100%",
-          maxWidth: 900,
-          minHeight: 560,
-          background: "#fff",
-        }}
-      >
-        {/* ── PANEL IZQUIERDO ── */}
-        <div
-          style={{
-            flex: 1,
-            background: "#f0f7f0",
-            padding: "40px 36px 32px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            minWidth: 0,
-          }}
-          className="d-none d-md-flex"
-        >
-          {/* Logo */}
-          <div className="d-flex align-items-center gap-2 mb-2">
-            <span style={{ fontSize: 32 }}>♻️</span>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#2d6a4f", lineHeight: 1 }}>Recycling Points</div>
-              <div style={{ fontSize: 12, color: "#74b190", fontWeight: 600 }}>Recicla y gana</div>
-            </div>
-          </div>
+    <div className="container-fluid">
+      <div className="row min-vh-100">
 
-          {/* Headline */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <h2 style={{ fontSize: 32, fontWeight: 900, color: "#1a3a24", lineHeight: 1.2, marginBottom: 12 }}>
-              Cada acción cuenta 🍃
-            </h2>
-            <p style={{ color: "#4a7a5a", fontSize: 15, fontWeight: 500, maxWidth: 260 }}>
-              Únete a la comunidad que cuida el planeta y gana recompensas.
-            </p>
+        <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
+          <img src="/src/assets/imagenes/eco.png" alt="EcoRecicla" className="img-fluid" />
+        </div>
 
-            {/* Ilustración SVG — cubo reciclaje con planta */}
-            {/* Imagen de fondo reciclaje */}
-<div style={{ display: "flex", justifyContent: "center", margin: "24px 0 16px" }}>
-  <img
-    src={fondoReciclaje}
-    alt="Ilustración de reciclaje"
-    style={{
-      width: "100%",
-      maxWidth: 280,
-      objectFit: "contain",
-      borderRadius: 16,
-      filter: "drop-shadow(0 4px 16px rgba(45,106,79,0.15))",
-    }}
-  />
-</div>
+        <div className="col-md-6 d-flex justify-content-center align-items-center">
+          <div className="w-100 p-4 mx-auto">
+            <ul className="bg-white text-dark p-4 rounded shadow-sm list-unstyled">
 
-            {/* Stat */}
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "14px 20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                boxShadow: "0 2px 12px #2d6a4f18",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 13, color: "#74b190", fontWeight: 700 }}>🍃 Juntos hemos reciclado</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#1a3a24" }}>
-                  12,540 kg <span style={{ fontSize: 14, color: "#4a7a5a", fontWeight: 600 }}>de residuos</span>
+              <h1 className="text-center text-dark fw-bold fs-3">
+                ¡Bienvenido de nuevo! <i className="bi bi-leaf-fill text-success"></i>
+              </h1>
+              <h2 className="text-center fw-light text-success fs-6">
+                iniciar sesion para continuar reciclando y ganando
+              </h2>
+
+              <br />
+
+              {error && (
+                <div className="alert alert-danger py-2 text-center">{error}</div>
+              )}
+
+              <li className="mb-3">
+                <label className="form-label">Correo electrónico</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-envelope"></i></span>
+                  <input
+                    className="form-control"
+                    placeholder="Ingresa tu correo electrónico"
+                    value={correo}
+                    onChange={(e) => setCorreo(e.target.value)}
+                  />
                 </div>
-              </div>
-              <span style={{ fontSize: 34 }}>🌍</span>
-            </div>
-          </div>
+              </li>
 
-          {/* Footer íconos */}
-          <div className="d-flex justify-content-between mt-3" style={{ gap: 8 }}>
-            {[
-              { icon: "🍃", text: "Reduce contaminación" },
-              { icon: "♻️", text: "Recicla responsable" },
-              { icon: "⭐", text: "Gana recompensas" },
-            ].map(f => (
-              <div key={f.text} style={{ textAlign: "center", flex: 1 }}>
-                <div style={{ fontSize: 22 }}>{f.icon}</div>
-                <div style={{ fontSize: 11, color: "#4a7a5a", fontWeight: 700, lineHeight: 1.3 }}>{f.text}</div>
+              <li className="mb-3">
+                <label className="form-label">Contraseña</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-lock"></i></span>
+                  <input
+                    className="form-control"
+                    placeholder="Ingresa tu contraseña"
+                    type="password"
+                    value={contraseña}
+                    onChange={(e) => setContraseña(e.target.value)}
+                  />
+                  <span className="input-group-text"><i className="bi bi-eye"></i></span>
+                </div>
+              </li>
+
+              <li className="mb-3 d-flex justify-content-between align-items-center">
+                <div className="form-check">
+                  <input className="form-check-input" type="checkbox" />
+                  <label className="form-check-label">recordarme</label>
+                </div>
+                <span className="text-success small">¿Olvidaste tu contraseña?</span>
+              </li>
+
+              <div className="d-grid">
+                <button className="btn btn-success rounded-pill py-2" onClick={validar}>
+                  <i className="bi bi-leaf-fill me-2"></i>
+                  INICIAR SESIÓN
+                </button>
               </div>
-            ))}
+
+              <br />
+
+              <div className="d-flex align-items-center my-3">
+                <div className="flex-grow-1 border-top"></div>
+                <span className="px-3 text-secondary small">o continúa con</span>
+                <div className="flex-grow-1 border-top"></div>
+              </div>
+
+              <div className="d-flex justify-content-center gap-3">
+                <button className="btn btn-light border rounded-pill px-4">
+                  <i className="bi bi-google me-2 text-danger"></i>Google
+                </button>
+                <button className="btn btn-light border rounded-pill px-4">
+                  <i className="bi bi-facebook me-2 text-primary"></i>Facebook
+                </button>
+              </div>
+
+              <br />
+
+              <div className="text-center">
+                <span className="text-secondary">¿no tienes cuenta?</span>{" "}
+                <span
+                  className="fw-bold text-success text-decoration-none"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate("/Registro")}
+                >
+                  Regístrate aquí
+                </span>
+              </div>
+
+            </ul>
           </div>
         </div>
 
@@ -183,7 +159,7 @@ export default function Login({ onLogin }) {
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* correo */}
+            {/* Email */}
             <div className="mb-3">
               <label className="form-label fw-bold" style={{ color: "#2d6a4f", fontSize: 14 }}>
                 Correo electrónico
@@ -193,118 +169,114 @@ export default function Login({ onLogin }) {
                   ✉️
                 </span>
                 <input
-                  type="correo"
+                  type="email"
                   className="form-control"
                   placeholder="Ingresa tu correo electrónico"
-                  value={correo}
-                  onChange={e => setCorreo(e.target.value)}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   style={{ border: "2px solid #c3e8d0", borderLeft: "none", borderRadius: "0 10px 10px 0", fontWeight: 600, fontSize: 14 }}
                 />
               </div>
-            </div>
 
-            {/* Contraseña */}
-            <div className="mb-3">
-              <label className="form-label fw-bold" style={{ color: "#2d6a4f", fontSize: 14 }}>
-                Contraseña
-              </label>
-              <div className="input-group">
-                <span className="input-group-text" style={{ border: "2px solid #c3e8d0", borderRight: "none", background: "#f9fdfb", borderRadius: "10px 0 0 10px" }}>
-                  🔒
-                </span>
-                <input
-                  type={showPass ? "text" : "password"}
-                  className="form-control"
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  style={{ border: "2px solid #c3e8d0", borderLeft: "none", borderRight: "none", fontWeight: 600, fontSize: 14 }}
-                />
-                <button
-                  type="button"
-                  className="input-group-text"
-                  onClick={() => setShowPass(v => !v)}
-                  style={{ border: "2px solid #c3e8d0", borderLeft: "none", background: "#f9fdfb", cursor: "pointer", borderRadius: "0 10px 10px 0" }}
-                >
-                  {showPass ? "🙈" : "👁️"}
-                </button>
+              <li className="mb-2">
+                <label className="form-label text-dark">Correo electrónico</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-envelope"></i></span>
+                  <input className="form-control" placeholder="correo electrónico"
+                    value={correo} onChange={(e) => setCorreo(e.target.value)} />
+                </div>
+              </li>
+
+              <div className="d-flex justify-content-center gap-2">
+                <li className="mb-2 w-50">
+                  <label className="form-label text-dark">Contraseña</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-lock"></i></span>
+                    <input className="form-control" placeholder="crea una contraseña" type="password"
+                      value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
+                </li>
+                <li className="mb-2 w-50">
+                  <label className="form-label text-dark">Confirmar contraseña</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-lock"></i></span>
+                    <input className="form-control" placeholder="confirma tu contraseña" type="password"
+                      value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+                  </div>
+                </li>
+              </div>
+
+              <li className="mb-2">
+                <label className="form-label text-dark">¿Cómo te enteraste de nosotros?</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-globe"></i></span>
+                  <select className="form-select" value={origen} onChange={(e) => setOrigen(e.target.value)}>
+                    <option value="">Selecciona una opción</option>
+                    <option value="redes">Redes sociales</option>
+                    <option value="amigo">Amigo o familiar</option>
+                    <option value="google">Google</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+              </li>
+
+              <li className="mb-2">
+                <input className="form-check-input me-2" type="checkbox"
+                  checked={terminos} onChange={(e) => setTerminos(e.target.checked)} />
+                <span className="text-dark">Acepto los términos y condiciones y la política de privacidad</span>
+              </li>
+
+            </ul>
+
+            <div className="d-flex flex-column align-items-center">
+              <button className="btn btn-warning text-white rounded-pill px-5 py-2 w-50" onClick={validar}>
+                CREAR CUENTA <i className="bi bi-leaf-fill ms-2 text-white"></i>
+              </button>
+
+              <br />
+
+              <div className="d-flex align-items-center my-3 w-100">
+                <div className="flex-grow-1 border-top border-2 border-dark"></div>
+                <span className="px-3 fw-semibold text-dark">O continúa con</span>
+                <div className="flex-grow-1 border-top border-2 border-dark"></div>
               </div>
             </div>
 
-            {/* Recordarme + ¿Olvidaste? */}
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="remember"
-                  checked={remember}
-                  onChange={e => setRemember(e.target.checked)}
-                  style={{ accentColor: "#2d6a4f" }}
-                />
-                <label className="form-check-label" htmlFor="remember" style={{ color: "#4a7a5a", fontWeight: 600, fontSize: 14 }}>
-                  Recordarme
-                </label>
-              </div>
-              <a href="#" style={{ color: "#2d6a4f", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                ¿Olvidaste tu contraseña?
-              </a>
+            <div className="d-flex justify-content-center align-items-center gap-3">
+              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
+                <i className="bi bi-google me-2 text-danger"></i>Google
+              </button>
+              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
+                <i className="bi bi-facebook me-2 text-primary"></i>Facebook
+              </button>
             </div>
 
-            {/* Botón iniciar sesión */}
-            <button
-              type="submit"
-              className="btn w-100 fw-bold text-white"
-              disabled={loading}
-              style={{
-                background: loading ? "#74b190" : "linear-gradient(135deg, #2d6a4f, #1a3a24)",
-                border: "none",
-                borderRadius: 12,
-                padding: "13px",
-                fontSize: 16,
-                letterSpacing: ".3px",
-                boxShadow: "0 4px 16px #2d6a4f44",
-                transition: "opacity .2s",
-              }}
-            >
-              {loading ? "Iniciando sesión..." : "🍃 Iniciar sesión"}
-            </button>
-          </form>
+            <br />
 
-          {/* Separador */}
-          <div className="d-flex align-items-center gap-2 my-4">
-            <hr style={{ flex: 1, borderColor: "#e2f5ea" }} />
-            <span style={{ color: "#9ab5a0", fontSize: 13, fontWeight: 600 }}>o continúa con</span>
-            <hr style={{ flex: 1, borderColor: "#e2f5ea" }} />
+            <div className="d-flex justify-content-center align-items-center gap-2">
+              <span className="fw-light text-secondary">¿ya tienes cuenta?</span>
+              <span
+                className="text-decoration-none fw-bold text-success"
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate("/")}
+              >
+                Inicia sesión
+              </span>
+            </div>
+
           </div>
-
-          {/* Social buttons */}
-          <div className="d-flex gap-3">
-            <button
-              className="btn fw-bold d-flex align-items-center justify-content-center gap-2"
-              style={{ flex: 1, border: "2px solid #e2e8f0", borderRadius: 12, padding: "11px", fontSize: 14, color: "#374151", background: "#fff" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              Google
-            </button>
-            <button
-              className="btn fw-bold d-flex align-items-center justify-content-center gap-2"
-              style={{ flex: 1, border: "2px solid #e2e8f0", borderRadius: 12, padding: "11px", fontSize: 14, color: "#374151", background: "#fff" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              Facebook
-            </button>
-          </div>
-
-          {/* Registro */}
-          <p className="text-center mt-4 mb-0" style={{ color: "#9ab5a0", fontSize: 14, fontWeight: 600 }}>
-            ¿No tienes cuenta?{" "}
-            <a href="#" style={{ color: "#2d6a4f", fontWeight: 800, textDecoration: "none" }}>
-              Regístrate aquí
-            </a>
-          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login({ onLogin }) {
+  return (
+    <Routes>
+      <Route path="/"         element={<LoginForm onLogin={onLogin} />} />
+      <Route path="/Registro" element={<RegistroForm />} />
+      <Route path="*"         element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

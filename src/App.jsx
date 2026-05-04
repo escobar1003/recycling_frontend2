@@ -4,27 +4,26 @@ import { INITIAL_STATE } from "./constants/data";
 import { useEffect } from "react";
 import { getUsuarios } from "./services/api";
 
-import Login          from "./components/Login";
-import Sidebar        from "./components/Sidebar";
-import Topbar         from "./components/Topbar";
-import ToastContainer from "./components/ToastContainer";
+import Login           from "./components/Login";
+import Registro        from "./components/Registro";
+import Sidebar         from "./components/Sidebar";
+import Topbar          from "./components/Topbar";
+import ToastContainer  from "./components/ToastContainer";
 
-// Módulos existentes
-import Dashboard      from "./components/Dashboard";
-import Entregas       from "./components/Entregas";
-import ClasificadorIA from "./components/ClasificadorIA";
-import Recompensas    from "./components/Recompensas";
-import MisPuntos      from "./components/MisPuntos";
-import Mapa           from "./components/Mapa";
-import ImpactoEco     from "./components/ImpactoEco";
-import Usuarios       from "./components/Usuarios";
+import Dashboard       from "./components/Dashboard";
+import Entregas        from "./components/Entregas";
+import ClasificadorIA  from "./components/ClasificadorIA";
+import Recompensas     from "./components/Recompensas";
+import MisPuntos       from "./components/MisPuntos";
+import Mapa            from "./components/Mapa";
+import ImpactoEco      from "./components/ImpactoEco";
+import Usuarios        from "./components/Usuarios";
 import Administradores from "./components/Administradores";
-import Aliados        from "./components/Aliados";
-import Encargados     from "./components/Encargados";
-import Materiales     from "./components/Materiales";
-import Perfil         from "./components/Perfil";
+import Aliados         from "./components/Aliados";
+import Encargados      from "./components/Encargados";
+import Materiales      from "./components/Materiales";
+import Perfil          from "./components/Perfil";
 
-// Catálogos
 import CatRoles              from "./components/catalogos/CatRoles";
 import CatEstadosPuntos      from "./components/catalogos/CatEstadosPuntos";
 import CatEstadosMateriales  from "./components/catalogos/CatEstadosMateriales";
@@ -35,7 +34,6 @@ import CatEstadosUsuarios    from "./components/catalogos/CatEstadosUsuarios";
 import CatEstadosRecompensas from "./components/catalogos/CatEstadosRecompensas";
 import CatTiposRecompensa    from "./components/catalogos/CatTiposRecompensa";
 
-// ── Reducer ───────────────────────────────────────────────────────────────────
 function reducer(state, { type, payload }) {
   switch (type) {
     case "ADD_ENTREGA":   return { ...state, entregas:  [payload, ...state.entregas] };
@@ -50,7 +48,6 @@ function reducer(state, { type, payload }) {
   }
 }
 
-// ── Toast hook ────────────────────────────────────────────────────────────────
 function useToast() {
   const [toasts, setToasts] = useState([]);
   const showToast = useCallback((msg, type = "success") => {
@@ -61,16 +58,30 @@ function useToast() {
   return { toasts, showToast, remove };
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [user, setUser] = useState(null); // se resetea al recargar la página
+  const [user, setUser] = useState(null);
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
   const navigate = useNavigate();
 
-  // Si no hay sesión activa, mostrar Login
   if (!user) {
-    return <Login onLogin={(data) => setUser(data)} />;
+    return (
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Login
+              onLogin={(data) => {
+                setUser(data);
+                navigate("/dashboard"); // ← CORRECCIÓN CLAVE
+              }}
+            />
+          }
+        />
+        <Route path="/Registro" element={<Registro />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   }
 
   const shared = { state, dispatch, showToast, navigate };
@@ -84,7 +95,6 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            {/* Módulos principales */}
             <Route path="/dashboard"       element={<Dashboard       {...shared} />} />
             <Route path="/usuarios"        element={<Usuarios        {...shared} />} />
             <Route path="/administradores" element={<Administradores {...shared} />} />
@@ -93,7 +103,6 @@ export default function App() {
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
             <Route path="/entregas"        element={<Entregas        {...shared} />} />
 
-            {/* Catálogos */}
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
             <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
@@ -104,7 +113,6 @@ export default function App() {
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
-            {/* Rutas legacy */}
             <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas    {...shared} />} />
             <Route path="/puntos"      element={<MisPuntos       state={state} />} />

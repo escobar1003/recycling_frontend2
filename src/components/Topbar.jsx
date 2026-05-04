@@ -1,107 +1,55 @@
-import { G, GL, Y } from "../constants/data";
-
 export default function Topbar({ pts, setView }) {
   return (
-    <header className="eco-topbar">
-      {/* Marca */}
-      <div style={{ minWidth: 140 }}>
-        <div style={{ fontWeight: 800, fontSize: 17, color: G, letterSpacing: "-.3px" }}>
-          Recycling Points
-        </div>
-        <div style={{ fontSize: 11, color: "#9ca3af" }}>Recicla y gana</div>
-      </div>
+    <nav className="navbar navbar-light bg-white border-bottom px-3 py-2">
+      <div className="container-fluid gap-3">
 
-      {/* Avatar + saludo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            width: 38, height: 38, borderRadius: "50%",
-            background: GL, border: `2px solid ${G}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 700, fontSize: 13, color: G, flexShrink: 0,
-          }}
-        >
-          AG
-        </div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "#1f2937" }}>¡Hola, Ana! 🌿</div>
-          <div style={{ fontSize: 11, color: "#9ca3af" }}>Reciclador comprometido</div>
-        </div>
-      </div>
+        <a className="navbar-brand mb-0" href="#">
+          <span className="fw-bold text-success">Recycling Points</span>
+          <br />
+          <small className="text-muted fw-normal">Recicla y gana</small>
+        </a>
 
-      {/* Buscador */}
-      <div style={{ flex: 1, maxWidth: 400, position: "relative" }}>
-        <span
-          style={{
-            position: "absolute", left: 11, top: "50%",
-            transform: "translateY(-50%)", fontSize: 14, color: "#9ca3af",
-          }}
-        >
-          🔍
+        <div className="d-flex align-items-center gap-2">
+          <div className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success p-3">
+            AG
+          </div>
+          <div>
+            <p className="mb-0 fw-bold text-dark">¡Hola, Ana!</p>
+            <p className="mb-0 text-muted small">Reciclador comprometido</p>
+          </div>
+        </div>
+
+        <div className="input-group flex-grow-1 mx-2 w-25">
+          <span className="input-group-text bg-light border">
+            <i className="bi bi-search text-muted"></i>
+          </span>
+          <input type="text" className="form-control bg-light" placeholder="Buscar..." />
+        </div>
+
+        <span className="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-2 fs-6 fw-bold">
+          <i className="bi bi-star-fill text-warning me-1"></i>
+          {pts.toLocaleString()} pts
         </span>
-        <input
-          type="text"
-          placeholder="Buscar..."
-          style={{
-            width: "100%", padding: "8px 12px 8px 34px",
-            border: "1px solid #e5e7eb", borderRadius: 24,
-            fontSize: 13, background: "#f9fafb", outline: "none",
-          }}
-        />
-      </div>
 
-      {/* Acciones derecha */}
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-        {/* Puntos */}
-        <div
-          style={{
-            background: GL, borderRadius: 20, padding: "5px 14px",
-            fontSize: 13, fontWeight: 700, color: G,
-            display: "flex", alignItems: "center", gap: 5,
-          }}
-        >
-          ⭐ <span>{pts.toLocaleString()}</span> pts
-        </div>
-
-        {/* Notificaciones */}
-        <button
-          style={{
-            width: 38, height: 38, borderRadius: 10,
-            border: "1px solid #e5e7eb", background: "#fff",
-            fontSize: 17, position: "relative",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer",
-          }}
-        >
-          🔔
-          <span
-            style={{
-              position: "absolute", top: -4, right: -4,
-              background: Y, color: "#1f2937",
-              fontSize: 9, fontWeight: 800,
-              width: 17, height: 17, borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              border: "2px solid #fff",
-            }}
-          >
+        <div className="position-relative">
+          <button className="btn btn-outline-secondary">
+            <i className="bi bi-bell"></i>
+          </button>
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white">
             3
           </span>
-        </button>
+        </div>
 
-        {/* Avatar perfil */}
         <div
+          className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success p-3"
+          role="button"
           onClick={() => setView("perfil")}
-          style={{
-            width: 38, height: 38, borderRadius: "50%",
-            background: GL, border: `2px solid ${G}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 700, fontSize: 13, color: G, cursor: "pointer",
-          }}
           title="Mi perfil"
         >
           AG
         </div>
+
       </div>
-    </header>
+    </nav>
   );
 }

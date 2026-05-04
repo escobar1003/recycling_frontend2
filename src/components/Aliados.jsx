@@ -22,9 +22,9 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const validate = () => {
     const e = {};
-    if (!form.nombre.trim())        e.nombre       = "El nombre del contacto es obligatorio";
-    if (!form.nombreEntidad.trim()) e.nombreEntidad = "El nombre de la entidad es obligatorio";
-    if (!form.email.trim())         e.email        = "El correo es obligatorio";
+    if (!form.nombre.trim())        e.nombre        = "El nombre del contacto es obligatorio";
+    if (!form.nombreEntidad.trim()) e.nombreEntidad  = "El nombre de la entidad es obligatorio";
+    if (!form.email.trim())         e.email         = "El correo es obligatorio";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
     return e;
@@ -33,47 +33,37 @@ export default function Aliados({ state, dispatch, showToast }) {
   const guardar = () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-
     const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
     dispatch({
       type: "ADD_USER",
       payload: {
-        id:             Date.now(),
-        nombre:         form.nombre.trim(),
-        nombreEntidad:  form.nombreEntidad.trim(),
-        email:          form.email.trim(),
-        telefono:       form.telefono.trim(),
-        rol:            "Afiliado",
-        zona:           form.zona,
-        puntoAsignado:  form.puntoAsignado,
-        pts:            0,
-        activo:         form.activo,
-        av:             initials,
-        fechaAlta:      new Date().toLocaleDateString("es-CO"),
+        id:            Date.now(),
+        nombre:        form.nombre.trim(),
+        nombreEntidad: form.nombreEntidad.trim(),
+        email:         form.email.trim(),
+        telefono:      form.telefono.trim(),
+        rol:           "Afiliado",
+        zona:          form.zona,
+        puntoAsignado: form.puntoAsignado,
+        pts:           0,
+        activo:        form.activo,
+        av:            initials,
+        fechaAlta:     new Date().toLocaleDateString("es-CO"),
       },
     });
-
-    showToast(`✅ Aliado "${form.nombreEntidad.trim()}" registrado`);
+    showToast(`Aliado "${form.nombreEntidad.trim()}" registrado`);
     setModal(false); setForm(EMPTY_FORM); setErrors({});
   };
 
-  const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
-
-  const handleToggle = (id, nombre, estadoActual) => {
+  const cerrarModal    = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
+  const handleToggle   = (id, nombre, estadoActual) => {
     dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(
-      estadoActual ? `🔴 ${nombre} ha sido desactivado` : `🟢 ${nombre} ha sido activado`,
-      estadoActual ? "error" : "success"
-    );
+    showToast(estadoActual ? `${nombre} desactivado` : `${nombre} activado`, estadoActual ? "error" : "success");
   };
-
-  const handleSave = (updatedUser) => {
-    dispatch({ type: "UPDATE_USER", payload: updatedUser });
-  };
-
+  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
   const handleEliminar = (id) => {
     dispatch({ type: "DEL_USER", payload: id });
-    showToast("🗑️ Aliado eliminado", "error");
+    showToast("Aliado eliminado", "error");
     if (viewUser?.id === id) setViewUser(null);
   };
 
@@ -90,44 +80,56 @@ export default function Aliados({ state, dispatch, showToast }) {
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
 
-  const cfg = getRolCfg("Afiliado");
-
   return (
-    <div>
-      {/* Header */}
+    <div className="container-fluid px-0">
+
+      {/* ── Header ── */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold m-0">🤝 Gestión de aliados</h4>
-        <button className="btn btn-warning rounded-3 fw-semibold" onClick={() => setModal(true)}>
-          <i className="bi bi-shop me-1"></i> Nuevo aliado
+        <div>
+          <h5 className="fw-bold mb-0 text-dark">
+            <i className="bi bi-handshake me-2 text-success"></i>
+            Gestión de aliados
+          </h5>
+          <small className="text-muted">
+            {aliados.length} aliado{aliados.length !== 1 ? "s" : ""} registrado{aliados.length !== 1 ? "s" : ""}
+          </small>
+        </div>
+        <button
+          className="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-2"
+          onClick={() => setModal(true)}
+        >
+          <i className="bi bi-shop"></i>
+          Nuevo aliado
         </button>
       </div>
 
-      {/* Buscador */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group" style={{ maxWidth: 380 }}>
-          <span className="input-group-text bg-white border-end-0 rounded-start-3">🔍</span>
+      {/* ── Buscador ── */}
+      <div className="mb-3">
+        <div className="input-group input-group-sm" style={{ maxWidth: 420 }}>
+          <span className="input-group-text bg-white border-end-0">
+            <i className="bi bi-search text-secondary"></i>
+          </span>
           <input
             className="form-control border-start-0 rounded-end-3"
             placeholder="Buscar por nombre, entidad, correo o zona..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: 13 }}
           />
         </div>
-        <span className="badge bg-warning-subtle text-warning-emphasis rounded-pill align-self-center px-3 py-2" style={{ fontSize: 12 }}>
-          {aliados.length} aliado{aliados.length !== 1 ? "s" : ""} registrado{aliados.length !== 1 ? "s" : ""}
-        </span>
       </div>
 
-      {/* Tabla */}
-      <TablaUsuarios
-        lista={filtered}
-        onToggle={handleToggle}
-        onVer={setViewUser}
-        onEliminar={handleEliminar}
-      />
+      {/* ── Tabla ── */}
+      <div className="card border rounded-3 shadow-none">
+        <div className="card-body p-0">
+          <TablaUsuarios
+            lista={filtered}
+            onToggle={handleToggle}
+            onVer={setViewUser}
+            onEliminar={handleEliminar}
+          />
+        </div>
+      </div>
 
-      {/* Modal editar */}
       <ModalDetalle
         user={viewUser}
         onClose={() => setViewUser(null)}
@@ -135,125 +137,155 @@ export default function Aliados({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
-      {/* Modal nuevo aliado */}
+      {/* ── Modal nuevo aliado ── */}
       {modal && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content rounded-4 border-0 shadow-lg p-2"
-              style={{ maxHeight: "90vh", overflowY: "auto" }}>
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div className="modal-content rounded-4 border-0 shadow">
 
               {/* Header */}
-              <div className="modal-header border-0" style={{ background: cfg.bg }}>
+              <div className="modal-header border-bottom">
                 <div className="d-flex align-items-center gap-3">
                   <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                    style={{ width: 52, height: 52, fontSize: 18, background: "#fff", color: cfg.color, border: `2px solid ${cfg.color}` }}
-                  >{avatarPreview}</div>
+                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
+                    style={{ width: 44, height: 44, fontSize: 15 }}
+                  >
+                    {avatarPreview}
+                  </div>
                   <div>
-                    <h5 className="modal-title fw-bold mb-0" style={{ color: cfg.color }}>🤝 Nuevo aliado</h5>
-                    <div className="small mt-1" style={{ color: cfg.color, opacity: 0.75 }}>
-                      Registra una empresa u organización aliada
-                    </div>
+                    <h6 className="modal-title fw-bold mb-0 text-dark">
+                      <i className="bi bi-handshake me-2 text-success"></i>
+                      Nuevo aliado
+                    </h6>
+                    <small className="text-muted">Registra una empresa u organización aliada</small>
                   </div>
                 </div>
                 <button type="button" className="btn-close ms-auto" onClick={cerrarModal} />
               </div>
 
-              <div className="modal-body">
-                {/* Sección entidad */}
-                <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>🏪 Datos de la entidad</p>
-                <div className="row g-3 mb-3">
+              {/* Body */}
+              <div className="modal-body p-4">
+
+                {/* Entidad */}
+                <p className="small fw-semibold text-muted text-uppercase mb-2" style={{ letterSpacing: 1 }}>
+                  <i className="bi bi-building me-1"></i>Datos de la entidad
+                </p>
+                <div className="row g-3 mb-4">
                   <div className="col-12">
-                    <label className="form-label fw-bold small text-secondary">Nombre de la entidad / empresa *</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-shop me-1 text-secondary"></i>Nombre de la entidad *
+                    </label>
                     <input
                       value={form.nombreEntidad}
                       onChange={e => set("nombreEntidad", e.target.value)}
                       placeholder="Ej: Supermercado La 14"
-                      className={`form-control form-control-sm bg-light rounded-3 ${errors.nombreEntidad ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm rounded-3 ${errors.nombreEntidad ? "is-invalid" : ""}`}
                     />
                     {errors.nombreEntidad && <div className="invalid-feedback">{errors.nombreEntidad}</div>}
                   </div>
                 </div>
 
-                {/* Sección contacto */}
-                <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>👤 Datos del contacto</p>
-                <div className="row g-3 mb-3">
+                {/* Contacto */}
+                <p className="small fw-semibold text-muted text-uppercase mb-2" style={{ letterSpacing: 1 }}>
+                  <i className="bi bi-person me-1"></i>Datos del contacto
+                </p>
+                <div className="row g-3">
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Nombre del contacto *</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-person me-1 text-secondary"></i>Nombre del contacto *
+                    </label>
                     <input
                       value={form.nombre}
                       onChange={e => set("nombre", e.target.value)}
                       placeholder="Ej: Carlos Ruiz"
-                      className={`form-control form-control-sm bg-light rounded-3 ${errors.nombre ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm rounded-3 ${errors.nombre ? "is-invalid" : ""}`}
                     />
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-envelope me-1 text-secondary"></i>Correo electrónico *
+                    </label>
                     <input
                       type="email"
                       value={form.email}
                       onChange={e => set("email", e.target.value)}
                       placeholder="correo@empresa.com"
-                      className={`form-control form-control-sm bg-light rounded-3 ${errors.email ? "is-invalid" : ""}`}
+                      className={`form-control form-control-sm rounded-3 ${errors.email ? "is-invalid" : ""}`}
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono
+                    </label>
                     <input
                       value={form.telefono}
                       onChange={e => set("telefono", e.target.value)}
                       placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm bg-light rounded-3"
+                      className="form-control form-control-sm rounded-3"
                     />
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Zona</label>
-                    <select value={form.zona} onChange={e => set("zona", e.target.value)}
-                      className="form-select form-select-sm bg-light rounded-3">
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-geo-alt me-1 text-secondary"></i>Zona
+                    </label>
+                    <select
+                      value={form.zona}
+                      onChange={e => set("zona", e.target.value)}
+                      className="form-select form-select-sm rounded-3"
+                    >
                       <option value="">Sin zona</option>
                       {ZONAS.map(z => <option key={z}>{z}</option>)}
                     </select>
                   </div>
+
                   <div className="col-12">
-                    <label className="form-label fw-bold small text-secondary">Punto asignado</label>
-                    <select value={form.puntoAsignado} onChange={e => set("puntoAsignado", e.target.value)}
-                      className="form-select form-select-sm bg-light rounded-3">
+                    <label className="form-label small fw-semibold text-dark">
+                      <i className="bi bi-pin-map me-1 text-secondary"></i>Punto asignado
+                    </label>
+                    <select
+                      value={form.puntoAsignado}
+                      onChange={e => set("puntoAsignado", e.target.value)}
+                      className="form-select form-select-sm rounded-3"
+                    >
                       <option value="">Sin asignar</option>
                       {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
                     </select>
                   </div>
-                </div>
 
-                {/* Info rol */}
-                <div className="rounded-3 p-3 small fw-semibold mb-3" style={{ background: cfg.bg, color: cfg.color }}>
-                  {cfg.icon} {rolDesc["Afiliado"]}
-                </div>
+                  <div className="col-12">
+                    <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border">
+                      <div>
+                        <div className="small fw-semibold text-dark">Estado inicial</div>
+                        <div className="text-muted" style={{ fontSize: 11 }}>El aliado podrá operar si está activo</div>
+                      </div>
+                      <div className="d-flex align-items-center gap-2">
+                        <span className={`badge rounded-pill ${form.activo ? "bg-success" : "bg-secondary"}`}>
+                          {form.activo ? "Activo" : "Inactivo"}
+                        </span>
+                        <Toggle checked={form.activo} onChange={v => set("activo", v)} />
+                      </div>
+                    </div>
+                  </div>
 
-                {/* Estado */}
-                <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light">
-                  <div>
-                    <div className="fw-bold small">Estado inicial</div>
-                    <div className="text-muted" style={{ fontSize: 11 }}>El aliado podrá operar si está activo</div>
-                  </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
-                      {form.activo ? "Activo" : "Inactivo"}
-                    </span>
-                    <Toggle checked={form.activo} onChange={v => set("activo", v)} />
-                  </div>
                 </div>
               </div>
 
-              <div className="modal-footer border-0 gap-2">
-                <button className="btn btn-secondary rounded-3 flex-fill" onClick={cerrarModal}>Cancelar</button>
-                <button className="btn rounded-3 flex-fill fw-bold"
-                  style={{ background: cfg.color, color: "#fff" }}
-                  onClick={guardar}>
-                  🤝 Registrar aliado
+              {/* Footer */}
+              <div className="modal-footer border-top gap-2">
+                <button className="btn btn-outline-secondary btn-sm rounded-3 flex-fill" onClick={cerrarModal}>
+                  <i className="bi bi-x me-1"></i>Cancelar
+                </button>
+                <button className="btn btn-success btn-sm rounded-3 flex-fill" onClick={guardar}>
+                  <i className="bi bi-check-lg me-1"></i>Registrar aliado
                 </button>
               </div>
+
             </div>
           </div>
         </div>
