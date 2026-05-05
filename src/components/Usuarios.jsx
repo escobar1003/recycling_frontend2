@@ -5,7 +5,7 @@ import { getUsuarios, actualizarUsuario, eliminarUsuario } from "../services/api
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
-  rol: "Usuario", zona: "", puntoAsignado: "", activo: true,
+  rol: "Usuario",  activo: true,
 };
 
 export default function Usuarios({ state, dispatch, showToast }) {
@@ -64,8 +64,8 @@ export default function Usuarios({ state, dispatch, showToast }) {
           email:         form.email.trim(),
           telefono:      form.telefono.trim(),
           rol:           "Usuario",
-          zona:          form.zona,
-          puntoAsignado: form.puntoAsignado,
+          
+          
           pts:           0,
           activo:        true,
           av:            initials,
@@ -221,22 +221,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                       className="form-control form-control-sm bg-light"
                     />
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Zona</label>
-                    <select value={form.zona} onChange={e => set("zona", e.target.value)}
-                      className="form-select form-select-sm bg-light">
-                      <option value="">Sin zona</option>
-                      {ZONAS.map(z => <option key={z}>{z}</option>)}
-                    </select>
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label fw-bold small text-secondary">Punto asignado</label>
-                    <select value={form.puntoAsignado} onChange={e => set("puntoAsignado", e.target.value)}
-                      className="form-select form-select-sm bg-light">
-                      <option value="">Sin asignar</option>
-                      {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
-                    </select>
-                  </div>
+                  
                   <div className="col-12">
                     <div className="alert alert-success small fw-semibold mb-0">
                       <i className="bi bi-info-circle me-1"></i> {rolDesc["Usuario"]}
