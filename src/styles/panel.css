@@ -1,0 +1,277 @@
+/* ── TIPOGRAFÍA BASE ─────────────────────────────── */
+* {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ── VARIABLES ───────────────────────────────────── */
+:root {
+  --verde:       #2e7d32;
+  --verde-claro: #e8f5e9;
+  --mostaza:     #c9a227;
+  --rojo:        #c0392b;
+  --negro:       #111111;
+  --gris-texto:  #555555;
+  --gris-borde:  #e0e0e0;
+  --fondo:       #ffffff;
+}
+
+/* ── PÁGINA ──────────────────────────────────────── */
+.panel-page {
+  background-color: var(--fondo);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* ── ENCABEZADO ──────────────────────────────────── */
+.panel-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--negro);
+  margin: 0;
+}
+
+.panel-subtitle {
+  font-size: 0.78rem;
+  color: var(--verde);
+  font-weight: 600;
+}
+
+/* ── BOTONES ─────────────────────────────────────── */
+.btn-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-panel:hover { opacity: 0.85; }
+.btn-panel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-panel.primary   { background-color: var(--verde);  color: #fff; }
+.btn-panel.secondary { background-color: #fff; color: var(--verde); border: 1px solid var(--verde); }
+.btn-panel.ghost     { background-color: #fff; color: var(--gris-texto); border: 1px solid var(--gris-borde); }
+.btn-panel.danger    { background-color: var(--rojo); color: #fff; }
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid var(--gris-borde);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #444;
+  transition: border-color 0.15s;
+}
+.btn-icon:hover        { border-color: var(--verde); color: var(--verde); }
+.btn-icon.del:hover    { border-color: var(--rojo);  color: var(--rojo); }
+
+/* ── CHIPS DE FILTRO ─────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--gris-borde);
+  background-color: #fff;
+  color: #444;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip.active {
+  background-color: var(--verde);
+  border-color: var(--verde);
+  color: #fff;
+}
+.chip .chip-count {
+  background-color: var(--mostaza);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ── INPUTS / SELECTS ────────────────────────────── */
+.panel-input,
+.panel-select {
+  border: 1px solid var(--gris-borde);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  outline: none;
+  width: 100%;
+  background-color: #fff;
+  color: var(--negro);
+  transition: border-color 0.15s;
+}
+.panel-input:focus,
+.panel-select:focus {
+  border-color: var(--verde);
+}
+
+.panel-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gris-texto);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── TABLA ───────────────────────────────────────── */
+.panel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.panel-table th {
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid #f0f0f0;
+}
+.panel-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: middle;
+  color: #222;
+}
+.panel-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+/* ── BADGE ───────────────────────────────────────── */
+.panel-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ── ESTADO (punto de color) ─────────────────────── */
+.estado-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.estado-dot .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.estado-dot.activo   { color: var(--verde); }
+.estado-dot.inactivo { color: #aaa; }
+.estado-dot.activo   .dot { background-color: var(--verde); }
+.estado-dot.inactivo .dot { background-color: #ccc; }
+
+/* ── CONTENEDOR TABLA ────────────────────────────── */
+.panel-table-wrap {
+  background-color: #fff;
+  border: 1px solid #efefef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── MODAL ───────────────────────────────────────── */
+.panel-modal-bg {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.panel-modal {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+.panel-modal.sm { max-width: 380px; }
+
+.panel-modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--negro);
+}
+.panel-modal-body {
+  padding: 20px;
+}
+.panel-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.panel-modal-grid .full { grid-column: 1 / -1; }
+
+.panel-modal-foot {
+  padding: 14px 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ── TOAST ───────────────────────────────────────── */
+.panel-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background-color: #1a1a1a;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── BÚSQUEDA CON ÍCONO ──────────────────────────── */
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gris-borde);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #fff;
+}
+.search-box i {
+  padding: 0 8px;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  width: 180px;
+}

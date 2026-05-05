@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
 
+import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
 import Sidebar         from "./components/Sidebar";
