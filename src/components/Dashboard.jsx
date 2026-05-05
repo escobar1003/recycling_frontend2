@@ -1,8 +1,21 @@
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell } from "recharts";
 import { CHART_DATA } from "../constants/data";
 
-export default function Dashboard({ state }) {
+export default function Dashboard({ state }){
   const totalKg = state.entregas.reduce((a, e) => a + e.peso, 0);
-  const max = Math.max(...CHART_DATA.map(d => d.val));
+  // Ejemplo: puedes cambiar la lógica según tus datos reales
+const nuevos = state.entregas.filter(e => e.esNuevo).length;
+const recurrentes = state.entregas.length - nuevos;
+
+ const pieData = [
+  { name: "Nuevos", value: 39 },
+  { name: "Recurrentes", value: 61 },
+   ];
+        const barData = CHART_DATA.map(d => ({
+        name: d.label,
+         kg: d.val,
+         hi: d.hi
+          }));
 
   return (
     <div className="row g-3">
@@ -41,9 +54,9 @@ export default function Dashboard({ state }) {
             <div className="d-flex align-items-end gap-2 mb-1" style={{ height: 100 }}>
               {CHART_DATA.map((d, i) => (
                 <div key={i} className="flex-fill d-flex flex-column align-items-center gap-1">
-                  {d.hi && (
+                 {d.hi && (
                     <span className="badge" style={{ background: "#facc15", color: "#111111", fontSize: 9 }}>
-                      {d.val}kg
+                    {d.val}kg
                     </span>
                   )}
                   <div
@@ -54,17 +67,9 @@ export default function Dashboard({ state }) {
                     }}
                   />
                 </div>
-              ))}
-            </div>
-            <div className="d-flex">
-              {CHART_DATA.map((d, i) => (
-                <div key={i} className="flex-fill text-center text-muted" style={{ fontSize: 9 }}>{d.label}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
+                 ))}
+                </div>
+                    
       {/* Entregas recientes */}
       <div className="col-md-6">
         <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #facc15" }}>
@@ -140,6 +145,39 @@ export default function Dashboard({ state }) {
           </div>
         </div>
       </div>
+                           <div className="col-md-6">
+   <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #16a34a" }}>
+    <div className="card-body">
+      
+      <div className="fw-bold mb-3 text-dark">
+        <i className="bi bi-pie-chart me-1" style={{ color: "#16a34a" }}></i>
+        Usuarios nuevos vs recurrentes
+      </div>
+
+      <div style={{ width: "100%", height: 220 }}>
+        <ResponsiveContainer>
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={index} fill={COLORS[index]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+       </div>
+      </div>
+     </div>
+
 
       {/* Actividad reciente */}
       <div className="col-md-6">
