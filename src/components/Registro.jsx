@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registrarse } from "../services/api";
+import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 
 function Registro() {
   const [nombre, setNombre] = useState("");
@@ -61,7 +62,7 @@ function Registro() {
         {/* ESTE ES EL LADO ISQUIERDO  */}
         <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
           <img
-            src="/src/assets/imagenes/eco.png"
+            src={fondoReciclaje}
             alt="EcoRecicla"
             className="img-fluid"
           />
