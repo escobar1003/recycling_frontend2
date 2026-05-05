@@ -158,3 +158,27 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ── Tamaño global de botones (Bootstrap override) ────────────────────────── */
+.btn {
+  font-size: 12px !important;
+  padding: 5px 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Botones pequeños: aún más compactos */
+.btn-sm {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+
+/* Botones grandes: igualarlos al tamaño normal reducido */
+.btn-lg {
+  font-size: 13px !important;
+  padding: 6px 14px !important;
+}
+
+/* Iconos dentro de botones: ajuste proporcional */
+.btn i, .btn .bi {
+  font-size: 12px !important;
+}

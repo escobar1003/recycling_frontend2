@@ -10,10 +10,6 @@ import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
 import Entregas        from "./components/Entregas";
-import ClasificadorIA  from "./components/ClasificadorIA";
-import Recompensas     from "./components/Recompensas";
-import MisPuntos       from "./components/MisPuntos";
-import Mapa            from "./components/Mapa";
 import ImpactoEco      from "./components/ImpactoEco";
 import Usuarios        from "./components/Usuarios";
 import Administradores from "./components/Administradores";
@@ -111,10 +107,6 @@ export default function App() {
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
-            <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
-            <Route path="/recompensas" element={<Recompensas    {...shared} />} />
-            <Route path="/puntos"      element={<MisPuntos       state={state} />} />
-            <Route path="/mapa"        element={<Mapa            showToast={showToast} />} />
             <Route path="/eco"         element={<ImpactoEco      state={state} />} />
             <Route path="/perfil"      element={<Perfil          state={state} showToast={showToast} />} />
 

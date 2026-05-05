@@ -108,16 +108,26 @@ export default function VistaMateriales() {
   return (
     <div className="container-fluid py-4 bg-light min-vh-100">
 
+      {/* ── Header ── */}
       <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div>
-          <h4 className="mb-0 fw-bold text-dark">Materiales</h4>
-          <small className="text-success fw-semibold">{materiales.length} materiales registrados</small>
+          <h5 className="fw-bold mb-0 text-dark">
+            <i className="bi bi-recycle me-2 text-success"></i>Materiales
+          </h5>
+          <small className="text-muted">
+            {materiales.length} material{materiales.length !== 1 ? "es" : ""} registrado{materiales.length !== 1 ? "s" : ""}
+          </small>
         </div>
-        <button className="btn btn-success fw-bold" onClick={abrirNuevo}>
-          <i className="bi bi-plus-lg me-1"></i> Nuevo material
+        <button
+          className="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-2 fw-semibold"
+          style={{ fontSize: 12 }}
+          onClick={abrirNuevo}
+        >
+          <i className="bi bi-plus-lg"></i>Nuevo material
         </button>
       </div>
 
+      {/* ── Filtros por categoría ── */}
       <div className="d-flex flex-wrap gap-2 mb-4">
         {CATEGORIAS.map(cat => {
           const cnt = materiales.filter(m => m.categoria === cat).length;
@@ -125,89 +135,147 @@ export default function VistaMateriales() {
           return (
             <button
               key={cat}
-              className={`btn btn-sm fw-bold border ${filtroCat === cat ? "btn-success text-white" : "btn-outline-success"}`}
+              className={`btn btn-sm fw-semibold border rounded-3 ${filtroCat === cat ? "btn-success text-white" : "btn-outline-success"}`}
+              style={{ fontSize: 12 }}
               onClick={() => setFiltroCat(filtroCat === cat ? "todos" : cat)}
             >
-              {cat} <span className="badge bg-warning text-dark ms-1">{cnt}</span>
+              {cat}
+              <span className="badge rounded-pill ms-1 fw-semibold"
+                style={{ background: "#facc15", color: "#111111", fontSize: 10 }}>
+                {cnt}
+              </span>
             </button>
           );
         })}
       </div>
 
+      {/* ── Barra de búsqueda y filtros ── */}
       <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group w-auto">
-          <span className="input-group-text bg-white"><i className="bi bi-search"></i></span>
-          <input className="form-control" placeholder="Buscar material..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+        <div className="input-group input-group-sm" style={{ maxWidth: 300 }}>
+          <span className="input-group-text bg-white border-end-0">
+            <i className="bi bi-search text-secondary"></i>
+          </span>
+          <input
+            className="form-control border-start-0 rounded-end-3"
+            placeholder="Buscar material..."
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+          />
         </div>
-        <select className="form-select w-auto" value={filtroZona} onChange={e => setFiltroZona(e.target.value)}>
+        <select
+          className="form-select form-select-sm rounded-3"
+          style={{ width: "auto", fontSize: 12 }}
+          value={filtroZona}
+          onChange={e => setFiltroZona(e.target.value)}
+        >
           <option value="todos">Todas las zonas</option>
           {ZONAS.map(z => <option key={z}>{z}</option>)}
         </select>
-        <select className="form-select w-auto" value={filtroCat} onChange={e => setFiltroCat(e.target.value)}>
+        <select
+          className="form-select form-select-sm rounded-3"
+          style={{ width: "auto", fontSize: 12 }}
+          value={filtroCat}
+          onChange={e => setFiltroCat(e.target.value)}
+        >
           <option value="todos">Todas las categorias</option>
           {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
         </select>
-        <button className="btn btn-outline-success fw-bold" onClick={cargarMateriales}>
-          <i className="bi bi-arrow-clockwise me-1"></i> Actualizar
+        <button
+          className="btn btn-sm btn-outline-success rounded-3 fw-semibold d-flex align-items-center gap-1"
+          style={{ fontSize: 12 }}
+          onClick={cargarMateriales}
+        >
+          <i className="bi bi-arrow-clockwise"></i>Actualizar
         </button>
       </div>
 
-      <div className="card border shadow-sm">
+      {/* ── Tabla ── */}
+      <div className="card border rounded-3 shadow-none">
         {loading ? (
-          <div className="text-center py-5 text-success fw-bold">
+          <div className="text-center py-5 text-muted">
             <div className="spinner-border text-success mb-2"></div>
-            <br />Cargando materiales...
+            <br />
+            <small className="fw-semibold">Cargando materiales...</small>
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="table-light">
-                <tr className="text-uppercase small text-muted">
-                  <th>ID</th>
-                  <th>Material</th>
-                  <th>Categoria</th>
-                  <th>Descripcion</th>
-                  <th>Peso min.</th>
-                  <th>Peso max.</th>
-                  <th>Unidad</th>
-                  <th>Zona</th>
-                  <th>Pts/kg</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+            <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
+              <thead className="table-light border-bottom">
+                <tr>
+                  {[
+                    ["bi-hash",           "ID"],
+                    ["bi-recycle",        "Material"],
+                    ["bi-tag",            "Categoria"],
+                    ["bi-card-text",      "Descripcion"],
+                    ["bi-arrow-down",     "Peso min."],
+                    ["bi-arrow-up",       "Peso max."],
+                    ["bi-rulers",         "Unidad"],
+                    ["bi-geo-alt",        "Zona"],
+                    ["bi-star",           "Pts/kg"],
+                    ["bi-check-circle",   "Estado"],
+                    ["bi-gear",           "Acciones"],
+                  ].map(([ic, h]) => (
+                    <th key={h}
+                      className="ps-4 py-3 fw-semibold text-muted text-uppercase border-0"
+                      style={{ fontSize: 11 }}
+                    >
+                      <i className={`bi ${ic} me-1`}></i>{h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filtrados.length === 0 ? (
-                  <tr><td colSpan={11} className="text-center py-5 fw-bold text-muted">Sin resultados</td></tr>
+                  <tr>
+                    <td colSpan={11} className="text-center text-muted py-5">
+                      <i className="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                      <span className="small">Sin resultados</span>
+                    </td>
+                  </tr>
                 ) : filtrados.map(m => (
                   <tr key={m.id}>
-                    <td className="text-muted fw-semibold small align-middle">#{m.id}</td>
-                    <td className="align-middle fw-bold text-dark">{m.nombre}</td>
-                    <td className="align-middle">
-                      <span className="badge bg-success-subtle text-success border border-success">{m.categoria}</span>
+                    <td className="ps-4 text-muted fw-semibold" style={{ fontSize: 12 }}>#{m.id}</td>
+                    <td className="fw-bold text-dark">{m.nombre}</td>
+                    <td>
+                      <span className="badge rounded-pill fw-semibold"
+                        style={{ background: "#dcfce7", color: "#16a34a", fontSize: 11, border: "1px solid #16a34a" }}>
+                        {m.categoria}
+                      </span>
                     </td>
-                    <td className="align-middle small text-muted">{m.descripcion}</td>
-                    <td className="align-middle small fw-semibold">{m.peso_minimo} {m.unidad}</td>
-                    <td className="align-middle small fw-semibold">{m.peso_maximo} {m.unidad}</td>
-                    <td className="align-middle small">{m.unidad}</td>
-                    <td className="align-middle small">
+                    <td className="text-secondary" style={{ fontSize: 12 }}>{m.descripcion}</td>
+                    <td className="fw-semibold text-dark" style={{ fontSize: 12 }}>{m.peso_minimo} {m.unidad}</td>
+                    <td className="fw-semibold text-dark" style={{ fontSize: 12 }}>{m.peso_maximo} {m.unidad}</td>
+                    <td className="text-secondary" style={{ fontSize: 12 }}>{m.unidad}</td>
+                    <td className="text-secondary" style={{ fontSize: 12 }}>
                       <i className="bi bi-geo-alt-fill text-success me-1"></i>{m.zona}
                     </td>
-                    <td className="align-middle fw-bold text-success">
+                    <td className="fw-bold text-success">
                       <i className="bi bi-star-fill text-warning me-1"></i>{m.puntos_por_kg}
                     </td>
-                    <td className="align-middle">
+                    <td>
                       {m.activo
-                        ? <span className="badge bg-success"><i className="bi bi-check-circle me-1"></i>Activo</span>
-                        : <span className="badge bg-danger"><i className="bi bi-x-circle me-1"></i>Inactivo</span>}
+                        ? <span className="badge rounded-pill fw-normal" style={{ fontSize: 10, background: "#16a34a", color: "#fff" }}>
+                            <i className="bi bi-check-circle me-1"></i>Activo
+                          </span>
+                        : <span className="badge rounded-pill fw-normal" style={{ fontSize: 10, background: "#f3f4f6", color: "#6b7280" }}>
+                            <i className="bi bi-x-circle me-1"></i>Inactivo
+                          </span>}
                     </td>
-                    <td className="align-middle">
+                    <td>
                       <div className="d-flex gap-1">
-                        <button className="btn btn-sm btn-outline-success" onClick={() => abrirEditar(m)}>
-                          <i className="bi bi-pencil"></i>
+                        <button
+                          className="btn btn-sm rounded-3 fw-semibold d-flex align-items-center gap-1"
+                          style={{ fontSize: 11, padding: "4px 10px", background: "#dcfce7", color: "#16a34a", border: "none" }}
+                          onClick={() => abrirEditar(m)}
+                        >
+                          <i className="bi bi-pencil-square"></i>Editar
                         </button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => setConfirmDel(m)}>
-                          <i className="bi bi-trash"></i>
+                        <button
+                          className="btn btn-outline-danger btn-sm rounded-3 d-flex align-items-center justify-content-center"
+                          style={{ width: 30, height: 30, fontSize: 13, padding: 0 }}
+                          onClick={() => setConfirmDel(m)}
+                        >
+                          <i className="bi bi-trash3"></i>
                         </button>
                       </div>
                     </td>
@@ -219,70 +287,92 @@ export default function VistaMateriales() {
         )}
       </div>
 
+      {/* ══ Modal nuevo / editar material ══ */}
       {showModal && (
-        <div className="modal d-block" style={{background:"#00000055"}} onClick={ev => { if (ev.target === ev.currentTarget) setShowModal(false); }}>
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}
+          onClick={ev => { if (ev.target === ev.currentTarget) setShowModal(false); }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border">
-              <div className="modal-header border-bottom">
-                <h5 className="modal-title fw-bold text-dark">
-                  <i className={`bi ${editItem ? "bi-pencil-square" : "bi-recycle"} me-2 text-success`}></i>
+            <div className="modal-content border shadow-lg">
+              <div className="modal-header bg-success-subtle border-bottom">
+                <h5 className="modal-title fw-bold mb-0 text-success">
+                  <i className={`bi ${editItem ? "bi-pencil-square" : "bi-recycle"} me-2`}></i>
                   {editItem ? "Editar material" : "Nuevo material"}
                 </h5>
-                <button className="btn-close" onClick={() => setShowModal(false)} />
+                <button className="btn-close ms-auto" onClick={() => setShowModal(false)} />
               </div>
               <div className="modal-body">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-success">Nombre del material *</label>
-                    <input className="form-control" placeholder="Ej: Botella PET" value={form.nombre} onChange={e => setF("nombre", e.target.value)} />
+                    <label className="form-label fw-bold small text-secondary">Nombre del material *</label>
+                    <input className="form-control form-control-sm bg-light" placeholder="Ej: Botella PET"
+                      value={form.nombre} onChange={e => setF("nombre", e.target.value)} />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-success">Categoria *</label>
-                    <select className="form-select" value={form.categoria} onChange={e => setF("categoria", e.target.value)}>
+                    <label className="form-label fw-bold small text-secondary">Categoria *</label>
+                    <select className="form-select form-select-sm bg-light"
+                      value={form.categoria} onChange={e => setF("categoria", e.target.value)}>
                       <option value="">Selecciona categoria...</option>
                       {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
                     </select>
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-bold small text-success">Descripcion</label>
-                    <textarea className="form-control" rows={2} placeholder="Describe el material..." value={form.descripcion} onChange={e => setF("descripcion", e.target.value)} />
+                    <label className="form-label fw-bold small text-secondary">Descripcion</label>
+                    <textarea className="form-control form-control-sm bg-light" rows={2}
+                      placeholder="Describe el material..." value={form.descripcion}
+                      onChange={e => setF("descripcion", e.target.value)} />
                   </div>
                   <div className="col-md-3">
-                    <label className="form-label fw-bold small text-success">Peso minimo</label>
-                    <input type="number" className="form-control" placeholder="0.1" min="0" step="0.1" value={form.peso_minimo} onChange={e => setF("peso_minimo", e.target.value)} />
+                    <label className="form-label fw-bold small text-secondary">Peso minimo</label>
+                    <input type="number" className="form-control form-control-sm bg-light"
+                      placeholder="0.1" min="0" step="0.1" value={form.peso_minimo}
+                      onChange={e => setF("peso_minimo", e.target.value)} />
                   </div>
                   <div className="col-md-3">
-                    <label className="form-label fw-bold small text-success">Peso maximo</label>
-                    <input type="number" className="form-control" placeholder="100" min="0" step="0.1" value={form.peso_maximo} onChange={e => setF("peso_maximo", e.target.value)} />
+                    <label className="form-label fw-bold small text-secondary">Peso maximo</label>
+                    <input type="number" className="form-control form-control-sm bg-light"
+                      placeholder="100" min="0" step="0.1" value={form.peso_maximo}
+                      onChange={e => setF("peso_maximo", e.target.value)} />
                   </div>
                   <div className="col-md-3">
-                    <label className="form-label fw-bold small text-success">Unidad</label>
-                    <select className="form-select" value={form.unidad} onChange={e => setF("unidad", e.target.value)}>
+                    <label className="form-label fw-bold small text-secondary">Unidad</label>
+                    <select className="form-select form-select-sm bg-light"
+                      value={form.unidad} onChange={e => setF("unidad", e.target.value)}>
                       {UNIDADES.map(u => <option key={u}>{u}</option>)}
                     </select>
                   </div>
                   <div className="col-md-3">
-                    <label className="form-label fw-bold small text-success">Puntos por kg *</label>
-                    <input type="number" className="form-control" placeholder="30" min="0" value={form.puntos_por_kg} onChange={e => setF("puntos_por_kg", e.target.value)} />
+                    <label className="form-label fw-bold small text-secondary">Puntos por kg *</label>
+                    <input type="number" className="form-control form-control-sm bg-light"
+                      placeholder="30" min="0" value={form.puntos_por_kg}
+                      onChange={e => setF("puntos_por_kg", e.target.value)} />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-success">Zona *</label>
-                    <select className="form-select" value={form.zona} onChange={e => setF("zona", e.target.value)}>
+                    <label className="form-label fw-bold small text-secondary">Zona *</label>
+                    <select className="form-select form-select-sm bg-light"
+                      value={form.zona} onChange={e => setF("zona", e.target.value)}>
                       <option value="">Selecciona zona...</option>
                       {ZONAS.map(z => <option key={z}>{z}</option>)}
                     </select>
                   </div>
                   <div className="col-md-6 d-flex align-items-end">
-                    <div className="form-check form-switch">
-                      <input className="form-check-input" type="checkbox" id="activoMat" checked={form.activo} onChange={e => setF("activo", e.target.checked)} />
-                      <label className="form-check-label fw-bold text-success" htmlFor="activoMat">Material activo</label>
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="form-check form-switch mb-0">
+                        <input className="form-check-input" type="checkbox" id="activoMat"
+                          checked={form.activo} onChange={e => setF("activo", e.target.checked)}
+                          style={{ width: 40, height: 22, cursor: "pointer" }} />
+                      </div>
+                      <label className="form-check-label fw-bold small text-secondary" htmlFor="activoMat">
+                        Material activo
+                      </label>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="modal-footer border-top">
-                <button className="btn btn-outline-secondary fw-bold" onClick={() => setShowModal(false)}>Cancelar</button>
-                <button className="btn btn-success fw-bold" disabled={saving} onClick={guardar}>
+              <div className="modal-footer border-top gap-2">
+                <button className="btn btn-outline-secondary flex-fill" onClick={() => setShowModal(false)}>
+                  <i className="bi bi-x-lg me-1"></i>Cancelar
+                </button>
+                <button className="btn btn-success flex-fill fw-bold" disabled={saving} onClick={guardar}>
                   <i className={`bi ${editItem ? "bi-floppy" : "bi-recycle"} me-1`}></i>
                   {saving ? "Guardando..." : editItem ? "Actualizar" : "Crear material"}
                 </button>
@@ -292,18 +382,23 @@ export default function VistaMateriales() {
         </div>
       )}
 
+      {/* ══ Modal confirmar eliminar ══ */}
       {confirmDel && (
-        <div className="modal d-block" style={{background:"#00000055"}}>
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,.45)", zIndex: 9000 }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border border-danger">
+            <div className="modal-content border border-danger rounded-4">
               <div className="modal-body text-center p-4">
                 <i className="bi bi-trash3 text-danger fs-1"></i>
                 <h5 className="fw-bold mt-2 text-dark">Eliminar material</h5>
-                <p className="text-muted">Vas a eliminar <strong>"{confirmDel.nombre}"</strong>. Esta accion no se puede deshacer.</p>
+                <p className="text-muted small">
+                  Vas a eliminar <strong>"{confirmDel.nombre}"</strong>. Esta accion no se puede deshacer.
+                </p>
                 <div className="d-flex gap-2 justify-content-center mt-3">
-                  <button className="btn btn-outline-secondary fw-bold" onClick={() => setConfirmDel(null)}>Cancelar</button>
-                  <button className="btn btn-danger fw-bold" onClick={confirmarEliminar}>
-                    <i className="bi bi-trash me-1"></i> Si, eliminar
+                  <button className="btn btn-outline-secondary flex-fill" onClick={() => setConfirmDel(null)}>
+                    Cancelar
+                  </button>
+                  <button className="btn btn-danger flex-fill fw-bold" onClick={confirmarEliminar}>
+                    <i className="bi bi-trash me-1"></i>Si, eliminar
                   </button>
                 </div>
               </div>
@@ -312,11 +407,12 @@ export default function VistaMateriales() {
         </div>
       )}
 
+      {/* ── Toast ── */}
       {toast && (
-        <div className="position-fixed bottom-0 end-0 p-3" style={{zIndex:9999}}>
-          <div className="toast show bg-dark text-success fw-bold">
-            <div className="toast-body">
-              <i className="bi bi-check2-circle me-2"></i>{toast}
+        <div className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 9999 }}>
+          <div className="toast show bg-dark text-white rounded-3">
+            <div className="toast-body fw-semibold" style={{ fontSize: 13 }}>
+              <i className="bi bi-check2-circle text-success me-2"></i>{toast}
             </div>
           </div>
         </div>

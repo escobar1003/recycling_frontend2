@@ -85,7 +85,7 @@ export default function Dashboard({ state }) {
                   className="rounded d-flex align-items-center justify-content-center flex-shrink-0 p-2"
                   style={{ background: "#f0fdf4" }}
                 >
-                  <i className="bi bi-recycle fs-5" style={{ color: "#16a34a" }}></i>
+                  <i className={`bi ${e.icon} fs-5`} style={{ color: "#16a34a" }}></i>
                 </div>
                 <div className="flex-fill">
                   <div className="fw-semibold small">{e.material}</div>
@@ -159,7 +159,7 @@ export default function Dashboard({ state }) {
                   className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 p-1"
                   style={{ background: "#f0fdf4" }}
                 >
-                  <i className="bi bi-check2" style={{ color: "#16a34a" }}></i>
+                  <i className={`bi ${h.icon}`} style={{ color: "#16a34a" }}></i>
                 </div>
                 <div className="flex-fill">
                   <div className="fw-bold small">{h.desc}</div>
