@@ -4,12 +4,10 @@
 const BASE_URL = 'http://localhost:3333';
 
 // Token en memoria (se asigna tras login o registro)
-let _token = null;
-
-export function setToken(t)  { _token = t; }
+let _token = localStorage.getItem("token") || null;
+export function setToken(t)  { _token = t; localStorage.setItem("token", t); }
 export function getToken()   { return _token; }
-export function clearToken() { _token = null; }
-
+export function clearToken() { _token = null; localStorage.removeItem("token"); }
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (_token) headers['Authorization'] = `Bearer ${_token}`;
