@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getUsuarios, crearUsuario, cambiarEstadoUsuario } from "../services/api";
+import { getUsuarios, actualizarUsuario, eliminarUsuario } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -19,7 +19,8 @@ export default function Usuarios({ state, dispatch, showToast }) {
   useEffect(() => {
     getUsuarios()
       .then(data => {
-        dispatch({ type: "SET_USUARIOS", payload: data });
+        // El backend devuelve { usuarios: [...] }
+        dispatch({ type: "SET_USUARIOS", payload: data.usuarios ?? data });
       })
       .catch(() => {
         showToast("No se pudieron cargar los usuarios del servidor", "error");
@@ -45,17 +46,20 @@ export default function Usuarios({ state, dispatch, showToast }) {
     if (Object.keys(e).length) { setErrors(e); return; }
 
     try {
-      const nuevo = await crearUsuario({
-        nombre_completo: form.nombre.trim(),
-        correo:          form.email.trim(),
-        rol:             "Usuario",
+      // Registro via /api/auth/registrarse
+      const { registrarse } = await import("../services/api");
+      const resp = await registrarse({
+        nombre:   form.nombre.trim(),
+        correo:   form.email.trim(),
+        password: "Temporal123!",
+        telefono: form.telefono.trim() || undefined,
       });
 
       const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
       dispatch({
         type: "ADD_USER",
         payload: {
-          id:            nuevo.id ?? Date.now(),
+          id:            resp.usuario?.idUsuario ?? Date.now(),
           nombre:        form.nombre.trim(),
           email:         form.email.trim(),
           telefono:      form.telefono.trim(),
@@ -63,7 +67,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
           zona:          form.zona,
           puntoAsignado: form.puntoAsignado,
           pts:           0,
-          activo:        form.activo,
+          activo:        true,
           av:            initials,
           fechaAlta:     new Date().toLocaleDateString("es-CO"),
         },
@@ -80,7 +84,8 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
-      await cambiarEstadoUsuario(id, !estadoActual);
+      // Actualizar estado via PUT /api/admin/usuarios/:id
+      await actualizarUsuario(id, { idEstadoUsuario: estadoActual ? 2 : 1 });
       dispatch({ type: "TOGGLE_USER", payload: id });
       showToast(
         estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
