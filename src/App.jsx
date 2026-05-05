@@ -1,9 +1,11 @@
+// App.jsx
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
 
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
+import LandingPage     from "./components/LandingPage";  // ← NUEVO
 import Sidebar         from "./components/Sidebar";
 import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
@@ -58,26 +60,28 @@ export default function App() {
   const { toasts, showToast, remove } = useToast();
   const navigate = useNavigate();
 
+  // Sin sesión: landing, login y registro accesibles
   if (!user) {
     return (
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Login
-              onLogin={(data) => {
-                setUser(data);
-                navigate("/dashboard"); // ← CORRECCIÓN CLAVE
-              }}
-            />
-          }
-        />
-        <Route path="/Registro" element={<Registro />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Página principal pública */}
+        <Route path="/"         element={<LandingPage />} />
+        <Route path="/login"    element={
+          <Login
+            onLogin={(data) => {
+              setUser(data);
+              navigate("/dashboard");
+            }}
+          />
+        } />
+        <Route path="/registro" element={<Registro />} />
+        {/* Cualquier otra ruta redirige al landing */}
+        <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
+  // Con sesión: dashboard completo
   const shared = { state, dispatch, showToast, navigate };
 
   return (
@@ -107,8 +111,8 @@ export default function App() {
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
-            <Route path="/eco"         element={<ImpactoEco      state={state} />} />
-            <Route path="/perfil"      element={<Perfil          state={state} showToast={showToast} />} />
+            <Route path="/eco"    element={<ImpactoEco state={state} />} />
+            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} />} />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
