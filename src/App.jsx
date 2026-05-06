@@ -13,7 +13,7 @@ import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
-import Entregas        from "./components/Entregas";
+
 import ClasificadorIA  from "./components/ClasificadorIA";
 import Recompensas     from "./components/Recompensas";
 import MisPuntos       from "./components/MisPuntos";
@@ -71,23 +71,6 @@ export default function App() {
   const navigate = useNavigate();
 
 
-  // Sin sesión: landing, login y registro accesibles
-  if (!user) {
-    return (
-      <Routes>
-        {/* Página principal pública */}
-        <Route path="/"         element={<LandingPage />} />
-        <Route path="/login"    element={
-          <Login
-            onLogin={(data) => {
-              setUser(data);
-              navigate("/dashboard");
-            }}
-          />
-        } />
-        <Route path="/registro" element={<Registro />} />
-        {/* Cualquier otra ruta redirige al landing */}
-
   const handleLogin = (usuarioData) => {
     setUser(usuarioData);
     navigate("/dashboard");
@@ -106,18 +89,14 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/"         element={<Login    onLogin={handleLogin} />} />
-        <Route path="/Registro" element={<Registro />} />
-
-        <Route path="*"         element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
-
   // Con sesión: dashboard completo
-  const shared = { state, dispatch, showToast, navigate };
-
   const shared = { state, dispatch, showToast, navigate, user };
 
 
@@ -136,12 +115,12 @@ export default function App() {
             <Route path="/aliados"         element={<Aliados         {...shared} />} />
             <Route path="/encargados"      element={<Encargados      {...shared} />} />
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
-            <Route path="/entregas"        element={<Entregas        {...shared} />} />
+            
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
             <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
-            <Route path="/catalogos/estados-entregas"    element={<CatEstadosEntregas    {...shared} />} />
+            
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
             <Route path="/catalogos/estados-usuarios"    element={<CatEstadosUsuarios    {...shared} />} />
