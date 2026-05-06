@@ -1,32 +1,53 @@
 import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { iniciarSesion } from "../services/api";
+import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 
 function LoginForm({ onLogin }) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
 
-  const validar = () => {
+  const validar = async () => {
     if (correo.trim() === "" || contraseña.trim() === "") {
       setError("Todos los campos son obligatorios");
       return;
     }
-    if (!correo.includes("@") || !correo.includes(".com")) {
+    if (!correo.includes("@") || !correo.includes(".")) {
       setError("Correo electrónico inválido");
       return;
     }
     setError("");
-    onLogin({ correo });
+    setLoading(true);
+    try {
+      const data = await iniciarSesion(correo.trim(), contraseña);
+      onLogin(data.usuario);
+    } catch (err) {
+      setError(err.message || "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleKeyDown = (e) => { if (e.key === "Enter") validar(); };
 
   return (
     <div className="container-fluid">
       <div className="row min-vh-100">
 
-        <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
-          <img src="/src/assets/imagenes/eco.png" alt="EcoRecicla" className="img-fluid" />
-        </div>
+        <div
+          className="col-md-6 p-0"
+          style={{
+            backgroundImage: `url(${fondoReciclaje})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            minHeight: "100vh",
+          }}
+/>
 
         <div className="col-md-6 d-flex justify-content-center align-items-center">
           <div className="w-100 p-4 mx-auto">
@@ -54,6 +75,7 @@ function LoginForm({ onLogin }) {
                     placeholder="Ingresa tu correo electrónico"
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
               </li>
@@ -65,11 +87,18 @@ function LoginForm({ onLogin }) {
                   <input
                     className="form-control"
                     placeholder="Ingresa tu contraseña"
-                    type="password"
+                    type={showPass ? "text" : "password"}
                     value={contraseña}
                     onChange={(e) => setContraseña(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
-                  <span className="input-group-text"><i className="bi bi-eye"></i></span>
+                  <span
+                    className="input-group-text"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowPass(s => !s)}
+                  >
+                    <i className={`bi ${showPass ? "bi-eye-slash" : "bi-eye"}`}></i>
+                  </span>
                 </div>
               </li>
 
@@ -82,9 +111,16 @@ function LoginForm({ onLogin }) {
               </li>
 
               <div className="d-grid">
-                <button className="btn btn-success rounded-pill py-2" onClick={validar}>
-                  <i className="bi bi-leaf-fill me-2"></i>
-                  INICIAR SESIÓN
+                <button
+                  className="btn btn-success rounded-pill py-2"
+                  onClick={validar}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Entrando...</>
+                  ) : (
+                    <><i className="bi bi-leaf-fill me-2"></i>INICIAR SESIÓN</>
+                  )}
                 </button>
               </div>
 

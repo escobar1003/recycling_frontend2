@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
-import { MAT_CFG } from "../constants/data";
-import { getPuntos } from "../services/api";
+import { G, GL, MAT_CFG } from "../constants/data";
+import { getAliados } from "../services/api";
+
+const selStyle = {
+  width: "100%",
+  padding: "9px 12px",
+  border: "1px solid #e5e7eb",
+  borderRadius: 8,
+  fontSize: 13,
+  fontFamily: "inherit",
+  background: "#f9fafb",
+};
+
 
 export default function Entregas({ state, dispatch, showToast }) {
   const [modal, setModal] = useState(false);
@@ -12,7 +23,7 @@ export default function Entregas({ state, dispatch, showToast }) {
   const [puntoSeleccionado, setPuntoSeleccionado] = useState("");
 
   useEffect(() => {
-    getPuntos()
+    getAliados()
       .then(data => {
         setPuntos(data);
         if (data.length > 0) setPuntoSeleccionado(data[0].nombre);
