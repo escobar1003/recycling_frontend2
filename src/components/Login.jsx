@@ -1,328 +1,437 @@
-// src/components/Login.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { iniciarSesion } from "../services/api";
 import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 
-export default function Login({ onLogin }) {
+// ─────────────────────────────────────────────
+// FORMULARIO DE LOGIN
+// ─────────────────────────────────────────────
+function LoginForm({ onLogin }) {
+  const [correo, setCorreo]       = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [error, setError]         = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [showPass, setShowPass]   = useState(false);
+  const [remember, setRemember]   = useState(false);
   const navigate = useNavigate();
 
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [remember, setRemember] = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const validar = async (e) => {
+    // Soporta llamada desde form onSubmit o desde click en botón
+    if (e && e.preventDefault) e.preventDefault();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    if (!email || !password) {
-      setError("Por favor completa todos los campos.");
+    if (correo.trim() === "" || contraseña.trim() === "") {
+      setError("Todos los campos son obligatorios");
       return;
     }
+    if (!correo.includes("@") || !correo.includes(".")) {
+      setError("Correo electrónico inválido");
+      return;
+    }
+
+    setError("");
     setLoading(true);
     try {
-      const data = await iniciarSesion(email, password);
-      if (onLogin) onLogin(data);
+      const data = await iniciarSesion(correo.trim(), contraseña);
+      if (onLogin) onLogin(data.usuario ?? data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const handleKeyDown = (e) => { if (e.key === "Enter") validar(); };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#f4f8f4",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "'Nunito', 'Segoe UI', sans-serif",
-      padding: "16px",
-    }}>
-      <div className="shadow-lg" style={{
-        display: "flex",
-        borderRadius: 24,
-        overflow: "hidden",
-        width: "100%",
-        maxWidth: 900,
-        minHeight: 560,
-        background: "#fff",
-      }}>
+    <div className="container-fluid">
+      <div className="row min-vh-100">
 
-        {/* ── PANEL IZQUIERDO ── */}
-        <div className="d-none d-md-flex" style={{
-          flex: 1,
-          background: "#f0f7f0",
-          padding: "40px 36px 32px",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          minWidth: 0,
-        }}>
-          {/* Logo */}
-          <div className="d-flex align-items-center gap-2 mb-2">
-            <span style={{ fontSize: 32 }}>♻️</span>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#2d6a4f", lineHeight: 1 }}>
-                Recycling Points
-              </div>
-              <div style={{ fontSize: 12, color: "#74b190", fontWeight: 600 }}>
-                Recicla y gana
-              </div>
-            </div>
-          </div>
+        {/* ── PANEL IZQUIERDO: imagen de fondo ── */}
+        <div
+          className="col-md-6 p-0"
+          style={{
+            backgroundImage: `url(${fondoReciclaje})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            minHeight: "100vh",
+          }}
+        />
 
-          {/* Headline */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <h2 style={{ fontSize: 32, fontWeight: 900, color: "#1a3a24", lineHeight: 1.2, marginBottom: 12 }}>
-              Cada acción cuenta 🍃
-            </h2>
-            <p style={{ color: "#4a7a5a", fontSize: 15, fontWeight: 500, maxWidth: 260 }}>
-              Únete a la comunidad que cuida el planeta y gana recompensas.
-            </p>
+        {/* ── PANEL DERECHO: formulario ── */}
+        <div className="col-md-6 d-flex justify-content-center align-items-center">
+          <div className="w-100 p-4 mx-auto">
+            <form
+              className="bg-white text-dark p-4 rounded shadow-sm"
+              onSubmit={validar}
+              noValidate
+            >
+              <h1 className="text-center text-dark fw-bold fs-3">
+                ¡Bienvenido de nuevo! <i className="bi bi-leaf-fill text-success"></i>
+              </h1>
+              <h2 className="text-center fw-light text-success fs-6">
+                Inicia sesión para continuar reciclando y ganando
+              </h2>
 
-            {/* Imagen */}
-            <div style={{ display: "flex", justifyContent: "center", margin: "24px 0 16px" }}>
-              <img
-                src={fondoReciclaje}
-                alt="Ilustración de reciclaje"
-                style={{
-                  width: "100%",
-                  maxWidth: 280,
-                  objectFit: "contain",
-                  borderRadius: 16,
-                }}
-              />
-            </div>
+              <br />
 
-            {/* Stat */}
-            <div style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: "14px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              boxShadow: "0 2px 12px #2d6a4f18",
-            }}>
-              <div>
-                <div style={{ fontSize: 13, color: "#74b190", fontWeight: 700 }}>
-                  🍃 Juntos hemos reciclado
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#1a3a24" }}>
-                  12,540 kg{" "}
-                  <span style={{ fontSize: 14, color: "#4a7a5a", fontWeight: 600 }}>de residuos</span>
+              {error && (
+                <div className="alert alert-danger py-2 text-center">{error}</div>
+              )}
+
+              {/* Email */}
+              <div className="mb-3">
+                <label className="form-label">Correo electrónico</label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="bi bi-envelope"></i>
+                  </span>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="Ingresa tu correo electrónico"
+                    value={correo}
+                    onChange={(e) => setCorreo(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
                 </div>
               </div>
-              <span style={{ fontSize: 34 }}>🌍</span>
-            </div>
-          </div>
 
-          {/* Footer íconos */}
-          <div className="d-flex justify-content-between mt-3" style={{ gap: 8 }}>
-            {[
-              { icon: "🍃", text: "Reduce contaminación" },
-              { icon: "♻️", text: "Recicla responsable" },
-              { icon: "⭐", text: "Gana recompensas" },
-            ].map(f => (
-              <div key={f.text} style={{ textAlign: "center", flex: 1 }}>
-                <div style={{ fontSize: 22 }}>{f.icon}</div>
-                <div style={{ fontSize: 11, color: "#4a7a5a", fontWeight: 700, lineHeight: 1.3 }}>
-                  {f.text}
+              {/* Contraseña */}
+              <div className="mb-3">
+                <label className="form-label">Contraseña</label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="bi bi-lock"></i>
+                  </span>
+                  <input
+                    className="form-control"
+                    placeholder="Ingresa tu contraseña"
+                    type={showPass ? "text" : "password"}
+                    value={contraseña}
+                    onChange={(e) => setContraseña(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  <button
+                    type="button"
+                    className="input-group-text"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowPass((s) => !s)}
+                  >
+                    <i className={`bi ${showPass ? "bi-eye-slash" : "bi-eye"}`}></i>
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* ── PANEL DERECHO: FORMULARIO ── */}
-        <div style={{
-          flex: 1,
-          padding: "48px 40px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          background: "#fff",
-        }}>
-          <h3 style={{ fontSize: 26, fontWeight: 900, color: "#1a3a24", marginBottom: 6 }}>
-            ¡Bienvenido de nuevo! 🍃
-          </h3>
-          <p style={{ color: "#74b190", fontSize: 14, fontWeight: 600, marginBottom: 28 }}>
-            Inicia sesión para continuar reciclando y ganando
-          </p>
-
-          {error && (
-            <div className="alert alert-danger py-2" style={{ borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
-              ⚠️ {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {/* Email */}
-            <div className="mb-3">
-              <label className="form-label fw-bold" style={{ color: "#2d6a4f", fontSize: 14 }}>
-                Correo electrónico
-              </label>
-              <div className="input-group">
-                <span className="input-group-text" style={{
-                  borderTop: "2px solid #c3e8d0",
-                  borderBottom: "2px solid #c3e8d0",
-                  borderLeft: "2px solid #c3e8d0",
-                  borderRight: "none",
-                  background: "#f9fdfb",
-                  borderRadius: "10px 0 0 10px",
-                }}>
-                  ✉️
-                </span>
-                <input
-                  type="email"
-                  className="form-control"
-                  placeholder="Ingresa tu correo electrónico"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  style={{
-                    borderTop: "2px solid #c3e8d0",
-                    borderBottom: "2px solid #c3e8d0",
-                    borderLeft: "none",
-                    borderRight: "none",
-                    borderRadius: "0 10px 10px 0",
-                    fontWeight: 600,
-                    fontSize: 14,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Contraseña */}
-            <div className="mb-3">
-              <label className="form-label fw-bold" style={{ color: "#2d6a4f", fontSize: 14 }}>
-                Contraseña
-              </label>
-              <div className="input-group">
-                <span className="input-group-text" style={{
-                  borderTop: "2px solid #c3e8d0",
-                  borderBottom: "2px solid #c3e8d0",
-                  borderLeft: "2px solid #c3e8d0",
-                  borderRight: "none",
-                  background: "#f9fdfb",
-                  borderRadius: "10px 0 0 10px",
-                }}>
-                  🔒
-                </span>
-                <input
-                  type={showPass ? "text" : "password"}
-                  className="form-control"
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  style={{
-                    borderTop: "2px solid #c3e8d0",
-                    borderBottom: "2px solid #c3e8d0",
-                    borderLeft: "none",
-                    borderRight: "none",
-                    fontWeight: 600,
-                    fontSize: 14,
-                  }}
-                />
+              {/* Recordarme + ¿Olvidaste? */}
+              <div className="mb-3 d-flex justify-content-between align-items-center">
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="remember"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="remember">
+                    Recordarme
+                  </label>
+                </div>
                 <button
                   type="button"
-                  className="input-group-text"
-                  onClick={() => setShowPass(v => !v)}
-                  style={{
-                    borderTop: "2px solid #c3e8d0",
-                    borderBottom: "2px solid #c3e8d0",
-                    borderRight: "2px solid #c3e8d0",
-                    borderLeft: "none",
-                    background: "#f9fdfb",
-                    cursor: "pointer",
-                    borderRadius: "0 10px 10px 0",
-                  }}
+                  className="btn btn-link p-0 text-success small text-decoration-none"
+                  onClick={() => navigate("/forgot")}
                 >
-                  {showPass ? "🙈" : "👁️"}
+                  ¿Olvidaste tu contraseña?
                 </button>
               </div>
-            </div>
 
-            {/* Recordarme + ¿Olvidaste? */}
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="remember"
-                  checked={remember}
-                  onChange={e => setRemember(e.target.checked)}
-                  style={{ accentColor: "#2d6a4f" }}
-                />
-                <label className="form-check-label" htmlFor="remember"
-                  style={{ color: "#4a7a5a", fontWeight: 600, fontSize: 14 }}>
-                  Recordarme
-                </label>
+              {/* Botón iniciar sesión */}
+              <div className="d-grid">
+                <button
+                  type="submit"
+                  className="btn btn-success rounded-pill py-2"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Entrando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-leaf-fill me-2"></i>INICIAR SESIÓN
+                    </>
+                  )}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => navigate("/forgot")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  color: "#2d6a4f",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </div>
+              <div className="d-flex align-items-center my-3">
+                <div className="flex-grow-1 border-top"></div>
+                <span className="px-3 text-secondary small">o continúa con</span>
+                <div className="flex-grow-1 border-top"></div>
+              </div>
 
-            {/* Botón iniciar sesión */}
-            <button
-              type="submit"
-              className="btn w-100 fw-bold text-white"
-              disabled={loading}
-              style={{
-                background: loading ? "#74b190" : "linear-gradient(135deg, #2d6a4f, #1a3a24)",
-                border: "none",
-                borderRadius: 12,
-                padding: "13px",
-                fontSize: 16,
-                letterSpacing: ".3px",
-                boxShadow: "0 4px 16px #2d6a4f44",
-                transition: "opacity .2s",
-              }}
-            >
-              {loading ? "Iniciando sesión..." : "🍃 Iniciar sesión"}
-            </button>
-          </form>
+              <div className="d-flex justify-content-center gap-3">
+                <button type="button" className="btn btn-light border rounded-pill px-4">
+                  <i className="bi bi-google me-2 text-danger"></i>Google
+                </button>
+                <button type="button" className="btn btn-light border rounded-pill px-4">
+                  <i className="bi bi-facebook me-2 text-primary"></i>Facebook
+                </button>
+              </div>
 
-          <p className="text-center mt-4 mb-0" style={{ color: "#9ab5a0", fontSize: 14, fontWeight: 600 }}>
-            ¿No tienes cuenta?{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/Registro")}
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                color: "#2d6a4f",
-                fontWeight: 800,
-                fontSize: 14,
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
-            >
-              Regístrate aquí
-            </button>
-          </p>
+              <br />
+
+              <div className="text-center">
+                <span className="text-secondary">¿No tienes cuenta?</span>{" "}
+                <button
+                  type="button"
+                  className="btn btn-link p-0 fw-bold text-success text-decoration-none"
+                  onClick={() => navigate("/Registro")}
+                >
+                  Regístrate aquí
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
       </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// FORMULARIO DE REGISTRO
+// ─────────────────────────────────────────────
+function RegistroForm() {
+  const [nombre, setNombre]       = useState("");
+  const [usuario, setUsuario]     = useState("");
+  const [correo, setCorreo]       = useState("");
+  const [password, setPassword]   = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [terminos, setTerminos]   = useState(false);
+  const [origen, setOrigen]       = useState("");
+  const [error, setError]         = useState("");
+  const navigate = useNavigate();
+
+  const validar = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setError("");
+
+    if (nombre.trim() === "")   return setError("Nombre requerido");
+    if (usuario.trim() === "")  return setError("Usuario requerido");
+    if (correo.trim() === "")   return setError("Correo requerido");
+    if (password.trim() === "") return setError("Contraseña requerida");
+    if (confirmar.trim() === "") return setError("Confirmación requerida");
+    if (!correo.includes("@") || !correo.includes(".com")) return setError("Correo inválido");
+    if (password !== confirmar) return setError("Las contraseñas no coinciden");
+    if (!terminos)              return setError("Debes aceptar términos y condiciones");
+    if (origen.trim() === "")   return setError("Selecciona cómo te enteraste de nosotros");
+
+    alert("¡Cuenta creada correctamente!");
+    navigate("/");
+  };
+
+  return (
+    <div className="container-fluid">
+      <div className="row min-vh-100">
+
+        {/* ── PANEL IZQUIERDO: imagen ── */}
+        <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
+          <img src="/src/assets/imagenes/eco.png" alt="EcoRecicla" className="img-fluid" />
+        </div>
+
+        {/* ── PANEL DERECHO: formulario ── */}
+        <div className="col-md-6 d-flex justify-content-center align-items-center">
+          <div className="w-100 p-4">
+
+            <form
+              className="bg-white text-dark p-3 rounded"
+              onSubmit={validar}
+              noValidate
+            >
+              {/* Ícono superior */}
+              <div className="text-center mb-2">
+                <div className="d-inline-flex justify-content-center align-items-center rounded-circle bg-success bg-opacity-10 p-4">
+                  <i className="bi bi-person fs-2 text-success"></i>
+                </div>
+                <div><i className="bi bi-leaf-fill text-success"></i></div>
+              </div>
+
+              <h1 className="text-center text-dark">Crear cuenta</h1>
+              <h2 className="text-center fw-light text-success fs-5">Es rápido y fácil</h2>
+
+              <br />
+
+              {error && (
+                <div className="alert alert-danger py-2 text-center">{error}</div>
+              )}
+
+              {/* Nombre + Usuario */}
+              <div className="d-flex justify-content-center gap-2">
+                <div className="mb-2 w-50">
+                  <label className="form-label text-dark">Nombre completo</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-person"></i></span>
+                    <input
+                      className="form-control"
+                      placeholder="Ingresa tu nombre completo"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="mb-2 w-50">
+                  <label className="form-label text-dark">Nombre de usuario</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-at"></i></span>
+                    <input
+                      className="form-control"
+                      placeholder="Elige tu nombre de usuario"
+                      value={usuario}
+                      onChange={(e) => setUsuario(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Correo */}
+              <div className="mb-2">
+                <label className="form-label text-dark">Correo electrónico</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-envelope"></i></span>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="Correo electrónico"
+                    value={correo}
+                    onChange={(e) => setCorreo(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Contraseña + Confirmar */}
+              <div className="d-flex justify-content-center gap-2">
+                <div className="mb-2 w-50">
+                  <label className="form-label text-dark">Contraseña</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-lock"></i></span>
+                    <input
+                      className="form-control"
+                      placeholder="Crea una contraseña"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="mb-2 w-50">
+                  <label className="form-label text-dark">Confirmar contraseña</label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-lock"></i></span>
+                    <input
+                      className="form-control"
+                      placeholder="Confirma tu contraseña"
+                      type="password"
+                      value={confirmar}
+                      onChange={(e) => setConfirmar(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ¿Cómo te enteraste? */}
+              <div className="mb-2">
+                <label className="form-label text-dark">¿Cómo te enteraste de nosotros?</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-globe"></i></span>
+                  <select
+                    className="form-select"
+                    value={origen}
+                    onChange={(e) => setOrigen(e.target.value)}
+                  >
+                    <option value="">Selecciona una opción</option>
+                    <option value="redes">Redes sociales</option>
+                    <option value="amigo">Amigo o familiar</option>
+                    <option value="google">Google</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Términos */}
+              <div className="mb-3">
+                <input
+                  className="form-check-input me-2"
+                  type="checkbox"
+                  id="terminos"
+                  checked={terminos}
+                  onChange={(e) => setTerminos(e.target.checked)}
+                />
+                <label className="text-dark" htmlFor="terminos">
+                  Acepto los términos y condiciones y la política de privacidad
+                </label>
+              </div>
+
+              {/* Botón crear cuenta */}
+              <div className="d-flex flex-column align-items-center">
+                <button
+                  type="submit"
+                  className="btn btn-warning text-white rounded-pill px-5 py-2 w-50"
+                >
+                  CREAR CUENTA <i className="bi bi-leaf-fill ms-2 text-white"></i>
+                </button>
+              </div>
+            </form>
+
+            <div className="d-flex align-items-center my-3 w-100">
+              <div className="flex-grow-1 border-top border-2 border-dark"></div>
+              <span className="px-3 fw-semibold text-dark">O continúa con</span>
+              <div className="flex-grow-1 border-top border-2 border-dark"></div>
+            </div>
+
+            <div className="d-flex justify-content-center align-items-center gap-3">
+              <button type="button" className="btn btn-light text-dark rounded-pill px-4 py-2">
+                <i className="bi bi-google me-2 text-danger"></i>Google
+              </button>
+              <button type="button" className="btn btn-light text-dark rounded-pill px-4 py-2">
+                <i className="bi bi-facebook me-2 text-primary"></i>Facebook
+              </button>
+            </div>
+
+            <br />
+
+            <div className="d-flex justify-content-center align-items-center gap-2">
+              <span className="fw-light text-secondary">¿Ya tienes cuenta?</span>
+              <button
+                type="button"
+                className="btn btn-link p-0 fw-bold text-success text-decoration-none"
+                onClick={() => navigate("/")}
+              >
+                Inicia sesión
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// EXPORT PRINCIPAL
+// ─────────────────────────────────────────────
+export default function Login({ onLogin }) {
+  return (
+    <Routes>
+      <Route path="/"         element={<LoginForm onLogin={onLogin} />} />
+      <Route path="/Registro" element={<RegistroForm />} />
+      <Route path="*"         element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

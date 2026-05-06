@@ -157,7 +157,7 @@ export default function VistaMateriales() {
                   <th>Tipo residuo</th>
                   <th>Descripcion</th>
                   <th>Color caneca</th>
-                  <th>Puntos/kg</th>
+                  <th>Puntos/kg & Mín.</th>
                   <th>Estado</th>
                   <th>Supermercado</th>
                   <th>Acciones</th>
@@ -181,8 +181,14 @@ export default function VistaMateriales() {
                         ? <><i className="bi bi-geo-alt-fill text-success me-1"></i>{m.colorCaneca}</>
                         : "—"}
                     </td>
-                    <td className="align-middle fw-bold text-success">
-                      <i className="bi bi-star-fill text-warning me-1"></i>{m.puntosPorKg}
+                    <td className="align-middle">
+                      <div className="fw-bold text-success">
+                        <i className="bi bi-star-fill text-warning me-1"></i>{m.puntosPorKg}
+                      </div>
+                      <div className="small text-muted">
+                        <i className="bi bi-box-seam me-1"></i>
+                        {m.kilosMinimos ? `${m.kilosMinimos} kg mín.` : "Sin mín."}
+                      </div>
                     </td>
                     <td className="align-middle">
                       {m.idEstadoMaterial === 1
