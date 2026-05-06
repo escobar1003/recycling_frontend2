@@ -4,12 +4,10 @@
 const BASE_URL = 'http://localhost:3333';
 
 // Token en memoria (se asigna tras login o registro)
-let _token = null;
-
-export function setToken(t)  { _token = t; }
+let _token = localStorage.getItem("token") || null;
+export function setToken(t)  { _token = t; localStorage.setItem("token", t); }
 export function getToken()   { return _token; }
-export function clearToken() { _token = null; }
-
+export function clearToken() { _token = null; localStorage.removeItem("token"); }
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (_token) headers['Authorization'] = `Bearer ${_token}`;
@@ -246,3 +244,9 @@ export async function getRecompensa(id)               { return request(`/api/adm
 export async function crearRecompensa(datos)          { return request('/api/admin/recompensas', { method: 'POST', body: JSON.stringify(datos) }); }
 export async function actualizarRecompensa(id, datos) { return request(`/api/admin/recompensas/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
 export async function eliminarRecompensa(id)          { return request(`/api/admin/recompensas/${id}`, { method: 'DELETE' }); }
+
+// ── Roles ─────────────────────────────────────────────────────
+export async function getRoles()                { return request('/api/admin/roles'); }
+export async function crearRol(datos)           { return request('/api/admin/roles', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarRol(id, datos)  { return request(`/api/admin/roles/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarRol(id)           { return request(`/api/admin/roles/${id}`, { method: 'DELETE' }); }

@@ -6,7 +6,7 @@ import { getAliados } from "../services/api";
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
   nombreEntidad: "", rol: "Afiliado",
-  zona: "", puntoAsignado: "", activo: true,
+  zona: "", activo: true,
 };
 
 export default function Aliados({ state, dispatch, showToast }) {
@@ -44,7 +44,6 @@ export default function Aliados({ state, dispatch, showToast }) {
         telefono:      form.telefono.trim(),
         rol:           "Afiliado",
         zona:          form.zona,
-        puntoAsignado: form.puntoAsignado,
         pts:           0,
         activo:        form.activo,
         av:            initials,
@@ -244,19 +243,7 @@ export default function Aliados({ state, dispatch, showToast }) {
                     </select>
                   </div>
 
-                  <div className="col-12">
-                    <label className="form-label small fw-semibold text-dark">
-                      <i className="bi bi-pin-map me-1 text-secondary"></i>Punto asignado
-                    </label>
-                    <select
-                      value={form.puntoAsignado}
-                      onChange={e => set("puntoAsignado", e.target.value)}
-                      className="form-select form-select-sm rounded-3"
-                    >
-                      <option value="">Sin asignar</option>
-                      {ALL_POINTS.map(p => <option key={p.id}>{p.name}</option>)}
-                    </select>
-                  </div>
+                  
 
                   <div className="col-12">
                     <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border">

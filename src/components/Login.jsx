@@ -5,6 +5,9 @@
 import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { iniciarSesion } from "../services/api";
+import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -42,6 +45,7 @@ export default function Login({ onLogin }) {
   }
 
   return (
+
     <div style={{
       minHeight: "100vh", background: "#f4f8f4",
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -65,6 +69,52 @@ export default function Login({ onLogin }) {
               <div style={{ fontSize: 12, color: "#74b190", fontWeight: 600 }}>Recicla y gana</div>
             </div>
           </div>
+
+    <div className="container-fluid">
+      <div className="row min-vh-100">
+
+        <div
+          className="col-md-6 p-0"
+          style={{
+            backgroundImage: `url(${fondoReciclaje})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            minHeight: "100vh",
+          }}
+/>
+
+        <div className="col-md-6 d-flex justify-content-center align-items-center">
+          <div className="w-100 p-4 mx-auto">
+            <ul className="bg-white text-dark p-4 rounded shadow-sm list-unstyled">
+
+              <h1 className="text-center text-dark fw-bold fs-3">
+                ¡Bienvenido de nuevo! <i className="bi bi-leaf-fill text-success"></i>
+              </h1>
+              <h2 className="text-center fw-light text-success fs-6">
+                iniciar sesion para continuar reciclando y ganando
+              </h2>
+
+              <br />
+
+              {error && (
+                <div className="alert alert-danger py-2 text-center">{error}</div>
+              )}
+
+              <li className="mb-3">
+                <label className="form-label">Correo electrónico</label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="bi bi-envelope"></i></span>
+                  <input
+                    className="form-control"
+                    placeholder="Ingresa tu correo electrónico"
+                    value={correo}
+                    onChange={(e) => setCorreo(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              </li>
+
 
           {/* Headline */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
