@@ -246,3 +246,9 @@ export async function getRecompensa(id)               { return request(`/api/adm
 export async function crearRecompensa(datos)          { return request('/api/admin/recompensas', { method: 'POST', body: JSON.stringify(datos) }); }
 export async function actualizarRecompensa(id, datos) { return request(`/api/admin/recompensas/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
 export async function eliminarRecompensa(id)          { return request(`/api/admin/recompensas/${id}`, { method: 'DELETE' }); }
+
+// ── Roles ─────────────────────────────────────────────────────
+export async function getRoles()                { return request('/api/admin/roles'); }
+export async function crearRol(datos)           { return request('/api/admin/roles', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarRol(id, datos)  { return request(`/api/admin/roles/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarRol(id)           { return request(`/api/admin/roles/${id}`, { method: 'DELETE' }); }
