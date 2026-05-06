@@ -3,6 +3,7 @@ import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
+import ForgotPassword from './components/RecuperarContraseña';
 
 import "./styles/panel.css";
 import Login           from "./components/Login";
@@ -64,11 +65,10 @@ function useToast() {
 }
 
 export default function App() {
-  // user = objeto { idUsuario, nombre, correo, rol, ... } que devuelve el backend
-  const [user, setUser] = useState(null);
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [user, setUser]         = useState(null);
+  const [state, dispatch]       = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
-  const navigate = useNavigate();
+  const navigate                = useNavigate();
 
 
   const handleLogin = (usuarioData) => {
@@ -86,9 +86,14 @@ export default function App() {
     navigate("/");
   };
 
+  // ── Rutas públicas (sin sesión) ──────────────────────────────────────
   if (!user) {
     return (
       <Routes>
+        <Route path="/"         element={<Login onLogin={handleLogin} />} />
+        <Route path="/Registro" element={<Registro />} />
+        <Route path="/forgot"   element={<ForgotPassword />} />
+        <Route path="*"         element={<Navigate to="/" replace />} />
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -99,6 +104,7 @@ export default function App() {
   // Con sesión: dashboard completo
   const shared = { state, dispatch, showToast, navigate, user };
 
+  // ── Rutas privadas (con sesión) ──────────────────────────────────────
 
   return (
     <div className="app-shell">
