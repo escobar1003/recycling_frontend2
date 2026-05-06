@@ -1,7 +1,6 @@
 // src/components/catalogos/CrudCatalogo.jsx
 // Componente base reutilizable para todos los catálogos CRUD
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 /**
  * Props:
  * - titulo: string — nombre del catálogo (ej: "Roles")
@@ -23,6 +22,9 @@ export default function CrudCatalogo({
     campos.reduce((acc, c) => ({ ...acc, [c.key]: "" }), {});
 
   const [datos, setDatos]           = useState(datosIniciales);
+  useEffect(() => {
+  setDatos(datosIniciales);
+}, [datosIniciales]);
   const [form, setForm]             = useState(campoVacio());
   const [editandoId, setEditandoId] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -50,34 +52,27 @@ export default function CrudCatalogo({
   };
 
   // ── Guardar (crear o editar) ─────────────────────────────────────────────
-  const guardar = () => {
-    if (!validar()) return;
-    if (editandoId !== null) {
-      const actualizado = datos.map(d =>
-        d.id === editandoId ? { ...d, ...form } : d
-      );
-      setDatos(actualizado);
-      onGuardar?.({ ...form, id: editandoId });
-    } else {
-      const nuevo = { ...form, id: Date.now() };
-      setDatos(prev => [...prev, nuevo]);
-      onGuardar?.(nuevo);
-    }
-    cancelar();
-  };
+const guardar = async () => {
+  if (!validar()) return;
+  if (editandoId !== null) {
+    await onGuardar?.({ ...form, id: editandoId });
+  } else {
+    await onGuardar?.(form);
+  }
+  cancelar();
+};
 
   // ── Editar ───────────────────────────────────────────────────────────────
   const editar = item => {
     setForm(campos.reduce((acc, c) => ({ ...acc, [c.key]: item[c.key] ?? "" }), {}));
-    setEditandoId(item.id);
+    setEditandoId(item.idRol ?? item.id);
     setMostrarForm(true);
     setError("");
   };
 
   // ── Eliminar ─────────────────────────────────────────────────────────────
-  const eliminar = id => {
-    setDatos(prev => prev.filter(d => d.id !== id));
-    onEliminar?.(id);
+  const eliminar = async id => {
+    await onEliminar?.(id);
     setConfirmDelete(null);
   };
 
@@ -225,7 +220,7 @@ export default function CrudCatalogo({
                 </tr>
               ) : (
                 datosFiltrados.map((item, idx) => (
-                  <tr key={item.id}>
+                  <tr key={item.idRol ?? item.id ?? item.nombre}>
                     <td className="ps-4 text-muted small">{idx + 1}</td>
                     {campos.map(c => (
                       <td key={c.key} className="small fw-semibold">{item[c.key] ?? "—"}</td>
@@ -241,7 +236,7 @@ export default function CrudCatalogo({
                         </button>
                         <button
                           className="btn btn-outline-danger btn-sm rounded-3"
-                          onClick={() => setConfirmDelete(item.id)}
+                          onClick={() => setConfirmDelete(item.idRol ?? item.id)}
                           title="Eliminar"
                         >
                           <i className="bi bi-trash-fill" />

@@ -98,14 +98,6 @@ export default function Administradores({ state, dispatch, showToast }) {
         </button>
       </div>
 
-      {/* ── Aviso ── */}
-      <div className="d-flex align-items-center gap-2 rounded-3 border border-success p-3 mb-4 bg-white">
-        <i className="bi bi-info-circle text-success"></i>
-        <span className="small text-secondary">
-          Los administradores tienen acceso total al sistema. Otorga este rol solo a personas de confianza.
-        </span>
-      </div>
-
       {/* ── Buscador ── */}
       <div className="mb-3">
         <div className="input-group input-group-sm" style={{ maxWidth: 380 }}>
