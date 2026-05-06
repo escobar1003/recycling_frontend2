@@ -1,139 +1,297 @@
+// Dashboard.jsx
+import { useEffect, useRef } from "react";
+import { Chart, registerables } from "chart.js";
 import { CHART_DATA } from "../constants/data";
+
+Chart.register(...registerables);
+
+const BAR_DATA = [
+  { label: "1 may", val: 30 },
+  { label: "2 may", val: 28 },
+  { label: "3 may", val: 33 },
+  { label: "4 may", val: 27 },
+  { label: "5 may", val: 18.3, hi: true },
+  { label: "6 may", val: 32 },
+  { label: "7 may", val: 26 },
+];
 
 export default function Dashboard({ state }) {
   const totalKg = state.entregas.reduce((a, e) => a + e.peso, 0);
-  const max = Math.max(...CHART_DATA.map(d => d.val));
+  const barRef = useRef(null);
+  const pieRef = useRef(null);
+  const barChartRef = useRef(null);
+  const pieChartRef = useRef(null);
+
+  useEffect(() => {
+    if (!barRef.current || !pieRef.current) return;
+
+    if (barChartRef.current) barChartRef.current.destroy();
+    barChartRef.current = new Chart(barRef.current, {
+      type: "bar",
+      data: {
+        labels: BAR_DATA.map(d => d.label),
+        datasets: [{
+          data: BAR_DATA.map(d => d.val),
+          backgroundColor: BAR_DATA.map(d => d.hi ? "#ca8a04" : "#c8e6c0"),
+          hoverBackgroundColor: BAR_DATA.map(d => d.hi ? "#a16207" : "#a5d6a7"),
+          borderRadius: 4,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(255,255,255,0.95)",
+            titleColor: "#111",
+            bodyColor: "#555",
+            borderColor: "#e5e7eb",
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: ctx => {
+                const kg = ctx.raw;
+                const pts = Math.round(kg * 40);
+                return [`${kg} kg`, `+${pts} pts`];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 }, color: "#888", autoSkip: false, maxRotation: 0 },
+            border: { display: false }
+          },
+          y: {
+            grid: { color: "rgba(0,0,0,0.06)" },
+            ticks: { font: { size: 11 }, color: "#888", stepSize: 15 },
+            border: { display: false },
+            min: 0,
+            max: 75
+          }
+        }
+      }
+    });
+
+    const nuevos = state.entregas.filter(e => e.esNuevo).length;
+    const recurrentes = state.entregas.length - nuevos;
+
+    if (pieChartRef.current) pieChartRef.current.destroy();
+    pieChartRef.current = new Chart(pieRef.current, {
+      type: "pie",
+      data: {
+        labels: ["Nuevos", "Recurrentes"],
+        datasets: [{
+          data: [nuevos || 39, recurrentes || 61],
+          backgroundColor: ["#16a34a", "#ca8a04"],
+          hoverBackgroundColor: ["#15803d", "#a16207"],
+          borderWidth: 2,
+          borderColor: "#fff",
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(255,255,255,0.95)",
+            titleColor: "#111",
+            bodyColor: "#555",
+            borderColor: "#e5e7eb",
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.raw}%`
+            }
+          }
+        },
+        layout: { padding: 10 }
+      },
+      plugins: [{
+        id: "pctLabels",
+        afterDraw(chart) {
+          const { ctx, data } = chart;
+          chart.getDatasetMeta(0).data.forEach((arc, i) => {
+            const val = data.datasets[0].data[i];
+            const angle = (arc.startAngle + arc.endAngle) / 2;
+            const r = (arc.innerRadius + arc.outerRadius) / 2 + 10;
+            ctx.save();
+            ctx.fillStyle = "#fff";
+            ctx.font = "500 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(
+              val + "%",
+              arc.x + Math.cos(angle) * r,
+              arc.y + Math.sin(angle) * r
+            );
+            ctx.restore();
+          });
+        }
+      }]
+    });
+
+    return () => {
+      barChartRef.current?.destroy();
+      pieChartRef.current?.destroy();
+    };
+  }, [state]);
 
   return (
     <div className="row g-3">
 
-      {/* Resumen reciclaje */}
+      {/* ── Métricas principales ── */}
+      <div className="col-6 col-md-3">
+        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #16a34a" }}>
+          <div className="card-body">
+            <div className="text-muted small mb-1">
+              <i className="bi bi-people-fill me-1" style={{ color: "#16a34a" }}></i>Total usuarios
+            </div>
+            <div className="fw-bold fs-3" style={{ color: "#111" }}>
+              {(state.usuarios?.length ?? 0).toLocaleString()}
+            </div>
+            <div className="small mt-1" style={{ color: "#16a34a" }}>
+              <i className="bi bi-arrow-up me-1"></i>8% este mes
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-6 col-md-3">
+        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #2563eb" }}>
+          <div className="card-body">
+            <div className="text-muted small mb-1">
+              <i className="bi bi-recycle me-1" style={{ color: "#2563eb" }}></i>Total kg reciclados
+            </div>
+            <div className="fw-bold fs-3" style={{ color: "#111" }}>{totalKg.toFixed(1)} kg</div>
+            <div className="small mt-1" style={{ color: "#2563eb" }}>
+              <i className="bi bi-arrow-up me-1"></i>12% vs mes anterior
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-6 col-md-3">
+        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #ca8a04" }}>
+          <div className="card-body">
+            <div className="text-muted small mb-1">
+              <i className="bi bi-star-fill me-1" style={{ color: "#ca8a04" }}></i>Puntos acumulados
+            </div>
+            <div className="fw-bold fs-3" style={{ color: "#111" }}>
+              {state.pts.toLocaleString()}
+            </div>
+            <div className="text-muted small mt-1">Total plataforma</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-6 col-md-3">
+        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #7c3aed" }}>
+          <div className="card-body">
+            <div className="text-muted small mb-1">
+              <i className="bi bi-box-seam-fill me-1" style={{ color: "#7c3aed" }}></i>Total entregas
+            </div>
+            <div className="fw-bold fs-3" style={{ color: "#111" }}>{state.entregas.length}</div>
+            <div className="small mt-1" style={{ color: "#7c3aed" }}>
+              <i className="bi bi-arrow-up me-1"></i>5% este mes
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Gráfica de barras ── */}
       <div className="col-md-6">
         <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #16a34a" }}>
           <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
               <span className="fw-bold text-dark">
                 <i className="bi bi-recycle me-1" style={{ color: "#16a34a" }}></i>Resumen de reciclaje
               </span>
-              <span className="badge rounded-pill fw-normal" style={{ background: "#f3f4f6", color: "#111111", fontSize: 11 }}>
+              <span className="badge rounded-pill fw-normal" style={{ background: "#f3f4f6", color: "#111", fontSize: 11 }}>
                 <i className="bi bi-calendar3 me-1"></i>Este mes
               </span>
             </div>
-
             <div className="row g-2 mb-3">
               <div className="col-6">
                 <div className="text-muted small mb-1">Total reciclado</div>
-                <div className="fw-bold fs-3 lh-1" style={{ color: "#111111" }}>{totalKg.toFixed(1)} kg</div>
+                <div className="fw-bold fs-3 lh-1" style={{ color: "#111" }}>{totalKg.toFixed(1)} kg</div>
                 <div className="small mt-1" style={{ color: "#16a34a" }}>
                   <i className="bi bi-arrow-up me-1"></i>12% vs mes anterior
                 </div>
               </div>
               <div className="col-6">
                 <div className="text-muted small mb-1">Puntos acumulados</div>
-                <div className="fw-bold fs-3 lh-1" style={{ color: "#111111" }}>
+                <div className="fw-bold fs-3 lh-1" style={{ color: "#111" }}>
                   {state.pts.toLocaleString()} <i className="bi bi-star-fill" style={{ color: "#facc15" }}></i>
                 </div>
                 <div className="text-muted small mt-1">Disponibles</div>
               </div>
             </div>
-
-            {/* Mini gráfica */}
-            <div className="d-flex align-items-end gap-2 mb-1" style={{ height: 100 }}>
-              {CHART_DATA.map((d, i) => (
-                <div key={i} className="flex-fill d-flex flex-column align-items-center gap-1">
-                  {d.hi && (
-                    <span className="badge" style={{ background: "#facc15", color: "#111111", fontSize: 9 }}>
-                      {d.val}kg
-                    </span>
-                  )}
-                  <div
-                    className="w-100 rounded-top"
-                    style={{
-                      height: Math.max(4, Math.round((d.val / max) * 70)),
-                      background: d.hi ? "#facc15" : "#dcfce7",
-                    }}
-                  />
-                </div>
-              ))}
+            <div style={{ position: "relative", height: 160 }}>
+              <canvas ref={barRef}></canvas>
             </div>
-            <div className="d-flex">
-              {CHART_DATA.map((d, i) => (
-                <div key={i} className="flex-fill text-center text-muted" style={{ fontSize: 9 }}>{d.label}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Entregas recientes */}
-      <div className="col-md-6">
-        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #facc15" }}>
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <span className="fw-bold text-dark">
-                <i className="bi bi-box-seam me-1" style={{ color: "#16a34a" }}></i>Entregas recientes
+            <div className="d-flex gap-3 mt-2" style={{ fontSize: 11, color: "#6b7280" }}>
+              <span>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#c8e6c0", marginRight: 4 }}></span>
+                Día normal
+              </span>
+              <span>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#ca8a04", marginRight: 4 }}></span>
+                Día destacado
               </span>
             </div>
-            {state.entregas.length === 0 ? (
-              <div className="text-center text-muted py-4">
-                <i className="bi bi-inbox fs-2 d-block mb-2"></i>
-                <span className="small">No hay entregas registradas</span>
-              </div>
-            ) : state.entregas.slice(0, 4).map(e => (
-              <div key={e.id} className="d-flex align-items-center gap-2 py-2 border-bottom">
-                <div
-                  className="rounded d-flex align-items-center justify-content-center flex-shrink-0 p-2"
-                  style={{ background: "#f0fdf4" }}
-                >
-                  <i className={`bi ${e.icon} fs-5`} style={{ color: "#16a34a" }}></i>
-                </div>
-                <div className="flex-fill">
-                  <div className="fw-semibold small">{e.material}</div>
-                  <div className="text-muted" style={{ fontSize: 11 }}>{e.punto}</div>
-                </div>
-                <div className="text-end flex-shrink-0">
-                  <div className="fw-bold small">{e.peso} kg</div>
-                  <div className="fw-bold small" style={{ color: "#16a34a" }}>+{e.pts} pts</div>
-                  <span
-                    className="badge rounded-pill"
-                    style={{
-                      fontSize: 10,
-                      background: e.estado === "Validada" ? "#16a34a" : "#f3f4f6",
-                      color: e.estado === "Validada" ? "#fff" : "#6b7280",
-                    }}
-                  >
-                    {e.estado}
-                  </span>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      {/* Impacto ambiental */}
+      {/* ── Gráfica de pie ── */}
+      <div className="col-md-6">
+        <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #ca8a04" }}>
+          <div className="card-body">
+            <div className="fw-bold mb-3 text-dark">
+              <i className="bi bi-pie-chart-fill me-1" style={{ color: "#ca8a04" }}></i>Usuarios nuevos vs recurrentes
+            </div>
+            <div style={{ position: "relative", height: 200 }}>
+              <canvas ref={pieRef}></canvas>
+            </div>
+            <div className="d-flex justify-content-center gap-4 mt-3" style={{ fontSize: 12, color: "#6b7280" }}>
+              <span>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#16a34a", marginRight: 4 }}></span>
+                Nuevos 39%
+              </span>
+              <span>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#ca8a04", marginRight: 4 }}></span>
+                Recurrentes 61%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Impacto ambiental ── */}
       <div className="col-md-6">
         <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #16a34a" }}>
           <div className="card-body">
             <div className="fw-bold mb-3 text-dark">
-              <i className="bi bi-tree me-1" style={{ color: "#16a34a" }}></i>Impacto ambiental
+              <i className="bi bi-tree-fill me-1" style={{ color: "#16a34a" }}></i>Impacto ambiental
             </div>
             {[
-              ["bi-tree-fill",    "CO2 evitado",         "8.4 kg",                   "aprox. 1.2 arboles"],
-              ["bi-droplet-fill", "Agua ahorrada",       "120 L",                    "Este mes"],
-              ["bi-recycle",      "Residuos reciclados", `${totalKg.toFixed(1)} kg`, "Este mes"],
-            ].map(([ic, lb, v, s], i) => (
+              ["bi-tree-fill",    "CO₂ evitado",         "320 kg",                   "~42 árboles equiv.", "#16a34a"],
+              ["bi-droplet-fill", "Agua ahorrada",       "6,200 L",                  "Este mes",           "#2563eb"],
+              ["bi-recycle",      "Residuos reciclados", `${totalKg.toFixed(1)} kg`, "Este mes",           "#7c3aed"],
+            ].map(([ic, lb, v, s, color], i) => (
               <div key={i} className="d-flex align-items-center gap-3 mb-3">
-                <div
-                  className="rounded d-flex align-items-center justify-content-center flex-shrink-0 p-2"
-                  style={{ background: "#f0fdf4" }}
-                >
-                  <i className={`bi ${ic} fs-4`} style={{ color: "#16a34a" }}></i>
+                <div className="rounded p-2" style={{ background: "#f0fdf4" }}>
+                  <i className={`bi ${ic} fs-4`} style={{ color }}></i>
                 </div>
                 <div>
                   <div className="text-muted small">{lb}</div>
-                  <div className="fw-bold fs-5 lh-sm" style={{ color: "#111111" }}>{v}</div>
-                  <div className="small" style={{ color: "#16a34a" }}>{s}</div>
+                  <div className="fw-bold fs-5 lh-sm" style={{ color: "#111" }}>{v}</div>
+                  <div className="small" style={{ color }}>{s}</div>
                 </div>
               </div>
             ))}
@@ -141,12 +299,12 @@ export default function Dashboard({ state }) {
         </div>
       </div>
 
-      {/* Actividad reciente */}
+      {/* ── Actividad reciente ── */}
       <div className="col-md-6">
         <div className="card shadow-sm border-0 h-100" style={{ borderLeft: "4px solid #facc15" }}>
           <div className="card-body">
             <div className="fw-bold mb-3 text-dark">
-              <i className="bi bi-bell me-1" style={{ color: "#16a34a" }}></i>Actividad reciente
+              <i className="bi bi-bell-fill me-1" style={{ color: "#16a34a" }}></i>Actividad reciente
             </div>
             {state.historial.length === 0 ? (
               <div className="text-center text-muted py-4">
@@ -155,10 +313,7 @@ export default function Dashboard({ state }) {
               </div>
             ) : state.historial.slice(0, 5).map(h => (
               <div key={h.id} className="d-flex align-items-start gap-2 py-2 border-bottom">
-                <div
-                  className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 p-1"
-                  style={{ background: "#f0fdf4" }}
-                >
+                <div className="rounded-circle p-1" style={{ background: "#f0fdf4" }}>
                   <i className={`bi ${h.icon}`} style={{ color: "#16a34a" }}></i>
                 </div>
                 <div className="flex-fill">
