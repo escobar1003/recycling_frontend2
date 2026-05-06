@@ -127,9 +127,9 @@ export default function LandingPage() {
           ].map((b, i) => (
             <div key={i} style={{
               display: "flex", alignItems: "center", gap: 12,
-              background: "#fff", border: "1px solid #FFFFFF",
+              background: "#fff", border: "1px solid #E4E4E4",
               borderRadius: 12, padding: "18px 24px",
-              fontSize: 15, color: "#94FF94", fontWeight: 500
+              fontSize: 15, color: "#189A18", fontWeight: 500
             }}>
               <i className={`bi ${b.icon}`} style={{ fontSize: 24 }}></i>
               {b.text}
@@ -169,7 +169,7 @@ export default function LandingPage() {
         background: "#16a34a", color: "#fff", fontSize: 14
       }}>
         <i className="bi bi-recycle me-2"></i>
-        © 2025 EcoRecicla · Todos los derechos reservados
+        © 2026 EcoRecicla · Todos los derechos reservados
       </footer>
 
     </div>
