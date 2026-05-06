@@ -1,5 +1,5 @@
 // src/components/Login.jsx
-// Login de EcoRecicla — navegación con React Router Dom
+// Login de RecyclinPoints — navegación con React Router Dom
 // Bootstrap 5 + emojis
 
 import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
