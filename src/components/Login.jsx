@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { iniciarSesion } from "../services/api";
+import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
 
 function LoginForm({ onLogin }) {
   const [correo, setCorreo] = useState("");
@@ -37,9 +38,16 @@ function LoginForm({ onLogin }) {
     <div className="container-fluid">
       <div className="row min-vh-100">
 
-        <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
-          <img src="/src/assets/imagenes/eco.png" alt="EcoRecicla" className="img-fluid" />
-        </div>
+        <div
+          className="col-md-6 p-0"
+          style={{
+            backgroundImage: `url(${fondoReciclaje})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            minHeight: "100vh",
+          }}
+/>
 
         <div className="col-md-6 d-flex justify-content-center align-items-center">
           <div className="w-100 p-4 mx-auto">
