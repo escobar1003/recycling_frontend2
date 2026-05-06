@@ -11,7 +11,7 @@ import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
-import Entregas        from "./components/Entregas";
+
 import ClasificadorIA  from "./components/ClasificadorIA";
 import Recompensas     from "./components/Recompensas";
 import MisPuntos       from "./components/MisPuntos";
@@ -110,12 +110,12 @@ export default function App() {
             <Route path="/aliados"         element={<Aliados         {...shared} />} />
             <Route path="/encargados"      element={<Encargados      {...shared} />} />
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
-            <Route path="/entregas"        element={<Entregas        {...shared} />} />
+            
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
             <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
-            <Route path="/catalogos/estados-entregas"    element={<CatEstadosEntregas    {...shared} />} />
+            
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
             <Route path="/catalogos/estados-usuarios"    element={<CatEstadosUsuarios    {...shared} />} />
