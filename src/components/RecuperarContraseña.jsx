@@ -251,7 +251,7 @@ export default function Forgotpassword() {
         <div className="text-center">
           <button type="button" className="btn btn-link fw-semibold"
             style={{ color: "#9ab5a0", fontSize: 13 }} onClick={() => navigate("/")}>
-            <i className="bi bi-arrow-left me-1" />Volver al inicio de sesión
+            <i className="bi bi-arrow-left me-1" />Volver al inicio de sesión..
           </button>
         </div>
 
