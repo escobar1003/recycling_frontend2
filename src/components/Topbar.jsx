@@ -1,7 +1,7 @@
 export default function Topbar({ navigate }) {
   return (
     <nav className="navbar bg-white border-bottom px-3 py-2" style={{ borderBottom: "2px solid #16a34a" }}>
-      <div className="container-fluid gap-3">
+      <div className="container-fluid gap-3"> </div>
 
         <a className="navbar-brand mb-0" href="#">
           <span className="fw-bold text-success fs-5">Recycling Points</span>
@@ -9,7 +9,6 @@ export default function Topbar({ navigate }) {
           <small className="text-muted fw-normal" style={{ fontSize: 11 }}>Recicla y gana</small>
         </a>
 
-<<<<<<< HEAD
         <div className="d-flex align-items-center gap-2">
         </div>
 
@@ -41,7 +40,7 @@ export default function Topbar({ navigate }) {
             </div>
 
           </div>
-=======
+
         <div className="input-group flex-grow-1 mx-2" style={{ maxWidth: 400 }}>
           <span className="input-group-text bg-white border-end-0">
             <i className="bi bi-search text-muted"></i>
@@ -75,7 +74,7 @@ export default function Topbar({ navigate }) {
           title="Mi perfil"
         >
           AG
->>>>>>> 9282340e3e6f1563a55dfc150c61992bb1459898
+
         </div>
 
       </div>

@@ -71,23 +71,6 @@ export default function App() {
   const navigate = useNavigate();
 
 
-  // Sin sesión: landing, login y registro accesibles
-  if (!user) {
-    return (
-      <Routes>
-        {/* Página principal pública */}
-        <Route path="/"         element={<LandingPage />} />
-        <Route path="/login"    element={
-          <Login
-            onLogin={(data) => {
-              setUser(data);
-              navigate("/dashboard");
-            }}
-          />
-        } />
-        <Route path="/registro" element={<Registro />} />
-        {/* Cualquier otra ruta redirige al landing */}
-
   const handleLogin = (usuarioData) => {
     setUser(usuarioData);
     navigate("/dashboard");
@@ -106,18 +89,14 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/"         element={<Login    onLogin={handleLogin} />} />
-        <Route path="/Registro" element={<Registro />} />
-
-        <Route path="*"         element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
-
   // Con sesión: dashboard completo
-  const shared = { state, dispatch, showToast, navigate };
-
   const shared = { state, dispatch, showToast, navigate, user };
 
 
