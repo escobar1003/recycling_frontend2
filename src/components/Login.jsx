@@ -126,20 +126,7 @@ function LoginForm({ onLogin }) {
 
               <br />
 
-              <div className="d-flex align-items-center my-3">
-                <div className="flex-grow-1 border-top"></div>
-                <span className="px-3 text-secondary small">o continúa con</span>
-                <div className="flex-grow-1 border-top"></div>
-              </div>
-
-              <div className="d-flex justify-content-center gap-3">
-                <button className="btn btn-light border rounded-pill px-4">
-                  <i className="bi bi-google me-2 text-danger"></i>Google
-                </button>
-                <button className="btn btn-light border rounded-pill px-4">
-                  <i className="bi bi-facebook me-2 text-primary"></i>Facebook
-                </button>
-              </div>
+              
 
               <br />
 

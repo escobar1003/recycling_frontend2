@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Topbar({ pts, setView }) {
   const [foto, setFoto] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handler = (e) => setFoto(e.detail);
+    // 🔥 Cargar imagen guardada al recargar
+    const savedFoto = localStorage.getItem("perfilFoto");
+    if (savedFoto) setFoto(savedFoto);
+
+    // 🔥 Escuchar cambios desde Perfil
+    const handler = (e) => {
+      setFoto(e.detail);
+      localStorage.setItem("perfilFoto", e.detail);
+    };
+
     window.addEventListener("perfilFoto", handler);
     return () => window.removeEventListener("perfilFoto", handler);
   }, []);
@@ -28,7 +39,7 @@ export default function Topbar({ pts, setView }) {
             <div
               className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success"
               role="button"
-              onClick={() => setView("perfil")}
+              onClick={() => navigate("/perfil")}
               title="Mi perfil"
               style={{ width: 42, height: 42 }}
             >

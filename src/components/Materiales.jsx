@@ -4,7 +4,7 @@ const API_URL = "https://tu-backend.com/api/materiales";
 
 const ZONAS     = ["Norte", "Sur", "Centro", "Oriente", "Occidente"];
 const UNIDADES  = ["kg", "g", "tonelada", "unidad"];
-const CATEGORIAS = ["Plastico", "Vidrio", "Metal", "Papel y Carton", "Organico", "Electronico", "Textil"];
+const CATEGORIAS = ["Organico", "Electronico", "Textil"];
 
 const EMPTY_FORM = {
   nombre: "", categoria: "", descripcion: "",

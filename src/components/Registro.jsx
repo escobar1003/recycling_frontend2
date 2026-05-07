@@ -237,32 +237,12 @@ function Registro() {
 
               <br />
 
-              <div className="d-flex align-items-center my-3 w-100">
-                <div className="flex-grow-1 border-top border-2 border-dark"></div>
-                <span className="px-3 fw-semibold text-dark">
-                  O continúa con
-                </span>
-                <div className="flex-grow-1 border-top border-2 border-dark"></div>
-              </div>
+             
 
             </div>
 
             {/* GOOGLE FACEBOOK */}
-            <div className="d-flex justify-content-center align-items-center gap-3">
-
-              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
-                <i className="bi bi-google me-2 text-danger"></i>
-                Google
-              </button>
-
-              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
-                <i className="bi bi-facebook me-2 text-primary"></i>
-                Facebook
-              </button>
-
-            </div>
-
-            <br />
+            
 
             <div className="d-flex justify-content-center align-items-center gap-2">
               <span className="fw-light text-secondary">
