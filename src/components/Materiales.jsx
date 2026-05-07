@@ -172,7 +172,7 @@ export default function VistaMateriales() {
                   <th>Unidad</th>
                   <th>Zona</th>
                   <th>Pts/kg</th>
-                  <th>Estado</th>
+
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -196,11 +196,7 @@ export default function VistaMateriales() {
                     <td className="align-middle fw-bold text-success">
                       <i className="bi bi-star-fill text-warning me-1"></i>{m.puntos_por_kg}
                     </td>
-                    <td className="align-middle">
-                      {m.activo
-                        ? <span className="badge bg-success"><i className="bi bi-check-circle me-1"></i>Activo</span>
-                        : <span className="badge bg-danger"><i className="bi bi-x-circle me-1"></i>Inactivo</span>}
-                    </td>
+                    
                     <td className="align-middle">
                       <div className="d-flex gap-1">
                         <button className="btn btn-sm btn-outline-success" onClick={() => abrirEditar(m)}>

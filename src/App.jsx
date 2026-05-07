@@ -1,3 +1,4 @@
+// App.jsx
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
@@ -6,6 +7,7 @@ import { cerrarSesion } from "./services/api";
 import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
+import LandingPage     from "./components/LandingPage";  // ← NUEVO
 import Sidebar         from "./components/Sidebar";
 import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
@@ -68,6 +70,7 @@ export default function App() {
   const { toasts, showToast, remove } = useToast();
   const navigate = useNavigate();
 
+
   const handleLogin = (usuarioData) => {
     setUser(usuarioData);
     navigate("/dashboard");
@@ -86,14 +89,16 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/"         element={<Login    onLogin={handleLogin} />} />
-        <Route path="/Registro" element={<Registro />} />
-        <Route path="*"         element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
+  // Con sesión: dashboard completo
   const shared = { state, dispatch, showToast, navigate, user };
+
 
   return (
     <div className="app-shell">
@@ -114,7 +119,7 @@ export default function App() {
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
-            <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
+            
             
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
@@ -122,12 +127,16 @@ export default function App() {
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
+            <Route path="/eco"    element={<ImpactoEco state={state} />} />
+            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} />} />
+
             <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas    {...shared} />} />
             <Route path="/puntos"      element={<MisPuntos      state={state} />} />
             <Route path="/mapa"        element={<Mapa           showToast={showToast} />} />
             <Route path="/eco"         element={<ImpactoEco     state={state} />} />
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
+
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
