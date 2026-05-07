@@ -167,14 +167,9 @@ function LoginForm({ onLogin }) {
                 </button>
               </div>
 
-              <div className="d-flex align-items-center my-3">
-                <div className="flex-grow-1 border-top"></div>
-                <span className="px-3 text-secondary small">o continúa con</span>
-                <div className="flex-grow-1 border-top"></div>
-              </div>
-
               
 
+              <br />
 
               <div className="text-center">
                 <span className="text-secondary">¿No tienes cuenta?</span>{" "}
