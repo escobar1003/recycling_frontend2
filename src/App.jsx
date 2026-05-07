@@ -91,10 +91,13 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
+<<<<<<< HEAD
         <Route path="/"         element={<Login onLogin={handleLogin} />} />
         <Route path="/Registro" element={<Registro />} />
         <Route path="/forgot"   element={<ForgotPassword />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
+=======
+>>>>>>> d482c1d (cambiar de rama a naralia para pull cambios)
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -105,7 +108,10 @@ export default function App() {
   // Con sesión: dashboard completo
   const shared = { state, dispatch, showToast, navigate, user };
 
+<<<<<<< HEAD
   // ── Rutas privadas (con sesión) ──────────────────────────────────────
+=======
+>>>>>>> d482c1d (cambiar de rama a naralia para pull cambios)
 
   return (
     <div className="app-shell">
