@@ -81,20 +81,7 @@ export default function Topbar({ pts, setView }) {
             </div>
 
             {/* PERFIL (iniciales) */}
-            <div
-              className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-              style={{
-                width: 38,
-                height: 38,
-                background: "#16a34a",
-                fontSize: 14,
-                cursor: "pointer",
-              }}
-              onClick={() => navigate("/perfil")}
-              title="Mi perfil"
-            >
-              AG
-            </div>
+           
 
           </div>
         </div>

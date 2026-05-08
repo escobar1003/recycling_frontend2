@@ -206,6 +206,7 @@ export async function crearClasificacion(datos) {
   });
 }
 
+
 // ============================================================
 // ADMIN  →  /api/admin  (requiere token + rol admin)
 // ============================================================
