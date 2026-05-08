@@ -5,7 +5,7 @@ import { getUsuarios, actualizarUsuario, eliminarUsuario } from "../services/api
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
-  rol: "Usuario",  activo: true,
+  rol: "Usuario", activo: true,
 };
 
 export default function Usuarios({ state, dispatch, showToast }) {
@@ -19,7 +19,6 @@ export default function Usuarios({ state, dispatch, showToast }) {
   useEffect(() => {
     getUsuarios()
       .then(data => {
-        // El backend devuelve { usuarios: [...] }
         dispatch({ type: "SET_USUARIOS", payload: data.usuarios ?? data });
       })
       .catch(() => {
@@ -36,7 +35,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo invalido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
     return e;
   };
@@ -44,9 +43,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-
     try {
-      // Registro via /api/auth/registrarse
       const { registrarse } = await import("../services/api");
       const resp = await registrarse({
         nombre:   form.nombre.trim(),
@@ -54,25 +51,21 @@ export default function Usuarios({ state, dispatch, showToast }) {
         password: "Temporal123!",
         telefono: form.telefono.trim() || undefined,
       });
-
       const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
       dispatch({
         type: "ADD_USER",
         payload: {
-          id:            resp.usuario?.idUsuario ?? Date.now(),
-          nombre:        form.nombre.trim(),
-          email:         form.email.trim(),
-          telefono:      form.telefono.trim(),
-          rol:           "Usuario",
-          
-          
-          pts:           0,
-          activo:        true,
-          av:            initials,
-          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+          id:       resp.usuario?.idUsuario ?? Date.now(),
+          nombre:   form.nombre.trim(),
+          email:    form.email.trim(),
+          telefono: form.telefono.trim(),
+          rol:      "Usuario",
+          pts:      0,
+          activo:   true,
+          av:       initials,
+          fechaAlta: new Date().toLocaleDateString("es-CO"),
         },
       });
-
       showToast(`Usuario "${form.nombre.trim()}" registrado`);
       setModal(false); setForm(EMPTY_FORM); setErrors({});
     } catch (err) {
@@ -84,7 +77,6 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
-      // Actualizar estado via PUT /api/admin/usuarios/:id
       await actualizarUsuario(id, { idEstadoUsuario: estadoActual ? 2 : 1 });
       dispatch({ type: "TOGGLE_USER", payload: id });
       showToast(
@@ -96,9 +88,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
     }
   };
 
-  const handleSave = (updatedUser) => {
-    dispatch({ type: "UPDATE_USER", payload: updatedUser });
-  };
+  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
 
   const handleEliminar = (id) => {
     dispatch({ type: "DEL_USER", payload: id });
@@ -118,52 +108,57 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
 
-  const cfg = getRolCfg("Usuario");
-
   return (
-    <div>
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold m-0">
-          <i className="bi bi-recycle me-2 text-success"></i>Gestion de usuarios
-        </h4>
-        <button className="btn btn-success" onClick={() => setModal(true)}>
-          <i className="bi bi-person-plus me-1"></i> Nuevo usuario
+    <div className="panel-page">
+
+      {/* ── ENCABEZADO ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+        <div>
+          <h4 className="panel-title">
+            <i className="bi bi-recycle" style={{ color: "var(--verde)", marginRight: 8 }}></i>
+            Gestión de usuarios
+          </h4>
+          <span className="panel-subtitle">
+            {usuarios.length} usuario{usuarios.length !== 1 ? "s" : ""} registrado{usuarios.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <button className="btn-panel primary" onClick={() => setModal(true)}>
+          <i className="bi bi-person-plus"></i> Nuevo usuario
         </button>
       </div>
 
-      {/* Buscador */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="input-group w-auto">
-          <span className="input-group-text bg-white">
-            <i className="bi bi-search"></i>
-          </span>
+      {/* ── BUSCADOR ── */}
+      <div style={{ marginBottom: 16 }}>
+        <div className="search-box" style={{ maxWidth: 380 }}>
+          <i className="bi bi-search"></i>
           <input
-            className="form-control"
             placeholder="Buscar por nombre, correo o zona..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            style={{ width: "100%" }}
           />
         </div>
       </div>
 
-      {/* Indicador de carga */}
+      {/* ── CARGANDO ── */}
       {loading && (
-        <div className="text-center py-3 text-muted small">
-          <div className="spinner-border spinner-border-sm text-success me-2"></div>
+        <div style={{ textAlign: "center", padding: "12px 0", fontSize: "0.78rem", color: "var(--gris-texto)" }}>
+          <span className="spinner-border spinner-border-sm" style={{ color: "var(--verde)", marginRight: 6 }}></span>
           Cargando usuarios del servidor...
         </div>
       )}
 
-      {/* Tabla */}
-      <TablaUsuarios
-        lista={filtered}
-        onToggle={handleToggle}
-        onVer={setViewUser}
-        onEliminar={handleEliminar}
-      />
+      {/* ── TABLA ── */}
+      <div className="panel-table-wrap">
+        <TablaUsuarios
+          lista={filtered}
+          onToggle={handleToggle}
+          onVer={setViewUser}
+          onEliminar={handleEliminar}
+        />
+      </div>
 
-      {/* Modal editar */}
+      {/* ── MODAL DETALLE / EDITAR ── */}
       <ModalDetalle
         user={viewUser}
         onClose={() => setViewUser(null)}
@@ -171,91 +166,147 @@ export default function Usuarios({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
-      {/* Modal nuevo usuario */}
+      {/* ── MODAL NUEVO USUARIO ── */}
       {modal && (
-        <div className="modal d-block" style={{background:"rgba(0,0,0,.45)",zIndex:9000}}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border shadow-lg">
+        <div
+          className="panel-modal-bg"
+          onClick={ev => { if (ev.target === ev.currentTarget) cerrarModal(); }}
+        >
+          <div className="panel-modal">
 
-              <div className="modal-header border-bottom">
+            {/* Header */}
+            <div className="panel-modal-head">
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {/* Avatar preview */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: "50%",
+                  background: "var(--verde-claro)", border: "1px solid var(--gris-borde)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 700, fontSize: "0.9rem", color: "var(--verde)",
+                  flexShrink: 0,
+                }}>
+                  {avatarPreview}
+                </div>
                 <div>
-                  <h5 className="modal-title fw-bold text-success">
-                    <i className="bi bi-recycle me-1"></i> Nuevo usuario
-                  </h5>
-                  <div className="text-muted small">Registra un nuevo usuario reciclador.</div>
-                </div>
-                <button type="button" className="btn-close" onClick={cerrarModal} />
-              </div>
-
-              <div className="modal-body">
-                <div className="text-center mb-3">
-                  <div className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success mx-auto fs-4 p-3">
-                    {avatarPreview}
+                  <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--negro)" }}>
+                    <i className="bi bi-recycle" style={{ color: "var(--verde)", marginRight: 6 }}></i>
+                    Nuevo usuario
                   </div>
-                </div>
-
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Nombre completo *</label>
-                    <input
-                      value={form.nombre} onChange={e => set("nombre", e.target.value)}
-                      placeholder="Ej: Carlos Ruiz"
-                      className={`form-control form-control-sm bg-light ${errors.nombre ? "is-invalid" : ""}`}
-                    />
-                    {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electronico *</label>
-                    <input
-                      type="email" value={form.email} onChange={e => set("email", e.target.value)}
-                      placeholder="correo@ejemplo.com"
-                      className={`form-control form-control-sm bg-light ${errors.email ? "is-invalid" : ""}`}
-                    />
-                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Telefono</label>
-                    <input
-                      value={form.telefono} onChange={e => set("telefono", e.target.value)}
-                      placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm bg-light"
-                    />
-                  </div>
-                  
-                  <div className="col-12">
-                    <div className="alert alert-success small fw-semibold mb-0">
-                      <i className="bi bi-info-circle me-1"></i> {rolDesc["Usuario"]}
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light border">
-                      <div>
-                        <div className="fw-bold small">Estado inicial</div>
-                        <div className="text-muted small">El usuario podra acceder de inmediato si esta activo</div>
-                      </div>
-                      <div className="d-flex align-items-center gap-2">
-                        <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
-                          {form.activo ? "Activo" : "Inactivo"}
-                        </span>
-                        <Toggle checked={form.activo} onChange={v => set("activo", v)} />
-                      </div>
-                    </div>
+                  <div style={{ fontSize: "0.72rem", color: "var(--gris-texto)" }}>
+                    Registra un nuevo usuario reciclador
                   </div>
                 </div>
               </div>
+              <button className="btn-icon" onClick={cerrarModal}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
 
-              <div className="modal-footer border-top gap-2">
-                <button className="btn btn-outline-secondary flex-fill" onClick={cerrarModal}>
-                  <i className="bi bi-x-lg me-1"></i> Cancelar
-                </button>
-                <button className="btn btn-success flex-fill fw-bold" onClick={guardar}>
-                  <i className="bi bi-check2-circle me-1"></i> Registrar usuario
-                </button>
+            {/* Body */}
+            <div className="panel-modal-body">
+              <div className="panel-modal-grid">
+
+                <div>
+                  <label className="panel-label">Nombre completo *</label>
+                  <input
+                    className="panel-input"
+                    value={form.nombre}
+                    onChange={e => set("nombre", e.target.value)}
+                    placeholder="Ej: Carlos Ruiz"
+                    style={errors.nombre ? { borderColor: "var(--rojo)" } : {}}
+                  />
+                  {errors.nombre && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--rojo)", marginTop: 2, display: "block" }}>
+                      {errors.nombre}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="panel-label">Correo electrónico *</label>
+                  <input
+                    type="email"
+                    className="panel-input"
+                    value={form.email}
+                    onChange={e => set("email", e.target.value)}
+                    placeholder="correo@ejemplo.com"
+                    style={errors.email ? { borderColor: "var(--rojo)" } : {}}
+                  />
+                  {errors.email && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--rojo)", marginTop: 2, display: "block" }}>
+                      {errors.email}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="panel-label">Teléfono</label>
+                  <input
+                    className="panel-input"
+                    value={form.telefono}
+                    onChange={e => set("telefono", e.target.value)}
+                    placeholder="Ej: 300 123 4567"
+                  />
+                </div>
+
+                {/* Info rol — ocupa columna completa */}
+                <div className="full">
+                  <div style={{
+                    background: "var(--verde-claro)",
+                    border: "1px solid var(--verde)",
+                    borderRadius: 6,
+                    padding: "8px 12px",
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    color: "var(--verde)",
+                  }}>
+                    <i className="bi bi-info-circle" style={{ marginRight: 6 }}></i>
+                    {rolDesc["Usuario"]}
+                  </div>
+                </div>
+
+                {/* Toggle estado — ocupa columna completa */}
+                <div className="full">
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 14px", borderRadius: 6,
+                    background: "#fafafa", border: "1px solid var(--gris-borde)",
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: "0.82rem", color: "var(--negro)" }}>Estado inicial</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--gris-texto)" }}>
+                        El usuario podrá acceder de inmediato si está activo
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{
+                        fontSize: "0.78rem", fontWeight: 600,
+                        color: form.activo ? "var(--verde)" : "var(--gris-texto)",
+                      }}>
+                        {form.activo ? "Activo" : "Inactivo"}
+                      </span>
+                      <Toggle checked={form.activo} onChange={v => set("activo", v)} />
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
+
+            {/* Footer */}
+            <div className="panel-modal-foot">
+              <button className="btn-panel ghost" onClick={cerrarModal}>
+                <i className="bi bi-x-lg"></i> Cancelar
+              </button>
+              <button className="btn-panel primary" onClick={guardar}>
+                <i className="bi bi-check2-circle"></i> Registrar usuario
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }
