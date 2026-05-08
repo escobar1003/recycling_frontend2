@@ -71,6 +71,7 @@ export default function App() {
   const navigate                = useNavigate();
 
 
+
   const handleLogin = (usuarioData) => {
     setUser(usuarioData);
     navigate("/dashboard");
@@ -125,7 +126,7 @@ export default function App() {
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
-            <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
+            
             
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
