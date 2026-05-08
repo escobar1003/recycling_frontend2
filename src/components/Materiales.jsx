@@ -6,6 +6,9 @@ const ZONAS     = ["Norte", "Sur", "Centro", "Oriente", "Occidente"];
 const UNIDADES  = ["kg", "g", "tonelada", "unidad"];
 const CATEGORIAS = ["Organico", "Electronico", "Textil"];
 
+// FIX: antes no existía y lo estabas usando en el código
+const COLORES_CANECA = ["Verde", "Amarillo", "Azul", "Rojo"];
+
 const EMPTY_FORM = {
   nombre: "", categoria: "", descripcion: "",
   peso_minimo: "", peso_maximo: "", unidad: "kg",
