@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
+const USUARIOS_SUB = [
+  { path: "/usuarios",        icon: "bi-recycle",           title: "Usuarios" },
+  { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
+  { path: "/aliados",         icon: "bi-handshake-fill",    title: "Aliados" },
+  { path: "/administradores", icon: "bi-shield-lock-fill",  title: "Administradores" },
+];
+
 const CATALOGOS = [
   { path: "/catalogos/roles",               icon: "bi-key-fill",          title: "Roles" },
   { path: "/catalogos/estados-puntos",      icon: "bi-geo-alt-fill",      title: "Estados puntos" },
@@ -14,58 +21,107 @@ const CATALOGOS = [
 ];
 
 const NAV = [
-  { path: "/dashboard",       icon: "bi-house-fill",        title: "Dashboard" },
-  { path: "/usuarios",        icon: "bi-people-fill",       title: "Gestión usuarios" },
-  { path: "/administradores", icon: "bi-shield-lock-fill",  title: "Gestión administradores" },
-  { path: "/aliados",         icon: "bi-handshake-fill",    title: "Aliados" },
-  { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
-  { path: "/materiales",      icon: "bi-recycle",           title: "Materiales" },
-  { path: "/entregas",        icon: "bi-box-seam-fill",     title: "Entregas" },
-  { path: "/perfil",          icon: "bi-person-circle",     title: "Mi Perfil" },
+  { path: "/dashboard",  icon: "bi-house-fill", title: "Dashboard" },
+  { path: "/materiales", icon: "bi-recycle",    title: "Materiales" },
 ];
+
+const USUARIOS_PATHS = USUARIOS_SUB.map(u => u.path);
 
 export default function Sidebar() {
   const location = useLocation();
-  const isCatalogActive = location.pathname.startsWith("/catalogos");
-  const [catalogosOpen, setCatalogosOpen] = useState(isCatalogActive);
 
-  const linkClass = ({ isActive }) =>
-    `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
-      isActive ? "btn-success text-white fw-semibold" : "btn-light text-secondary"
-    }`;
+  const isCatalogActive  = location.pathname.startsWith("/catalogos");
+  const isUsuariosActive = USUARIOS_PATHS.some(p => location.pathname.startsWith(p));
+
+  const [catalogosOpen, setCatalogosOpen] = useState(isCatalogActive);
+  const [usuariosOpen,  setUsuariosOpen]  = useState(isUsuariosActive);
 
   return (
     <div
-      className="d-flex flex-column bg-white border-end shadow-sm"
-      style={{ width: 235, minHeight: "100vh", flexShrink: 0 }}
+      className="d-flex flex-column bg-white border-end"
+      style={{ width: 235, minHeight: "100vh", flexShrink: 0, borderRight: "2px solid #16a34a" }}
     >
       {/* Logo */}
-      <div className="d-flex align-items-center gap-2 px-3 py-3 border-bottom">
+      <div className="d-flex align-items-center gap-2 px-3 py-3 border-bottom" style={{ borderBottom: "1px solid #e5e7eb" }}>
         <div
-          className="bg-success rounded-2 d-flex align-items-center justify-content-center text-white flex-shrink-0"
-          style={{ width: 36, height: 36, fontSize: 18 }}
+          className="rounded-2 d-flex align-items-center justify-content-center text-white flex-shrink-0"
+          style={{ width: 36, height: 36, fontSize: 18, background: "#16a34a" }}
         >
           <i className="bi bi-recycle" />
         </div>
-        <span className="fw-bold text-success fs-6">Recycling Points</span>
+        <span className="fw-bold fs-6" style={{ color: "#16a34a" }}>Recycling Points</span>
       </div>
 
       {/* Nav */}
       <nav className="flex-grow-1 py-2 px-2 d-flex flex-column gap-1 overflow-y-auto">
+
+        {/* Items fijos */}
         {NAV.map(n => (
-          <NavLink key={n.path} to={n.path} className={linkClass} style={{ fontSize: 13 }}>
+          <NavLink
+            key={n.path}
+            to={n.path}
+            className={({ isActive }) =>
+              `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
+                isActive ? "fw-semibold" : "btn-light text-secondary"
+              }`
+            }
+            style={({ isActive }) => isActive ? { background: "#16a34a", color: "#fff", fontSize: 13 } : { fontSize: 13 }}
+          >
             <i className={`bi ${n.icon}`} style={{ fontSize: 15, width: 18 }} />
-            {n.title}
+            <span>{n.title}</span>
           </NavLink>
         ))}
 
-        {/* Catálogos desplegable */}
+        {/* ── Usuarios desplegable ── */}
         <div>
           <button
             className={`btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 border-0 ${
-              isCatalogActive ? "btn-success text-white fw-semibold" : "btn-light text-secondary"
+              isUsuariosActive ? "fw-semibold" : "btn-light text-secondary"
             }`}
-            style={{ fontSize: 13 }}
+            style={isUsuariosActive
+              ? { background: "#16a34a", color: "#fff", fontSize: 13 }
+              : { fontSize: 13 }}
+            onClick={() => setUsuariosOpen(o => !o)}
+          >
+            <i className="bi bi-people-fill" style={{ fontSize: 15, width: 18 }} />
+            <span className="flex-grow-1">Usuarios</span>
+            <i className={`bi bi-chevron-${usuariosOpen ? "up" : "down"}`} style={{ fontSize: 11 }} />
+          </button>
+
+          {usuariosOpen && (
+            <div className="d-flex flex-column gap-1 mt-1 ms-3 ps-2 border-start" style={{ borderColor: "#16a34a" }}>
+              {USUARIOS_SUB.map(sub => (
+                <NavLink
+                  key={sub.path}
+                  to={sub.path}
+                  className={({ isActive }) =>
+                    `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
+                      isActive ? "fw-semibold" : "btn-light text-secondary"
+                    }`
+                  }
+                  style={({ isActive }) =>
+                    isActive
+                      ? { background: "#16a34a", color: "#fff", fontSize: 12 }
+                      : { fontSize: 12 }
+                  }
+                >
+                  <i className={`bi ${sub.icon}`} style={{ fontSize: 13, width: 16 }} />
+                  {sub.title}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Catálogos desplegable ── */}
+        <div>
+          <button
+            className={`btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 border-0 ${
+              isCatalogActive ? "fw-semibold" : "btn-light text-secondary"
+            }`}
+            style={isCatalogActive
+              ? { background: "#16a34a", color: "#fff", fontSize: 13 }
+              : { fontSize: 13 }}
             onClick={() => setCatalogosOpen(o => !o)}
           >
             <i className="bi bi-journals" style={{ fontSize: 15, width: 18 }} />
@@ -74,13 +130,21 @@ export default function Sidebar() {
           </button>
 
           {catalogosOpen && (
-            <div className="d-flex flex-column gap-1 mt-1 ms-3 ps-2 border-start border-success border-opacity-25">
+            <div className="d-flex flex-column gap-1 mt-1 ms-3 ps-2 border-start" style={{ borderColor: "#16a34a" }}>
               {CATALOGOS.map(sub => (
                 <NavLink
                   key={sub.path}
                   to={sub.path}
-                  className={linkClass}
-                  style={{ fontSize: 12 }}
+                  className={({ isActive }) =>
+                    `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
+                      isActive ? "fw-semibold" : "btn-light text-secondary"
+                    }`
+                  }
+                  style={({ isActive }) =>
+                    isActive
+                      ? { background: "#16a34a", color: "#fff", fontSize: 12 }
+                      : { fontSize: 12 }
+                  }
                 >
                   <i className={`bi ${sub.icon}`} style={{ fontSize: 13, width: 16 }} />
                   {sub.title}
@@ -91,16 +155,25 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Perfil rápido al fondo */}
+      {/* Perfil rápido */}
       <div className="px-2 pt-2 border-top">
         <NavLink
           to="/perfil"
-          className={linkClass}
-          style={{ fontSize: 13 }}
+          className={({ isActive }) =>
+            `btn d-flex align-items-center gap-2 text-start px-3 py-2 rounded-2 w-100 text-decoration-none border-0 ${
+              isActive ? "fw-semibold" : "btn-light text-secondary"
+            }`
+          }
+          style={({ isActive }) => ({ fontSize: 13, ...(isActive ? { background: "#16a34a", color: "#fff" } : {}) })}
         >
-          <i className="bi bi-person-circle text-success" style={{ fontSize: 20 }} />
+          <div
+            className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+            style={{ width: 28, height: 28, background: "#16a34a", fontSize: 11 }}
+          >
+            AD
+          </div>
           <div className="d-flex flex-column lh-1">
-            <span className="fw-semibold text-dark" style={{ fontSize: 13 }}>Administrador</span>
+            <span className="fw-semibold" style={{ fontSize: 13, color: "#111111" }}>Administrador</span>
             <span className="text-muted" style={{ fontSize: 11 }}>Ver perfil</span>
           </div>
         </NavLink>
@@ -109,8 +182,8 @@ export default function Sidebar() {
       {/* Salir */}
       <div className="px-2 py-2 pb-3">
         <button
-          className="btn btn-light text-danger d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
-          style={{ fontSize: 13 }}
+          className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
+          style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
         >
           <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
           Salir

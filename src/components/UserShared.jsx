@@ -1,4 +1,3 @@
-// ── Componentes compartidos ────────────────────────────────────────────────────
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS, ROLES_CFG } from "../constants/data";
 
@@ -10,14 +9,14 @@ export const rolDesc = {
 };
 
 const ROL_DEFAULTS = {
-  "Admin":     { color: "#1e40af", bg: "#dbeafe", icon: "🛡️" },
-  "Usuario":   { color: "#16a34a", bg: "#dcfce7", icon: "♻️" },
-  "Afiliado":  { color: "#b45309", bg: "#fef3c7", icon: "🏪" },
-  "Encargado": { color: "#7c3aed", bg: "#ede9fe", icon: "🔑" },
+  "Admin":     { color: "#1e40af", bg: "#dbeafe", icon: "bi-shield-lock-fill" },
+  "Usuario":   { color: "#16a34a", bg: "#dcfce7", icon: "bi-recycle" },
+  "Afiliado":  { color: "#b45309", bg: "#fef3c7", icon: "bi-shop" },
+  "Encargado": { color: "#7c3aed", bg: "#ede9fe", icon: "bi-person-badge-fill" },
 };
 
 export function getRolCfg(rol) {
-  return ROLES_CFG?.[rol] || ROL_DEFAULTS[rol] || { color: "#6b7280", bg: "#f3f4f6", icon: "👤" };
+  return ROLES_CFG?.[rol] || ROL_DEFAULTS[rol] || { color: "#6b7280", bg: "#f3f4f6", icon: "bi-person" };
 }
 
 // ── Badge de rol ───────────────────────────────────────────────────────────────
@@ -28,12 +27,12 @@ export function RolBadge({ rol }) {
       className="badge rounded-pill d-inline-flex align-items-center gap-1 fw-bold"
       style={{ background: cfg.bg, color: cfg.color, fontSize: 11, padding: "4px 10px" }}
     >
-      {cfg.icon} {rol}
+      <i className={`bi ${cfg.icon}`}></i> {rol}
     </span>
   );
 }
 
-// ── Toggle switch — Bootstrap nativo ──────────────────────────────────────────
+// ── Toggle switch ──────────────────────────────────────────────────────────────
 export function Toggle({ checked, onChange }) {
   return (
     <div className="form-check form-switch mb-0">
@@ -49,18 +48,13 @@ export function Toggle({ checked, onChange }) {
   );
 }
 
-// ── Modal editable (reemplaza ModalDetalle) ────────────────────────────────────
-// Props: user, onClose, onSave(updatedUser), showToast
+// ── Modal editable ─────────────────────────────────────────────────────────────
 export function ModalDetalle({ user, onClose, onSave, showToast }) {
   const [form,   setForm]   = useState(null);
   const [errors, setErrors] = useState({});
 
-  // Sincronizar form cuando cambia el usuario abierto
   useEffect(() => {
-    if (user) {
-      setForm({ ...user });
-      setErrors({});
-    }
+    if (user) { setForm({ ...user }); setErrors({}); }
   }, [user]);
 
   if (!user || !form) return null;
@@ -96,7 +90,7 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
       av:     form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join(""),
     };
     if (onSave) onSave(updatedUser);
-    if (showToast) showToast(`✅ ${updatedUser.nombre} actualizado correctamente`);
+    if (showToast) showToast(`${updatedUser.nombre} actualizado correctamente`);
     onClose();
   };
 
@@ -105,26 +99,21 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
       <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div className="modal-content rounded-4 border-0 shadow-lg">
 
-          {/* ── Header coloreado por rol ── */}
+          {/* Header */}
           <div
             className="modal-header border-0 rounded-top-4 px-4 pt-4 pb-3"
             style={{ background: cfg.bg }}
           >
             <div className="d-flex align-items-center gap-3 w-100">
               <div
-                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                style={{
-                  width: 56, height: 56, fontSize: 20,
-                  background: "#fff", color: cfg.color,
-                  border: `3px solid ${cfg.color}`,
-                  boxShadow: "0 2px 8px rgba(0,0,0,.12)",
-                }}
+                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 bg-white"
+                style={{ width: 56, height: 56, fontSize: 20, color: cfg.color, border: `3px solid ${cfg.color}` }}
               >
                 {avatarPreview}
               </div>
               <div>
                 <h5 className="modal-title fw-bold mb-0" style={{ color: cfg.color }}>
-                  {cfg.icon} Editar {user.rol}
+                  <i className={`bi ${cfg.icon} me-2`}></i>Editar {user.rol}
                 </h5>
                 <div className="small mt-1" style={{ color: cfg.color, opacity: 0.75 }}>
                   Modifica los datos y guarda los cambios
@@ -134,20 +123,19 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
             <button type="button" className="btn-close ms-3" onClick={onClose} />
           </div>
 
-          {/* ── Body ── */}
+          {/* Body */}
           <div className="modal-body px-4 py-3">
 
-            {/* Sección: Información personal */}
+            {/* Información personal */}
             <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>
-              📋 Información personal
+              <i className="bi bi-person-lines-fill me-1"></i>Información personal
             </p>
             <div className="row g-3 mb-4">
 
-              {/* Nombre de entidad — solo Afiliados */}
               {user.rol === "Afiliado" && (
                 <div className="col-12">
                   <label className="form-label fw-semibold small text-secondary mb-1">
-                    Nombre de la entidad / empresa
+                    <i className="bi bi-building me-1"></i>Nombre de la entidad / empresa
                   </label>
                   <input
                     className="form-control form-control-sm bg-light rounded-3"
@@ -160,6 +148,7 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
 
               <div className="col-md-6">
                 <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-person me-1"></i>
                   {user.rol === "Afiliado" ? "Nombre del contacto *" : "Nombre completo *"}
                 </label>
                 <input
@@ -172,7 +161,9 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold small text-secondary mb-1">Correo electrónico *</label>
+                <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-envelope me-1"></i>Correo electrónico *
+                </label>
                 <input
                   type="email"
                   className={`form-control form-control-sm bg-light rounded-3 ${errors.email ? "is-invalid" : ""}`}
@@ -184,7 +175,9 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold small text-secondary mb-1">Teléfono</label>
+                <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-telephone me-1"></i>Teléfono
+                </label>
                 <input
                   className="form-control form-control-sm bg-light rounded-3"
                   value={form.telefono || ""}
@@ -194,7 +187,9 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold small text-secondary mb-1">Zona</label>
+                <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-geo-alt me-1"></i>Zona
+                </label>
                 <select
                   className="form-select form-select-sm bg-light rounded-3"
                   value={form.zona || ""}
@@ -206,13 +201,15 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
             </div>
 
-            {/* Sección: Asignación y puntos */}
+            {/* Asignación y puntos */}
             <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>
-              📍 Asignación y puntos
+              <i className="bi bi-pin-map me-1"></i>Asignación y puntos
             </p>
             <div className="row g-3 mb-4">
               <div className="col-md-8">
-                <label className="form-label fw-semibold small text-secondary mb-1">Punto asignado</label>
+                <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-geo-fill me-1"></i>Punto asignado
+                </label>
                 <select
                   className="form-select form-select-sm bg-light rounded-3"
                   value={form.puntoAsignado || ""}
@@ -224,7 +221,9 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
 
               <div className="col-md-4">
-                <label className="form-label fw-semibold small text-secondary mb-1">⭐ Puntos acumulados</label>
+                <label className="form-label fw-semibold small text-secondary mb-1">
+                  <i className="bi bi-star-fill text-warning me-1"></i>Puntos acumulados
+                </label>
                 <div className="input-group input-group-sm">
                   <input
                     type="number"
@@ -241,14 +240,11 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
               </div>
             </div>
 
-            {/* Sección: Estado */}
+            {/* Estado */}
             <p className="text-uppercase fw-bold text-muted mb-2" style={{ fontSize: 11, letterSpacing: 1 }}>
-              🔘 Estado del registro
+              <i className="bi bi-toggles me-1"></i>Estado del registro
             </p>
-            <div
-              className="d-flex align-items-center justify-content-between p-3 rounded-3 border"
-              style={{ background: form.activo ? "#f0fdf4" : "#f9fafb", transition: ".2s" }}
-            >
+            <div className={`d-flex align-items-center justify-content-between p-3 rounded-3 border ${form.activo ? "bg-success-subtle" : "bg-light"}`}>
               <div>
                 <div className="fw-bold small">Estado actual</div>
                 <div className="text-muted" style={{ fontSize: 11 }}>
@@ -258,44 +254,44 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
                 </div>
               </div>
               <div className="d-flex align-items-center gap-2">
-                <span
-                  className={`badge rounded-pill fw-semibold ${form.activo ? "bg-success" : "bg-secondary"}`}
-                  style={{ fontSize: 11, minWidth: 66 }}
-                >
-                  {form.activo ? "✅ Activo" : "⚫ Inactivo"}
+                <span className={`badge rounded-pill fw-semibold ${form.activo ? "bg-success" : "bg-secondary"}`} style={{ fontSize: 11, minWidth: 66 }}>
+                  <i className={`bi ${form.activo ? "bi-check-circle" : "bi-x-circle"} me-1`}></i>
+                  {form.activo ? "Activo" : "Inactivo"}
                 </span>
                 <Toggle checked={form.activo} onChange={v => set("activo", v)} />
               </div>
             </div>
 
-            {/* Info de solo lectura */}
+            {/* Info solo lectura */}
             <div className="row g-2 mt-3">
               {[
-                ["📅 Fecha de alta", user.fechaAlta || "—"],
-                ["🪪 Rol",           user.rol],
-              ].map(([l, v]) => (
+                ["bi-calendar-event", "Fecha de alta", user.fechaAlta || "—"],
+                ["bi-person-badge",   "Rol",           user.rol],
+              ].map(([ic, l, v]) => (
                 <div key={l} className="col-6">
                   <div className="bg-light rounded-3 p-2 border">
-                    <div className="text-muted mb-1" style={{ fontSize: 10 }}>{l}</div>
+                    <div className="text-muted mb-1" style={{ fontSize: 10 }}>
+                      <i className={`bi ${ic} me-1`}></i>{l}
+                    </div>
                     <div className="fw-bold small">{v}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-          </div>{/* /modal-body */}
+          </div>
 
-          {/* ── Footer ── */}
+          {/* Footer */}
           <div className="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
             <button className="btn btn-light border rounded-3 flex-fill" onClick={onClose}>
-              Cancelar
+              <i className="bi bi-x-lg me-1"></i>Cancelar
             </button>
             <button
               className="btn fw-bold rounded-3 flex-fill"
               style={{ background: cfg.color, color: "#fff" }}
               onClick={guardar}
             >
-              {cfg.icon} Guardar cambios
+              <i className={`bi ${cfg.icon} me-1`}></i>Guardar cambios
             </button>
           </div>
 
@@ -305,14 +301,13 @@ export function ModalDetalle({ user, onClose, onSave, showToast }) {
   );
 }
 
-// ── Tabla genérica — Toggle con toast integrado ────────────────────────────────
-// onToggle recibe (id, nombre, estadoActual) para que el padre muestre el toast
+// ── Tabla genérica ─────────────────────────────────────────────────────────────
 export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
   if (lista.length === 0) {
     return (
       <div className="card shadow-sm p-0 overflow-hidden">
         <div className="text-center py-5 text-muted">
-          <div className="fs-2 mb-2">👤</div>
+          <i className="bi bi-person-x fs-2 d-block mb-2 text-secondary"></i>
           <div className="fw-semibold">Sin registros que coincidan</div>
           <div className="small mt-1">Intenta con otro término de búsqueda</div>
         </div>
@@ -326,12 +321,20 @@ export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
         <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
           <thead className="table-light">
             <tr>
-              {["Usuario", "Email", "Rol", "Zona", "Puntos", "Estado", "Acciones"].map(h => (
+              {[
+                ["bi-person",        "Usuario"],
+                ["bi-envelope",      "Email"],
+                ["bi-shield",        "Rol"],
+                ["bi-geo-alt",       "Zona"],
+                ["bi-star",          "Puntos"],
+                ["bi-toggles",       "Estado"],
+                ["bi-gear",          "Acciones"],
+              ].map(([ic, h]) => (
                 <th key={h}
                   className="text-uppercase text-muted fw-semibold border-0"
                   style={{ padding: "10px 16px", fontSize: 11 }}
                 >
-                  {h}
+                  <i className={`bi ${ic} me-1`}></i>{h}
                 </th>
               ))}
             </tr>
@@ -352,7 +355,6 @@ export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
                           background: u.activo ? cfg.bg : "#f3f4f6",
                           color:      u.activo ? cfg.color : "#9ca3af",
                           border: `1.5px solid ${u.activo ? cfg.color : "#d1d5db"}`,
-                          transition: ".2s",
                         }}
                       >
                         {u.av}
@@ -360,30 +362,32 @@ export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
                       <div>
                         <div className="fw-bold">{u.nombre}</div>
                         {u.fechaAlta && (
-                          <div className="text-muted" style={{ fontSize: 10 }}>Alta: {u.fechaAlta}</div>
+                          <div className="text-muted" style={{ fontSize: 10 }}>
+                            <i className="bi bi-calendar2 me-1"></i>Alta: {u.fechaAlta}
+                          </div>
                         )}
                       </div>
                     </div>
                   </td>
 
-                  <td className="text-secondary" style={{ padding: "12px 16px" }}>{u.email}</td>
+                  <td className="text-secondary" style={{ padding: "12px 16px" }}>
+                    <i className="bi bi-envelope me-1 text-muted"></i>{u.email}
+                  </td>
                   <td style={{ padding: "12px 16px" }}><RolBadge rol={u.rol} /></td>
-                  <td className="text-secondary" style={{ padding: "12px 16px", fontSize: 12 }}>{u.zona || "—"}</td>
+                  <td className="text-secondary" style={{ padding: "12px 16px", fontSize: 12 }}>
+                    <i className="bi bi-geo-alt me-1 text-muted"></i>{u.zona || "—"}
+                  </td>
                   <td className="fw-bold text-success" style={{ padding: "12px 16px" }}>
+                    <i className="bi bi-star-fill text-warning me-1"></i>
                     {(u.pts || 0).toLocaleString()}
                   </td>
 
-                  {/* Toggle con badge de estado */}
+                  {/* Toggle */}
                   <td style={{ padding: "12px 16px" }}>
                     <div className="d-flex align-items-center gap-2">
-                      <Toggle
-                        checked={u.activo}
-                        onChange={() => onToggle(u.id, u.nombre, u.activo)}
-                      />
-                      <span
-                        className={`badge rounded-pill ${u.activo ? "bg-success" : "bg-secondary"}`}
-                        style={{ fontSize: 10, minWidth: 58 }}
-                      >
+                      <Toggle checked={u.activo} onChange={() => onToggle(u.id, u.nombre, u.activo)} />
+                      <span className={`badge rounded-pill ${u.activo ? "bg-success" : "bg-secondary"}`} style={{ fontSize: 10, minWidth: 58 }}>
+                        <i className={`bi ${u.activo ? "bi-check-circle" : "bi-x-circle"} me-1`}></i>
                         {u.activo ? "Activo" : "Inactivo"}
                       </span>
                     </div>
@@ -395,13 +399,10 @@ export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
                       <button
                         title="Editar"
                         className="btn btn-sm rounded-3 fw-semibold d-flex align-items-center gap-1"
-                        style={{
-                          fontSize: 11, padding: "4px 10px",
-                          background: cfg.bg, color: cfg.color, border: "none",
-                        }}
+                        style={{ fontSize: 11, padding: "4px 10px", background: cfg.bg, color: cfg.color, border: "none" }}
                         onClick={() => onVer(u)}
                       >
-                        ✏️ Editar
+                        <i className="bi bi-pencil-square"></i> Editar
                       </button>
                       <button
                         title="Eliminar"
@@ -409,7 +410,7 @@ export function TablaUsuarios({ lista, onToggle, onVer, onEliminar }) {
                         style={{ width: 30, height: 30, fontSize: 13, padding: 0 }}
                         onClick={() => onEliminar(u.id)}
                       >
-                        🗑
+                        <i className="bi bi-trash3"></i>
                       </button>
                     </div>
                   </td>
