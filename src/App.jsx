@@ -3,17 +3,18 @@ import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
+import ForgotPassword from './components/RecuperarContraseña';
 
 import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
-import LandingPage     from "./components/LandingPage";
+import LandingPage     from "./components/LandingPage";  // ← NUEVO
 import Sidebar         from "./components/Sidebar";
 import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
-import Entregas        from "./components/Entregas";
+
 import ClasificadorIA  from "./components/ClasificadorIA";
 import Recompensas     from "./components/Recompensas";
 import MisPuntos       from "./components/MisPuntos";
@@ -64,10 +65,12 @@ function useToast() {
 }
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [user, setUser]         = useState(null);
+  const [state, dispatch]       = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
-  const navigate = useNavigate();
+  const navigate                = useNavigate();
+
+
 
   const handleLogin = (usuarioData) => {
     setUser(usuarioData);
@@ -84,20 +87,25 @@ export default function App() {
     navigate("/");
   };
 
-  // Sin sesión: landing, login y registro accesibles
+  // ── Rutas públicas (sin sesión) ──────────────────────────────────────
   if (!user) {
     return (
       <Routes>
-        <Route path="/"         element={<LandingPage />} />
-        <Route path="/login"    element={<Login onLogin={handleLogin} />} />
-        <Route path="/registro" element={<Registro />} />
+        <Route path="/"         element={<Login onLogin={handleLogin} />} />
+        <Route path="/Registro" element={<Registro />} />
+        <Route path="/forgot"   element={<ForgotPassword />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
   // Con sesión: dashboard completo
   const shared = { state, dispatch, showToast, navigate, user };
+
+  // ── Rutas privadas (con sesión) ──────────────────────────────────────
 
   return (
     <div className="app-shell">
@@ -114,17 +122,20 @@ export default function App() {
             <Route path="/aliados"         element={<Aliados         {...shared} />} />
             <Route path="/encargados"      element={<Encargados      {...shared} />} />
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
-            <Route path="/entregas"        element={<Entregas        {...shared} />} />
+            
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
-            <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
-            <Route path="/catalogos/estados-entregas"    element={<CatEstadosEntregas    {...shared} />} />
+            
+            
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
             <Route path="/catalogos/estados-usuarios"    element={<CatEstadosUsuarios    {...shared} />} />
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
+
+            <Route path="/eco"    element={<ImpactoEco state={state} />} />
+            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} />} />
 
             <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas    {...shared} />} />
@@ -133,6 +144,7 @@ export default function App() {
             <Route path="/eco"         element={<ImpactoEco     state={state} />} />
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
@@ -140,4 +152,4 @@ export default function App() {
       <ToastContainer toasts={toasts} remove={remove} />
     </div>
   );
-} 
+}
