@@ -5,6 +5,7 @@ import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
 import ForgotPassword from './components/RecuperarContraseña';
 
+
 import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
@@ -129,14 +130,9 @@ export default function App() {
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
-            <Route path="/eco"    element={<ImpactoEco state={state} />} />
-            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} />} />
+          
 
-            <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
-            <Route path="/recompensas" element={<Recompensas    {...shared} />} />
-            <Route path="/puntos"      element={<MisPuntos      state={state} />} />
-            <Route path="/mapa"        element={<Mapa           showToast={showToast} />} />
-            <Route path="/eco"         element={<ImpactoEco     state={state} />} />
+
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
 
