@@ -15,11 +15,7 @@ import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
 
-import ClasificadorIA  from "./components/ClasificadorIA";
-import Recompensas     from "./components/Recompensas";
-import MisPuntos       from "./components/MisPuntos";
-import Mapa            from "./components/Mapa";
-import ImpactoEco      from "./components/ImpactoEco";
+
 import Usuarios        from "./components/Usuarios";
 import Administradores from "./components/Administradores";
 import Aliados         from "./components/Aliados";
