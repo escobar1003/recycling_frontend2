@@ -8,13 +8,11 @@ import ForgotPassword from './components/RecuperarContraseña';
 import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
-import LandingPage     from "./components/LandingPage";  // ← NUEVO
 import Sidebar         from "./components/Sidebar";
 import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
-
 import ClasificadorIA  from "./components/ClasificadorIA";
 import Recompensas     from "./components/Recompensas";
 import MisPuntos       from "./components/MisPuntos";
@@ -46,6 +44,8 @@ function reducer(state, { type, payload }) {
     case "ADD_IA_HIST":    return { ...state, iaHist: [payload, ...state.iaHist] };
     case "SET_IA_RESULT":  return { ...state, iaResult: payload };
     case "SET_USUARIOS":   return { ...state, usuarios: payload };
+    case "SET_ADMINS":     return { ...state, usuarios: [...state.usuarios.filter(u => u.rol !== "Admin"), ...payload] };
+    case "SET_ALIADOS":    return { ...state, aliados: payload };
     case "ADD_USER":       return { ...state, usuarios: [...state.usuarios, payload] };
     case "UPDATE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload.id ? payload : u) };
     case "TOGGLE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
@@ -65,13 +65,16 @@ function useToast() {
 }
 
 export default function App() {
-  const [user, setUser]         = useState(null);
-  const [state, dispatch]       = useReducer(reducer, INITIAL_STATE);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [state, dispatch]             = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
-  const navigate                = useNavigate();
-
+  const navigate                      = useNavigate();
 
   const handleLogin = (usuarioData) => {
+    localStorage.setItem("user", JSON.stringify(usuarioData));
     setUser(usuarioData);
     navigate("/dashboard");
   };
@@ -82,6 +85,7 @@ export default function App() {
     } catch (_) {
       // Aunque falle el logout en backend, limpiamos el estado local
     }
+    localStorage.removeItem("user");
     setUser(null);
     navigate("/");
   };
@@ -91,20 +95,15 @@ export default function App() {
     return (
       <Routes>
         <Route path="/"         element={<Login onLogin={handleLogin} />} />
-        <Route path="/Registro" element={<Registro />} />
+        <Route path="/registro" element={<Registro />} />
         <Route path="/forgot"   element={<ForgotPassword />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
-  // Con sesión: dashboard completo
-  const shared = { state, dispatch, showToast, navigate, user };
-
   // ── Rutas privadas (con sesión) ──────────────────────────────────────
+  const shared = { state, dispatch, showToast, navigate, user };
 
   return (
     <div className="app-shell">
@@ -121,20 +120,16 @@ export default function App() {
             <Route path="/aliados"         element={<Aliados         {...shared} />} />
             <Route path="/encargados"      element={<Encargados      {...shared} />} />
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
-            
 
             <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
             <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
             <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
-            
+            <Route path="/catalogos/estados-entregas"    element={<CatEstadosEntregas    {...shared} />} />
             <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
             <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
             <Route path="/catalogos/estados-usuarios"    element={<CatEstadosUsuarios    {...shared} />} />
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
             <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
-
-            <Route path="/eco"    element={<ImpactoEco state={state} />} />
-            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} />} />
 
             <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas    {...shared} />} />
@@ -142,7 +137,6 @@ export default function App() {
             <Route path="/mapa"        element={<Mapa           showToast={showToast} />} />
             <Route path="/eco"         element={<ImpactoEco     state={state} />} />
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
-
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

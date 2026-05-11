@@ -27,7 +27,7 @@ const NAV = [
 
 const USUARIOS_PATHS = USUARIOS_SUB.map(u => u.path);
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const location = useLocation();
 
   const isCatalogActive  = location.pathname.startsWith("/catalogos");
@@ -184,6 +184,7 @@ export default function Sidebar() {
         <button
           className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
           style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
+          onClick={onLogout}
         >
           <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
           Salir

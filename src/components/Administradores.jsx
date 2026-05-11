@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ROLES_CFG, ZONAS, ALL_POINTS } from "../constants/data";
 import { RolBadge, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
+import { getAdmins, crearAdmin, actualizarAdmin, eliminarAdmin } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -13,6 +14,32 @@ export default function Administradores({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [loading,  setLoading]  = useState(true);
+
+  // ── Cargar admins del backend al montar ──────────────────────
+  useEffect(() => {
+    getAdmins()
+      .then(data => {
+        const lista = (data.admins ?? data.administradores ?? []).map(u => ({
+          id:        u.idAdmin ?? u.idUsuario,
+          nombre:    u.nombre,
+          email:     u.correo,
+          telefono:  u.telefono ?? "",
+          rol:       "Admin",
+          zona:      "",
+          pts:       0,
+          activo:    u.idEstadoUsuario === 1,
+          av:        (u.nombre ?? "").trim().split(" ").slice(0, 2)
+                       .map(w => w[0]?.toUpperCase() ?? "").join(""),
+          fechaAlta: u.fechaRegistro
+                       ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
+                       : "—",
+        }));
+        dispatch({ type: "SET_ADMINS", payload: lista });
+      })
+      .catch(() => showToast("No se pudieron cargar los administradores", "error"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
@@ -27,40 +54,68 @@ export default function Administradores({ state, dispatch, showToast }) {
     return e;
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
-        telefono: form.telefono.trim(), rol: "Admin",
-        pts: 0, activo: form.activo,
-        av: initials, fechaAlta: new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`✅ Administrador "${form.nombre.trim()}" creado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+
+    try {
+      const resp = await crearAdmin({
+        nombre:   form.nombre.trim(),
+        correo:   form.email.trim(),
+        password: "Temporal123!",
+        telefono: form.telefono.trim() || undefined,
+      });
+
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_USER",
+        payload: {
+          id:        resp.admin?.idAdmin ?? resp.usuario?.idUsuario ?? Date.now(),
+          nombre:    form.nombre.trim(),
+          email:     form.email.trim(),
+          telefono:  form.telefono.trim(),
+          rol:       "Admin",
+          pts:       0,
+          activo:    true,
+          av:        initials,
+          fechaAlta: new Date().toLocaleDateString("es-CO"),
+        },
+      });
+
+      showToast(`Administrador "${form.nombre.trim()}" creado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("Error al crear administrador: " + err.message, "error");
+    }
   };
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
-  const handleToggle = (id, nombre, estadoActual) => {
-    dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(
-      estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
-      estadoActual ? "error" : "success"
-    );
+  const handleToggle = async (id, nombre, estadoActual) => {
+    try {
+      await actualizarAdmin(id, { idEstadoUsuario: estadoActual ? 2 : 1 });
+      dispatch({ type: "TOGGLE_USER", payload: id });
+      showToast(
+        estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
+        estadoActual ? "error" : "success"
+      );
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
 
-  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
+  const handleSave = (u) => dispatch({ type: "UPDATE_USER", payload: u });
 
-  const handleEliminar = (id) => {
+  const handleEliminar = async (id) => {
     if (admins.length <= 1) { showToast("Debe existir al menos un administrador", "error"); return; }
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("Administrador eliminado", "error");
-    if (viewUser?.id === id) setViewUser(null);
+    try {
+      await eliminarAdmin(id);
+      dispatch({ type: "DEL_USER", payload: id });
+      showToast("Administrador eliminado", "error");
+      if (viewUser?.id === id) setViewUser(null);
+    } catch (err) {
+      showToast("Error al eliminar: " + err.message, "error");
+    }
   };
 
   const filtered = admins.filter(u => {
@@ -113,6 +168,14 @@ export default function Administradores({ state, dispatch, showToast }) {
         </div>
       </div>
 
+      {/* ── Indicador de carga ── */}
+      {loading && (
+        <div className="text-center py-3 text-muted small">
+          <div className="spinner-border spinner-border-sm text-success me-2"></div>
+          Cargando administradores del servidor...
+        </div>
+      )}
+
       {/* ── Tabla ── */}
       <div className="card border rounded-3 shadow-none">
         <div className="card-body p-0">
@@ -138,7 +201,6 @@ export default function Administradores({ state, dispatch, showToast }) {
           <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div className="modal-content rounded-4 border-0 shadow">
 
-              {/* Header */}
               <div className="modal-header border-bottom">
                 <div className="d-flex align-items-center gap-3">
                   <div
@@ -158,10 +220,8 @@ export default function Administradores({ state, dispatch, showToast }) {
                 <button type="button" className="btn-close" onClick={cerrarModal} />
               </div>
 
-              {/* Body */}
               <div className="modal-body p-4">
                 <div className="row g-3">
-
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold text-dark">
                       <i className="bi bi-person me-1 text-secondary"></i>Nombre completo *
@@ -201,10 +261,6 @@ export default function Administradores({ state, dispatch, showToast }) {
                     />
                   </div>
 
-                  
-
-                  
-
                   <div className="col-12">
                     <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border">
                       <div>
@@ -221,11 +277,9 @@ export default function Administradores({ state, dispatch, showToast }) {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
 
-              {/* Footer */}
               <div className="modal-footer border-top gap-2">
                 <button className="btn btn-outline-secondary btn-sm rounded-3 flex-fill" onClick={cerrarModal}>
                   <i className="bi bi-x me-1"></i>Cancelar

@@ -19,12 +19,24 @@ export default function Usuarios({ state, dispatch, showToast }) {
   useEffect(() => {
     getUsuarios()
       .then(data => {
-        // El backend devuelve { usuarios: [...] }
-        dispatch({ type: "SET_USUARIOS", payload: data.usuarios ?? data });
+        const lista = (data.usuarios ?? []).map(u => ({
+          id:        u.idUsuario,
+          nombre:    u.nombre,
+          email:     u.correo,
+          telefono:  u.telefono ?? "",
+          rol:       "Usuario",
+          zona:      "",
+          pts:       0,
+          activo:    u.idEstadoUsuario === 1,
+          av:        (u.nombre ?? "").trim().split(" ").slice(0, 2)
+                       .map(w => w[0]?.toUpperCase() ?? "").join(""),
+          fechaAlta: u.fechaRegistro
+                       ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
+                       : "—",
+        }));
+        dispatch({ type: "SET_USUARIOS", payload: lista });
       })
-      .catch(() => {
-        showToast("No se pudieron cargar los usuarios del servidor", "error");
-      })
+      .catch(() => showToast("No se pudieron cargar los usuarios", "error"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -46,7 +58,6 @@ export default function Usuarios({ state, dispatch, showToast }) {
     if (Object.keys(e).length) { setErrors(e); return; }
 
     try {
-      // Registro via /api/auth/registrarse
       const { registrarse } = await import("../services/api");
       const resp = await registrarse({
         nombre:   form.nombre.trim(),
@@ -59,17 +70,15 @@ export default function Usuarios({ state, dispatch, showToast }) {
       dispatch({
         type: "ADD_USER",
         payload: {
-          id:            resp.usuario?.idUsuario ?? Date.now(),
-          nombre:        form.nombre.trim(),
-          email:         form.email.trim(),
-          telefono:      form.telefono.trim(),
-          rol:           "Usuario",
-          
-          
-          pts:           0,
-          activo:        true,
-          av:            initials,
-          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+          id:        resp.usuario?.idUsuario ?? Date.now(),
+          nombre:    form.nombre.trim(),
+          email:     form.email.trim(),
+          telefono:  form.telefono.trim(),
+          rol:       "Usuario",
+          pts:       0,
+          activo:    true,
+          av:        initials,
+          fechaAlta: new Date().toLocaleDateString("es-CO"),
         },
       });
 
@@ -84,7 +93,6 @@ export default function Usuarios({ state, dispatch, showToast }) {
 
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
-      // Actualizar estado via PUT /api/admin/usuarios/:id
       await actualizarUsuario(id, { idEstadoUsuario: estadoActual ? 2 : 1 });
       dispatch({ type: "TOGGLE_USER", payload: id });
       showToast(
@@ -221,7 +229,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                       className="form-control form-control-sm bg-light"
                     />
                   </div>
-                  
+
                   <div className="col-12">
                     <div className="alert alert-success small fw-semibold mb-0">
                       <i className="bi bi-info-circle me-1"></i> {rolDesc["Usuario"]}
