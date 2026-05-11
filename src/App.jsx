@@ -5,21 +5,19 @@ import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
 import ForgotPassword from "./components/RecuperarContraseña";
 
-import "./styles/panel.css";
-import Login from "./components/Login";
-import Registro from "./components/Registro";
-import LandingPage from "./components/LandingPage";
-import Sidebar from "./components/Sidebar";
-import Topbar from "./components/Topbar";
-import ToastContainer from "./components/ToastContainer";
 
-import Dashboard from "./components/Dashboard";
-import ClasificadorIA from "./components/ClasificadorIA";
-import Recompensas from "./components/Recompensas";
-import MisPuntos from "./components/MisPuntos";
-import Mapa from "./components/Mapa";
-import ImpactoEco from "./components/ImpactoEco";
-import Usuarios from "./components/Usuarios";
+import "./styles/panel.css";
+import Login           from "./components/Login";
+import Registro        from "./components/Registro";
+import LandingPage     from "./components/LandingPage";  // ← NUEVO
+import Sidebar         from "./components/Sidebar";
+import Topbar          from "./components/Topbar";
+import ToastContainer  from "./components/ToastContainer";
+
+import Dashboard       from "./components/Dashboard";
+
+
+import Usuarios        from "./components/Usuarios";
 import Administradores from "./components/Administradores";
 import Aliados from "./components/Aliados";
 import Encargados from "./components/Encargados";
@@ -129,10 +127,12 @@ export default function App() {
             <Route path="/catalogos/estados-canjes" element={<CatEstadosCanjes {...shared} />} />
             <Route path="/catalogos/estados-usuarios" element={<CatEstadosUsuarios {...shared} />} />
             <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
-            <Route path="/catalogos/tipos-recompensa" element={<CatTiposRecompensa {...shared} />} />
+            <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
 
-            <Route path="/eco" element={<ImpactoEco state={state} />} />
-            <Route path="/perfil" element={<Perfil state={state} showToast={showToast} user={user} />} />
+          
+
+
+            <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
             <Route path="/ia" element={<ClasificadorIA {...shared} />} />
             <Route path="/recompensas" element={<Recompensas {...shared} />} />
