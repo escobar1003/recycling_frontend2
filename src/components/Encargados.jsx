@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { ZONAS, ALL_POINTS, MAT_CFG } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getPuntos } from "../services/api";
+import {
+  getEncargados,
+  crearEncargado,
+  actualizarEncargado,
+  eliminarEncargado,
+  getEntregasAdmin,
+  actualizarEstadoEntregaAdmin,
+} from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -17,6 +24,7 @@ export default function Encargados({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [loading,  setLoading]  = useState(true);
 
   // ── Estado entregas ──
   const [modalEntrega,      setModalEntrega]      = useState(false);
@@ -26,59 +34,139 @@ export default function Encargados({ state, dispatch, showToast }) {
   const [puntos,            setPuntos]            = useState([]);
   const [puntoSeleccionado, setPuntoSeleccionado] = useState("");
 
+  // ── Cargar encargados del backend ──
   useEffect(() => {
-    getPuntos()
+    getEncargados()
       .then(data => {
-        setPuntos(data);
-        if (data.length > 0) setPuntoSeleccionado(data[0].nombre);
+        const lista = (data.encargados ?? []).map(u => ({
+          id:            u.idEncargado,
+          nombre:        u.nombre,
+          email:         u.correo,
+          telefono:      u.telefono ?? "",
+          rol:           "Encargado",
+          zona:          u.zona ?? "",
+          puntoAsignado: u.puntoAsignado ?? "",
+          pts:           0,
+          activo:        u.idEstado === 1,
+          av:            (u.nombre ?? "").trim().split(" ").slice(0, 2)
+                           .map(w => w[0]?.toUpperCase() ?? "").join(""),
+          fechaAlta:     u.fechaRegistro
+                           ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
+                           : "—",
+        }));
+        dispatch({ type: "SET_ENCARGADOS", payload: lista });
       })
-      .catch(() => showToast("No se cargaron los puntos del servidor", "error"));
+      .catch(() => showToast("No se pudieron cargar los encargados", "error"))
+      .finally(() => setLoading(false));
   }, []);
+
+  // ── Cargar entregas cuando se cambia al tab ──
+  useEffect(() => {
+    if (tab !== "entregas") return;
+    setLoadingEntregas(true);
+    getEntregasAdmin()
+      .then(data => setEntregas(data.entregas ?? []))
+      .catch(() => showToast("No se pudieron cargar las entregas", "error"))
+      .finally(() => setLoadingEntregas(false));
+  }, [tab]);
 
   // ── Helpers encargados ──
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
-  const encargados = state.usuarios.filter(u => u.rol === "Encargado");
+  const encargados = state.encargados || [];
 
   const validate = () => {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
-    else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email))
+                             e.email  = "Correo inválido (debe tener @ y dominio)";
+    else if (encargados.some(u => u.email === form.email.trim()))
+                             e.email  = "Este correo ya existe";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim()))
+                             e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
-        telefono: form.telefono.trim(), rol: "Encargado",
-        zona: form.zona, puntoAsignado: form.puntoAsignado,
-        pts: 0, activo: form.activo, av: initials,
-        fechaAlta: new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`Encargado "${form.nombre.trim()}" registrado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+    try {
+      const resp = await crearEncargado({
+        nombre:        form.nombre.trim(),
+        correo:        form.email.trim(),
+        telefono:      form.telefono.trim() || undefined,
+        zona:          form.zona || undefined,
+        puntoAsignado: form.puntoAsignado || undefined,
+      });
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_ENCARGADO",
+        payload: {
+          id:            resp.encargado?.idEncargado ?? Date.now(),
+          nombre:        form.nombre.trim(),
+          email:         form.email.trim(),
+          telefono:      form.telefono.trim(),
+          rol:           "Encargado",
+          zona:          form.zona,
+          puntoAsignado: form.puntoAsignado,
+          pts:           0,
+          activo:        true,
+          av:            initials,
+          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+        },
+      });
+      showToast(`Encargado "${form.nombre.trim()}" registrado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("Error al registrar encargado: " + err.message, "error");
+    }
   };
 
-  const cerrarModal    = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
-  const handleToggle   = (id, nombre, estadoActual) => {
-    dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(
-      estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
-      estadoActual ? "error" : "success"
-    );
+  const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
+
+  const handleToggle = async (id, nombre, estadoActual) => {
+    try {
+      await actualizarEncargado(id, { idEstado: estadoActual ? 2 : 1 });
+      dispatch({ type: "TOGGLE_ENCARGADO", payload: id });
+      showToast(
+        estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
+        estadoActual ? "error" : "success"
+      );
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
-  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
-  const handleEliminar = (id) => {
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("Encargado eliminado", "error");
-    if (viewUser?.id === id) setViewUser(null);
+
+  const handleSave     = (u) => dispatch({ type: "UPDATE_ENCARGADO", payload: u });
+
+  const handleEliminar = async (id) => {
+    try {
+      await eliminarEncargado(id);
+      dispatch({ type: "DEL_ENCARGADO", payload: id });
+      showToast("Encargado eliminado", "error");
+      if (viewUser?.id === id) setViewUser(null);
+    } catch (err) {
+      showToast("Error al eliminar: " + err.message, "error");
+    }
+  };
+
+  // ── Cambiar estado de una entrega ──
+  const handleCambiarEstado = async (entrega) => {
+    const nuevoEstado = entrega.idEstadoEntrega === 1 ? 2 : 1;
+    try {
+      await actualizarEstadoEntregaAdmin(entrega.idEntrega, nuevoEstado);
+      setEntregas(prev =>
+        prev.map(e =>
+          e.idEntrega === entrega.idEntrega
+            ? { ...e, idEstadoEntrega: nuevoEstado, estadoEntrega: { ...e.estadoEntrega, nombre: nuevoEstado === 2 ? "Validada" : "Pendiente" } }
+            : e
+        )
+      );
+      showToast(nuevoEstado === 2 ? "Entrega validada" : "Entrega marcada como pendiente", "success");
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
 
   const filtered = encargados.filter(u => {
@@ -93,31 +181,6 @@ export default function Encargados({ state, dispatch, showToast }) {
 
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
-
-  // ── Helper entregas ──
-  const registrarEntrega = () => {
-    const p = parseFloat(peso);
-    if (!p || p <= 0) { showToast("Ingresa un peso válido", "error"); return; }
-    const cfg = MAT_CFG[mat] || { pts: 20, icon: "bi-recycle" };
-    const pts = Math.round(p * cfg.pts);
-    dispatch({
-      type: "ADD_ENTREGA",
-      payload: {
-        id: Date.now(), material: mat, icon: cfg.icon,
-        punto: puntoSeleccionado, fecha, peso: p, pts, estado: "Pendiente",
-      },
-    });
-    dispatch({
-      type: "ADD_HISTORIAL",
-      payload: {
-        id: Date.now(), desc: `Ganaste ${pts} puntos`,
-        sub: `Entrega de ${mat}`, tiempo: "Ahora", icon: "bi-star-fill",
-      },
-    });
-    dispatch({ type: "ADD_PTS", payload: pts });
-    showToast(`Entrega registrada — +${pts} pts`);
-    setModalEntrega(false); setPeso("");
-  };
 
   return (
     <div className="panel-page">

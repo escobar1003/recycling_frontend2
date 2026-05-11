@@ -1,4 +1,3 @@
-// App.jsx
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
@@ -9,12 +8,19 @@ import ForgotPassword from "./components/RecuperarContraseña";
 import "./styles/panel.css";
 import Login           from "./components/Login";
 import Registro        from "./components/Registro";
-import LandingPage     from "./components/LandingPage";  // ← NUEVO
 import Sidebar         from "./components/Sidebar";
 import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
+
+import ClasificadorIA  from "./components/ClasificadorIA";
+import Recompensas     from "./components/Recompensas";
+import MisPuntos       from "./components/MisPuntos";
+import Mapa            from "./components/Mapa";
+import ImpactoEco      from "./components/ImpactoEco";
+
+
 
 
 import Usuarios        from "./components/Usuarios";
@@ -34,6 +40,37 @@ import CatTiposRecompensa from "./components/catalogos/CatTiposRecompensa";
 
 function reducer(state, { type, payload }) {
   switch (type) {
+    
+    case "ADD_ENTREGA":    return { ...state, entregas:  [payload, ...state.entregas] };
+    case "ADD_HISTORIAL":  return { ...state, historial: [payload, ...state.historial] };
+    case "ADD_PTS":        return { ...state, pts: state.pts + payload };
+    case "SET_PTS":        return { ...state, pts: payload };
+    case "ADD_IA_HIST":    return { ...state, iaHist: [payload, ...state.iaHist] };
+    case "SET_IA_RESULT":  return { ...state, iaResult: payload };
+
+    // ── Usuarios ──
+    case "SET_USUARIOS":   return { ...state, usuarios: payload };
+    case "SET_ADMINS":     return { ...state, usuarios: [...state.usuarios.filter(u => u.rol !== "Admin"), ...payload] };
+    case "ADD_USER":       return { ...state, usuarios: [...state.usuarios, payload] };
+    case "UPDATE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload.id ? payload : u) };
+    case "TOGGLE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_USER":       return { ...state, usuarios: state.usuarios.filter(u => u.id !== payload) };
+
+    // ── Aliados / Supermercados ──
+    case "SET_ALIADOS":    return { ...state, aliados: payload };
+    case "ADD_ALIADO":     return { ...state, aliados: [...(state.aliados || []), payload] };
+    case "TOGGLE_ALIADO":  return { ...state, aliados: (state.aliados || []).map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_ALIADO":     return { ...state, aliados: (state.aliados || []).filter(u => u.id !== payload) };
+
+    // ── Encargados ──
+    case "SET_ENCARGADOS":   return { ...state, encargados: payload };
+    case "ADD_ENCARGADO":    return { ...state, encargados: [payload, ...(state.encargados || [])] };
+    case "UPDATE_ENCARGADO": return { ...state, encargados: (state.encargados || []).map(u => u.id === payload.id ? payload : u) };
+    case "TOGGLE_ENCARGADO": return { ...state, encargados: (state.encargados || []).map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_ENCARGADO":    return { ...state, encargados: (state.encargados || []).filter(u => u.id !== payload) };
+
+    default: return state;
+
     case "ADD_ENTREGA":
       return { ...state, entregas: [payload, ...state.entregas] };
     case "ADD_HISTORIAL":
@@ -44,6 +81,7 @@ function reducer(state, { type, payload }) {
       return { ...state, pts: payload };
     default:
       return state;
+      
   }
 }
 
@@ -63,12 +101,23 @@ function useToast() {
 }
 
 export default function App() {
+
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [state, dispatch]             = useReducer(reducer, INITIAL_STATE);
+  const { toasts, showToast, remove } = useToast();
+  const navigate                      = useNavigate();
+
   const [user, setUser] = useState(null);
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
   const navigate = useNavigate();
 
+
   const handleLogin = (usuarioData) => {
+    localStorage.setItem("user", JSON.stringify(usuarioData));
     setUser(usuarioData);
     navigate("/dashboard");
   };
@@ -76,7 +125,14 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await cerrarSesion();
+
+    } catch (_) {
+      // Aunque falle el logout en backend, limpiamos el estado local
+    }
+    localStorage.removeItem("user");
+
     } catch (_) {}
+
     setUser(null);
     navigate("/");
   };
@@ -85,14 +141,21 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
+
+        <Route path="/"         element={<Login onLogin={handleLogin} />} />
+
         <Route path="/"         element={<LandingPage />} />
         <Route path="/login"    element={<Login onLogin={handleLogin} />} />
+
         <Route path="/registro" element={<Registro />} />
         <Route path="/forgot"   element={<ForgotPassword />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
+
+
+  // ── Rutas privadas (con sesión) ──────────────────────────────────────
 
 
   const shared = { state, dispatch, showToast, navigate, user };
@@ -117,6 +180,30 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard {...shared} />} />
             <Route path="/usuarios" element={<Usuarios {...shared} />} />
             <Route path="/administradores" element={<Administradores {...shared} />} />
+
+            <Route path="/aliados"         element={<Aliados         {...shared} />} />
+            <Route path="/encargados"      element={<Encargados      {...shared} />} />
+            <Route path="/materiales"      element={<Materiales      {...shared} />} />
+
+            <Route path="/catalogos/roles"               element={<CatRoles              {...shared} />} />
+            <Route path="/catalogos/estados-puntos"      element={<CatEstadosPuntos      {...shared} />} />
+            <Route path="/catalogos/estados-materiales"  element={<CatEstadosMateriales  {...shared} />} />
+            <Route path="/catalogos/estados-entregas"    element={<CatEstadosEntregas    {...shared} />} />
+            <Route path="/catalogos/estados-aliados"     element={<CatEstadosAliados     {...shared} />} />
+            <Route path="/catalogos/estados-canjes"      element={<CatEstadosCanjes      {...shared} />} />
+            <Route path="/catalogos/estados-usuarios"    element={<CatEstadosUsuarios    {...shared} />} />
+            <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
+            <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
+
+            <Route path="/ia"          element={<ClasificadorIA {...shared} />} />
+            <Route path="/recompensas" element={<Recompensas    {...shared} />} />
+            <Route path="/puntos"      element={<MisPuntos      state={state} />} />
+            <Route path="/mapa"        element={<Mapa           showToast={showToast} />} />
+            <Route path="/eco"         element={<ImpactoEco     state={state} />} />
+            <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
             <Route path="/aliados" element={<Aliados {...shared} />} />
             <Route path="/encargados" element={<Encargados {...shared} />} />
             <Route path="/materiales" element={<Materiales {...shared} />} />
@@ -137,6 +224,7 @@ export default function App() {
            
 
             <Route path="/*" element={<Navigate to="/dashboard" replace />} />
+
           </Routes>
         </div>
       </div>

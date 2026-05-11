@@ -45,7 +45,7 @@ const validar = async (e) => {
     <div className="container-fluid">
       <div className="row min-vh-100">
 
-        {/* ESTE ES EL LADO ISQUIERDO  */}
+        {/* LADO IZQUIERDO */}
         <div className="col-md-6 bg-light d-flex justify-content-center align-items-center p-5">
           <img
             src={fondoReciclaje}
@@ -54,7 +54,7 @@ const validar = async (e) => {
           />
         </div>
 
-        {/* LADO DERECHO*/}
+        {/* LADO DERECHO */}
         <div className="col-md-6 d-flex justify-content-center align-items-center">
 
           <div className="w-100 p-4">
@@ -81,7 +81,7 @@ const validar = async (e) => {
                 <div className="alert alert-danger py-2 text-center">{error}</div>
               )}
 
-              {/* NOMBRE Y EL USUARIO */}
+              {/* NOMBRE Y USUARIO */}
               <div className="d-flex justify-content-center gap-2">
 
                 <li className="mb-2 w-50">
@@ -107,7 +107,7 @@ const validar = async (e) => {
                     </span>
                     <input
                       className="form-control"
-                      placeholder="elige tu nombre de usuario"
+                      placeholder="Elige tu nombre de usuario"
                       value={usuario}
                       onChange={(e) => setUsuario(e.target.value)}
                     />
@@ -116,7 +116,7 @@ const validar = async (e) => {
 
               </div>
 
-              {/* GMAIL PA VALIDAR  */}
+              {/* CORREO */}
               <li className="mb-2">
                 <label className="form-label text-dark">Correo electrónico</label>
                 <div className="input-group">
@@ -125,25 +125,25 @@ const validar = async (e) => {
                   </span>
                   <input
                     className="form-control"
-                    placeholder="correo electrónico"
+                    placeholder="Correo electrónico"
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
                   />
                 </div>
               </li>
 
-              {/* CONTRASEÑA Y CONFIRMARLA  */}
+              {/* CONTRASEÑA */}
               <div className="d-flex justify-content-center gap-2">
 
                 <li className="mb-2 w-50">
-                  <label className="form-label text-dark">contraseña</label>
+                  <label className="form-label text-dark">Contraseña</label>
                   <div className="input-group">
                     <span className="input-group-text">
                       <i className="bi bi-lock"></i>
                     </span>
                     <input
                       className="form-control"
-                      placeholder="crea una contraseña"
+                      placeholder="Crea una contraseña"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -152,14 +152,14 @@ const validar = async (e) => {
                 </li>
 
                 <li className="mb-2 w-50">
-                  <label className="form-label text-dark">confirmar contraseña</label>
+                  <label className="form-label text-dark">Confirmar contraseña</label>
                   <div className="input-group">
                     <span className="input-group-text">
                       <i className="bi bi-lock"></i>
                     </span>
                     <input
                       className="form-control"
-                      placeholder="confirma tu contraseña"
+                      placeholder="Confirma tu contraseña"
                       type="password"
                       value={confirmar}
                       onChange={(e) => setConfirmar(e.target.value)}
@@ -169,7 +169,7 @@ const validar = async (e) => {
 
               </div>
 
-              {/* CÓMO TE ENTERASTE  DE NOSOTROS */}
+              {/* CÓMO TE ENTERASTE */}
               <li className="mb-2">
                 <label className="form-label text-dark">
                   ¿Cómo te enteraste de nosotros?
@@ -192,7 +192,7 @@ const validar = async (e) => {
                 </div>
               </li>
 
-              {/* TERMINOS */}
+              {/* TÉRMINOS */}
               <li className="mb-2">
                 <input
                   className="form-check-input me-2"
@@ -232,9 +232,8 @@ const validar = async (e) => {
 
             <div className="d-flex justify-content-center align-items-center gap-2">
               <span className="fw-light text-secondary">
-                ¿ya tienes cuenta?
+                ¿Ya tienes cuenta?
               </span>
-
               <a href="/login" className="text-decoration-none fw-bold text-success">
                 Inicia sesión
               </a>

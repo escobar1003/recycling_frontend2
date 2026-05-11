@@ -34,7 +34,7 @@ export async function iniciarSesion(correo, password) {
     body: JSON.stringify({ correo, password }),
   });
   if (data.token) setToken(data.token);
-  return data; // { mensaje, token, usuario: { idUsuario, nombre, correo, telefono, imagen, rol } }
+  return data;
 }
 
 /** DELETE /api/auth/cerrar-sesion */
@@ -51,7 +51,7 @@ export async function registrarse(datos) {
     body: JSON.stringify(datos),
   });
   if (data.token) setToken(data.token);
-  return data; // { mensaje, token, usuario }
+  return data;
 }
 
 /** POST /api/auth/recuperar-password/solicitar  { correo } */
@@ -77,7 +77,6 @@ export async function restablecerPassword(datos) {
 /** GET /api/usuario/perfil */
 export async function getPerfil() {
   return request('/api/usuario/perfil');
-  // { idUsuario, nombre, correo, telefono, imagen, fechaRegistro, rol, estado }
 }
 
 /** PUT /api/usuario/perfil  { nombre?, telefono?, imagen? } */
@@ -212,20 +211,18 @@ export async function crearClasificacion(datos) {
 // ============================================================
 
 // ── Administradores ─────────────────────────────────────────
-export async function getAdmins()              { return request('/api/admin/admins'); }
-export async function crearAdmin(datos)         { return request('/api/admin/admins', { method: 'POST', body: JSON.stringify(datos) }); }
-export async function actualizarAdmin(id, datos){ return request(`/api/admin/admins/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
-export async function eliminarAdmin(id)         { return request(`/api/admin/admins/${id}`, { method: 'DELETE' }); }
+export async function getAdmins()               { return request('/api/admin/admins'); }
+export async function crearAdmin(datos)          { return request('/api/admin/admins', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarAdmin(id, datos) { return request(`/api/admin/admins/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarAdmin(id)          { return request(`/api/admin/admins/${id}`, { method: 'DELETE' }); }
 
 // ── Usuarios ─────────────────────────────────────────────────
-/** GET /api/admin/usuarios  → { usuarios: [...] } */
 export async function getUsuarios()                { return request('/api/admin/usuarios'); }
 export async function getUsuario(id)               { return request(`/api/admin/usuarios/${id}`); }
 export async function actualizarUsuario(id, datos) { return request(`/api/admin/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
 export async function eliminarUsuario(id)          { return request(`/api/admin/usuarios/${id}`, { method: 'DELETE' }); }
 
 // ── Aliados ──────────────────────────────────────────────────
-/** GET /api/admin/aliados  → { aliados: [...] } */
 export async function getAliados()                { return request('/api/admin/aliados'); }
 export async function getAliado(id)               { return request(`/api/admin/aliados/${id}`); }
 export async function crearAliado(datos)           { return request('/api/admin/aliados', { method: 'POST', body: JSON.stringify(datos) }); }
@@ -233,11 +230,11 @@ export async function actualizarAliado(id, datos) { return request(`/api/admin/a
 export async function eliminarAliado(id)          { return request(`/api/admin/aliados/${id}`, { method: 'DELETE' }); }
 
 // ── Materiales ───────────────────────────────────────────────
-export async function getMateriales()                 { return request('/api/admin/materiales'); }
-export async function getMaterial(id)                 { return request(`/api/admin/materiales/${id}`); }
-export async function crearMaterial(datos)            { return request('/api/admin/materiales', { method: 'POST', body: JSON.stringify(datos) }); }
-export async function actualizarMaterial(id, datos)   { return request(`/api/admin/materiales/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
-export async function eliminarMaterial(id)            { return request(`/api/admin/materiales/${id}`, { method: 'DELETE' }); }
+export async function getMateriales()               { return request('/api/admin/materiales'); }
+export async function getMaterial(id)               { return request(`/api/admin/materiales/${id}`); }
+export async function crearMaterial(datos)          { return request('/api/admin/materiales', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarMaterial(id, datos) { return request(`/api/admin/materiales/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarMaterial(id)          { return request(`/api/admin/materiales/${id}`, { method: 'DELETE' }); }
 
 // ── Recompensas ──────────────────────────────────────────────
 export async function getRecompensas()                { return request('/api/admin/recompensas'); }

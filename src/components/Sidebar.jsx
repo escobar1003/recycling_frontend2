@@ -4,7 +4,6 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 const USUARIOS_SUB = [
   { path: "/usuarios",        icon: "bi-recycle",           title: "Usuarios" },
   { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
-  { path: "/aliados",         icon: "bi-handshake-fill",    title: "Aliados" },
   { path: "/administradores", icon: "bi-shield-lock-fill",  title: "Administradores" },
 ];
 
@@ -21,13 +20,14 @@ const CATALOGOS = [
 ];
 
 const NAV = [
-  { path: "/dashboard",  icon: "bi-house-fill", title: "Dashboard" },
-  { path: "/materiales", icon: "bi-recycle",    title: "Materiales" },
+  { path: "/dashboard",  icon: "bi-house-fill",     title: "Dashboard" },
+  { path: "/materiales", icon: "bi-recycle",        title: "Materiales" },
+  { path: "/aliados",    icon: "bi-shop",            title: "Supermercado" },
 ];
 
 const USUARIOS_PATHS = USUARIOS_SUB.map(u => u.path);
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -64,7 +64,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-grow-1 py-2 px-2 d-flex flex-column gap-1 overflow-y-auto">
 
-        {/* Items fijos */}
+        {/* Items fijos (Dashboard, Materiales, Supermercado) */}
         {NAV.map(n => (
           <NavLink
             key={n.path}
@@ -194,6 +194,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
           style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
+          onClick={onLogout}
         >
           <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
           Salir

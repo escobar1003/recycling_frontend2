@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ZONAS, ALL_POINTS } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getAliados } from "../services/api";
+import { getAliados, crearAliado, actualizarAliado, eliminarAliado } from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -15,6 +15,32 @@ export default function Aliados({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [loading,  setLoading]  = useState(true);
+
+  useEffect(() => {
+    getAliados()
+      .then(data => {
+        const lista = (data.aliados ?? []).map(u => ({
+          id:            u.idAliado,
+          nombre:        u.nombre,
+          nombreEntidad: u.nombreEntidad ?? u.entidad ?? "",
+          email:         u.correo,
+          telefono:      u.telefono ?? "",
+          rol:           "Afiliado",
+          zona:          u.zona ?? "",
+          pts:           0,
+          activo:        u.estadoAliado?.idEstadoAliado === 1,
+          av:            (u.nombre ?? "").trim().split(" ").slice(0, 2)
+                           .map(w => w[0]?.toUpperCase() ?? "").join(""),
+          fechaAlta:     u.fechaRegistro
+                           ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
+                           : "—",
+        }));
+        dispatch({ type: "SET_ALIADOS", payload: lista });
+      })
+      .catch(() => showToast("No se pudieron cargar los supermercados", "error"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
@@ -22,48 +48,78 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const validate = () => {
     const e = {};
-    if (!form.nombre.trim())        e.nombre        = "El nombre del contacto es obligatorio";
-    if (!form.nombreEntidad.trim()) e.nombreEntidad = "El nombre de la entidad es obligatorio";
-    if (!form.email.trim())         e.email         = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
+    if (!form.nombre.trim())        e.nombre       = "El nombre del contacto es obligatorio";
+    if (!form.nombreEntidad.trim()) e.nombreEntidad = "El nombre del supermercado es obligatorio";
+    if (!form.email.trim())         e.email        = "El correo es obligatorio";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido (Ej: correo@ejemplo.com)";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\s/g, "")))
+      e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id:            Date.now(),
+    try {
+      const resp = await crearAliado({
         nombre:        form.nombre.trim(),
         nombreEntidad: form.nombreEntidad.trim(),
-        email:         form.email.trim(),
-        telefono:      form.telefono.trim(),
-        rol:           "Afiliado",
-        zona:          form.zona,
-        pts:           0,
-        activo:        form.activo,
-        av:            initials,
-        fechaAlta:     new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`Aliado "${form.nombreEntidad.trim()}" registrado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+        correo:        form.email.trim(),
+        password:      "Temporal123!",
+        telefono:      form.telefono.trim() || undefined,
+        zona:          form.zona || undefined,
+      });
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_ALIADO",
+        payload: {
+          id:            resp.aliado?.idAliado ?? resp.usuario?.idUsuario ?? Date.now(),
+          nombre:        form.nombre.trim(),
+          nombreEntidad: form.nombreEntidad.trim(),
+          email:         form.email.trim(),
+          telefono:      form.telefono.trim(),
+          rol:           "Afiliado",
+          zona:          form.zona,
+          pts:           0,
+          activo:        true,
+          av:            initials,
+          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+        },
+      });
+      showToast(`Supermercado "${form.nombreEntidad.trim()}" registrado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("Error al registrar supermercado: " + err.message, "error");
+    }
   };
 
-  const cerrarModal    = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
-  const handleToggle   = (id, nombre, estadoActual) => {
-    dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(estadoActual ? `${nombre} desactivado` : `${nombre} activado`, estadoActual ? "error" : "success");
+  const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
+
+  const handleToggle = async (id, nombre, estadoActual) => {
+    try {
+      await actualizarAliado(id, { idEstadoAliado: estadoActual ? 2 : 1 });
+      dispatch({ type: "TOGGLE_ALIADO", payload: id });
+      showToast(
+        estadoActual ? `${nombre} desactivado` : `${nombre} activado`,
+        estadoActual ? "error" : "success"
+      );
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
-  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
-  const handleEliminar = (id) => {
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("Aliado eliminado", "error");
-    if (viewUser?.id === id) setViewUser(null);
+
+  const handleSave = (u) => dispatch({ type: "UPDATE_USER", payload: u });
+
+  const handleEliminar = async (id) => {
+    try {
+      await eliminarAliado(id);
+      dispatch({ type: "DEL_ALIADO", payload: id });
+      showToast("Supermercado eliminado", "error");
+      if (viewUser?.id === id) setViewUser(null);
+    } catch (err) {
+      showToast("Error al eliminar: " + err.message, "error");
+    }
   };
 
   const filtered = aliados.filter(u => {

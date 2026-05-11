@@ -24,6 +24,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
       .catch(() => {
         showToast("No se pudieron cargar los usuarios del servidor", "error");
       })
+      .catch(() => showToast("No se pudieron cargar los usuarios", "error"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -37,6 +38,8 @@ export default function Usuarios({ state, dispatch, showToast }) {
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim())) e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
