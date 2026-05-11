@@ -1,4 +1,3 @@
-// App.jsx
 import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
@@ -43,13 +42,28 @@ function reducer(state, { type, payload }) {
     case "SET_PTS":        return { ...state, pts: payload };
     case "ADD_IA_HIST":    return { ...state, iaHist: [payload, ...state.iaHist] };
     case "SET_IA_RESULT":  return { ...state, iaResult: payload };
+
+    // ── Usuarios ──
     case "SET_USUARIOS":   return { ...state, usuarios: payload };
     case "SET_ADMINS":     return { ...state, usuarios: [...state.usuarios.filter(u => u.rol !== "Admin"), ...payload] };
-    case "SET_ALIADOS":    return { ...state, aliados: payload };
     case "ADD_USER":       return { ...state, usuarios: [...state.usuarios, payload] };
     case "UPDATE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload.id ? payload : u) };
     case "TOGGLE_USER":    return { ...state, usuarios: state.usuarios.map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
     case "DEL_USER":       return { ...state, usuarios: state.usuarios.filter(u => u.id !== payload) };
+
+    // ── Aliados / Supermercados ──
+    case "SET_ALIADOS":    return { ...state, aliados: payload };
+    case "ADD_ALIADO":     return { ...state, aliados: [...(state.aliados || []), payload] };
+    case "TOGGLE_ALIADO":  return { ...state, aliados: (state.aliados || []).map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_ALIADO":     return { ...state, aliados: (state.aliados || []).filter(u => u.id !== payload) };
+
+    // ── Encargados ──
+    case "SET_ENCARGADOS":   return { ...state, encargados: payload };
+    case "ADD_ENCARGADO":    return { ...state, encargados: [payload, ...(state.encargados || [])] };
+    case "UPDATE_ENCARGADO": return { ...state, encargados: (state.encargados || []).map(u => u.id === payload.id ? payload : u) };
+    case "TOGGLE_ENCARGADO": return { ...state, encargados: (state.encargados || []).map(u => u.id === payload ? { ...u, activo: !u.activo } : u) };
+    case "DEL_ENCARGADO":    return { ...state, encargados: (state.encargados || []).filter(u => u.id !== payload) };
+
     default: return state;
   }
 }

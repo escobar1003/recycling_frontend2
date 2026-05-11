@@ -48,8 +48,10 @@ export default function Usuarios({ state, dispatch, showToast }) {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo invalido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim())) e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
@@ -213,7 +215,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Correo electronico *</label>
+                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
                     <input
                       type="email" value={form.email} onChange={e => set("email", e.target.value)}
                       placeholder="correo@ejemplo.com"
@@ -222,12 +224,15 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Telefono</label>
+                    <label className="form-label fw-bold small text-secondary">Teléfono *</label>
                     <input
-                      value={form.telefono} onChange={e => set("telefono", e.target.value)}
-                      placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm bg-light"
+                      value={form.telefono}
+                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="Ej: 3001234567"
+                      maxLength={10}
+                      className={`form-control form-control-sm bg-light ${errors.telefono ? "is-invalid" : ""}`}
                     />
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
                   </div>
 
                   <div className="col-12">

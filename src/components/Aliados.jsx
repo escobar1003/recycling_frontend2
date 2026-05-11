@@ -17,12 +17,11 @@ export default function Aliados({ state, dispatch, showToast }) {
   const [viewUser, setViewUser] = useState(null);
   const [loading,  setLoading]  = useState(true);
 
-  // ── Cargar aliados del backend al montar ─────────────────────
   useEffect(() => {
     getAliados()
       .then(data => {
         const lista = (data.aliados ?? []).map(u => ({
-          id:            u.idAliado ?? u.idUsuario,
+          id:            u.idAliado,
           nombre:        u.nombre,
           nombreEntidad: u.nombreEntidad ?? u.entidad ?? "",
           email:         u.correo,
@@ -30,7 +29,7 @@ export default function Aliados({ state, dispatch, showToast }) {
           rol:           "Afiliado",
           zona:          u.zona ?? "",
           pts:           0,
-          activo:        u.idEstadoUsuario === 1,
+          activo:        u.estadoAliado?.idEstadoAliado === 1,
           av:            (u.nombre ?? "").trim().split(" ").slice(0, 2)
                            .map(w => w[0]?.toUpperCase() ?? "").join(""),
           fechaAlta:     u.fechaRegistro
@@ -39,7 +38,7 @@ export default function Aliados({ state, dispatch, showToast }) {
         }));
         dispatch({ type: "SET_ALIADOS", payload: lista });
       })
-      .catch(() => showToast("No se pudieron cargar los aliados", "error"))
+      .catch(() => showToast("No se pudieron cargar los supermercados", "error"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -49,18 +48,19 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const validate = () => {
     const e = {};
-    if (!form.nombre.trim())        e.nombre        = "El nombre del contacto es obligatorio";
-    if (!form.nombreEntidad.trim()) e.nombreEntidad  = "El nombre de la entidad es obligatorio";
-    if (!form.email.trim())         e.email         = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
+    if (!form.nombre.trim())        e.nombre       = "El nombre del contacto es obligatorio";
+    if (!form.nombreEntidad.trim()) e.nombreEntidad = "El nombre del supermercado es obligatorio";
+    if (!form.email.trim())         e.email        = "El correo es obligatorio";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido (Ej: correo@ejemplo.com)";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\s/g, "")))
+      e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
   const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-
     try {
       const resp = await crearAliado({
         nombre:        form.nombre.trim(),
@@ -70,10 +70,9 @@ export default function Aliados({ state, dispatch, showToast }) {
         telefono:      form.telefono.trim() || undefined,
         zona:          form.zona || undefined,
       });
-
       const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
       dispatch({
-        type: "ADD_USER",
+        type: "ADD_ALIADO",
         payload: {
           id:            resp.aliado?.idAliado ?? resp.usuario?.idUsuario ?? Date.now(),
           nombre:        form.nombre.trim(),
@@ -88,11 +87,10 @@ export default function Aliados({ state, dispatch, showToast }) {
           fechaAlta:     new Date().toLocaleDateString("es-CO"),
         },
       });
-
-      showToast(`Aliado "${form.nombreEntidad.trim()}" registrado`);
+      showToast(`Supermercado "${form.nombreEntidad.trim()}" registrado`);
       setModal(false); setForm(EMPTY_FORM); setErrors({});
     } catch (err) {
-      showToast("Error al registrar aliado: " + err.message, "error");
+      showToast("Error al registrar supermercado: " + err.message, "error");
     }
   };
 
@@ -100,8 +98,8 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const handleToggle = async (id, nombre, estadoActual) => {
     try {
-      await actualizarAliado(id, { idEstadoUsuario: estadoActual ? 2 : 1 });
-      dispatch({ type: "TOGGLE_USER", payload: id });
+      await actualizarAliado(id, { idEstadoAliado: estadoActual ? 2 : 1 });
+      dispatch({ type: "TOGGLE_ALIADO", payload: id });
       showToast(
         estadoActual ? `${nombre} desactivado` : `${nombre} activado`,
         estadoActual ? "error" : "success"
@@ -116,8 +114,8 @@ export default function Aliados({ state, dispatch, showToast }) {
   const handleEliminar = async (id) => {
     try {
       await eliminarAliado(id);
-      dispatch({ type: "DEL_USER", payload: id });
-      showToast("Aliado eliminado", "error");
+      dispatch({ type: "DEL_ALIADO", payload: id });
+      showToast("Supermercado eliminado", "error");
       if (viewUser?.id === id) setViewUser(null);
     } catch (err) {
       showToast("Error al eliminar: " + err.message, "error");
@@ -140,15 +138,14 @@ export default function Aliados({ state, dispatch, showToast }) {
   return (
     <div className="container-fluid px-0">
 
-      {/* ── Header ── */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h5 className="fw-bold mb-0 text-dark">
-            <i className="bi bi-handshake me-2 text-success"></i>
-            Gestión de aliados
+            <i className="bi bi-shop me-2 text-success"></i>
+            Gestión de supermercados
           </h5>
           <small className="text-muted">
-            {aliados.length} aliado{aliados.length !== 1 ? "s" : ""} registrado{aliados.length !== 1 ? "s" : ""}
+            {aliados.length} supermercado{aliados.length !== 1 ? "s" : ""} registrado{aliados.length !== 1 ? "s" : ""}
           </small>
         </div>
         <button
@@ -156,11 +153,10 @@ export default function Aliados({ state, dispatch, showToast }) {
           onClick={() => setModal(true)}
         >
           <i className="bi bi-shop"></i>
-          Nuevo aliado
+          Nuevo supermercado
         </button>
       </div>
 
-      {/* ── Buscador ── */}
       <div className="mb-3">
         <div className="input-group input-group-sm" style={{ maxWidth: 420 }}>
           <span className="input-group-text bg-white border-end-0">
@@ -175,15 +171,13 @@ export default function Aliados({ state, dispatch, showToast }) {
         </div>
       </div>
 
-      {/* ── Indicador de carga ── */}
       {loading && (
         <div className="text-center py-3 text-muted small">
           <div className="spinner-border spinner-border-sm text-success me-2"></div>
-          Cargando aliados del servidor...
+          Cargando supermercados del servidor...
         </div>
       )}
 
-      {/* ── Tabla ── */}
       <div className="card border rounded-3 shadow-none">
         <div className="card-body p-0">
           <TablaUsuarios
@@ -202,7 +196,6 @@ export default function Aliados({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
-      {/* ── Modal nuevo aliado ── */}
       {modal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
           <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -210,32 +203,28 @@ export default function Aliados({ state, dispatch, showToast }) {
 
               <div className="modal-header border-bottom">
                 <div className="d-flex align-items-center gap-3">
-                  <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
-                    style={{ width: 44, height: 44, fontSize: 15 }}
-                  >
+                  <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
+                    style={{ width: 44, height: 44, fontSize: 15 }}>
                     {avatarPreview}
                   </div>
                   <div>
                     <h6 className="modal-title fw-bold mb-0 text-dark">
-                      <i className="bi bi-handshake me-2 text-success"></i>
-                      Nuevo aliado
+                      <i className="bi bi-shop me-2 text-success"></i>Nuevo supermercado
                     </h6>
-                    <small className="text-muted">Registra una empresa u organización aliada</small>
+                    <small className="text-muted">Registra un supermercado como punto de acopio</small>
                   </div>
                 </div>
                 <button type="button" className="btn-close ms-auto" onClick={cerrarModal} />
               </div>
 
               <div className="modal-body p-4">
-
                 <p className="small fw-semibold text-muted text-uppercase mb-2" style={{ letterSpacing: 1 }}>
-                  <i className="bi bi-building me-1"></i>Datos de la entidad
+                  <i className="bi bi-building me-1"></i>Datos del supermercado
                 </p>
                 <div className="row g-3 mb-4">
                   <div className="col-12">
                     <label className="form-label small fw-semibold text-dark">
-                      <i className="bi bi-shop me-1 text-secondary"></i>Nombre de la entidad *
+                      <i className="bi bi-shop me-1 text-secondary"></i>Nombre del supermercado *
                     </label>
                     <input
                       value={form.nombreEntidad}
@@ -272,7 +261,7 @@ export default function Aliados({ state, dispatch, showToast }) {
                       type="email"
                       value={form.email}
                       onChange={e => set("email", e.target.value)}
-                      placeholder="correo@empresa.com"
+                      placeholder="correo@supermercado.com"
                       className={`form-control form-control-sm rounded-3 ${errors.email ? "is-invalid" : ""}`}
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
@@ -285,9 +274,14 @@ export default function Aliados({ state, dispatch, showToast }) {
                     <input
                       value={form.telefono}
                       onChange={e => set("telefono", e.target.value)}
-                      placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm rounded-3"
+                      placeholder="Ej: 3001234567"
+                      maxLength={10}
+                      className={`form-control form-control-sm rounded-3 ${errors.telefono ? "is-invalid" : ""}`}
                     />
+                    {errors.telefono
+                      ? <div className="invalid-feedback">{errors.telefono}</div>
+                      : <div className="form-text">10 dígitos, solo números</div>
+                    }
                   </div>
 
                   <div className="col-md-6">
@@ -308,7 +302,7 @@ export default function Aliados({ state, dispatch, showToast }) {
                     <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border">
                       <div>
                         <div className="small fw-semibold text-dark">Estado inicial</div>
-                        <div className="text-muted" style={{ fontSize: 11 }}>El aliado podrá operar si está activo</div>
+                        <div className="text-muted" style={{ fontSize: 11 }}>El supermercado podrá operar si está activo</div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <span className={`badge rounded-pill ${form.activo ? "bg-success" : "bg-secondary"}`}>
@@ -326,7 +320,7 @@ export default function Aliados({ state, dispatch, showToast }) {
                   <i className="bi bi-x me-1"></i>Cancelar
                 </button>
                 <button className="btn btn-success btn-sm rounded-3 flex-fill" onClick={guardar}>
-                  <i className="bi bi-check-lg me-1"></i>Registrar aliado
+                  <i className="bi bi-check-lg me-1"></i>Registrar supermercado
                 </button>
               </div>
 

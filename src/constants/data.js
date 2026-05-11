@@ -51,21 +51,21 @@ export const MAT_COLORS = {
 
 // ── Puntos de recolección ─────────────────────────────────────────────────────
 export const ALL_POINTS = [
-  { id: 1, name: "Punto Verde Centro",  address: "Cra 7 #45-12, Bogotá",     open: true,  hours: "Lun-Dom 7:00–19:00", phone: "601 234 5678", distance: "0.4 km", rating: 4.8, materials: ["Plástico","Cartón","Vidrio","Aluminio","Papel"] },
-  { id: 2, name: "EcoPunto Norte",      address: "Av. 127 #15-30, Bogotá",   open: true,  hours: "Lun-Dom 8:00–18:00", phone: "601 345 6789", distance: "1.2 km", rating: 4.5, materials: ["Plástico","Papel","Cartón","Tetrapack"] },
-  { id: 3, name: "EcoPunto Sur",        address: "Cll 40 Sur #20-11, Bogotá",open: false, hours: "Lun-Sáb 8:00–17:00", phone: "601 456 7890", distance: "1.8 km", rating: 4.2, materials: ["Vidrio","Metal","Electrónicos"] },
-  { id: 4, name: "Supermercado Verde",  address: "Cra 15 #90-50, Bogotá",    open: true,  hours: "Lun-Dom 8:00–21:00", phone: "601 567 8901", distance: "2.1 km", rating: 4.6, materials: ["Plástico","Cartón","Papel","Tetrapack","Aluminio"] },
-  { id: 5, name: "EcoStation Chapinero",address: "Cll 67 #4-30, Bogotá",     open: true,  hours: "Lun-Vie 7:00–18:00", phone: "601 678 9012", distance: "2.5 km", rating: 4.3, materials: ["Electrónicos","Metal","Vidrio"] },
-  { id: 6, name: "Punto Ambiental Suba",address: "Cra 91 #140-22, Bogotá",   open: false, hours: "Mar-Sáb 9:00–17:00", phone: "601 789 0123", distance: "3.1 km", rating: 4.0, materials: ["Orgánico","Plástico","Papel"] },
+  { id: 1, name: "Punto Verde Centro",   address: "Cra 7 #45-12, Bogotá",      open: true,  hours: "Lun-Dom 7:00–19:00", phone: "601 234 5678", distance: "0.4 km", rating: 4.8, materials: ["Plástico","Cartón","Vidrio","Aluminio","Papel"] },
+  { id: 2, name: "EcoPunto Norte",       address: "Av. 127 #15-30, Bogotá",    open: true,  hours: "Lun-Dom 8:00–18:00", phone: "601 345 6789", distance: "1.2 km", rating: 4.5, materials: ["Plástico","Papel","Cartón","Tetrapack"] },
+  { id: 3, name: "EcoPunto Sur",         address: "Cll 40 Sur #20-11, Bogotá", open: false, hours: "Lun-Sáb 8:00–17:00", phone: "601 456 7890", distance: "1.8 km", rating: 4.2, materials: ["Vidrio","Metal","Electrónicos"] },
+  { id: 4, name: "Supermercado Verde",   address: "Cra 15 #90-50, Bogotá",     open: true,  hours: "Lun-Dom 8:00–21:00", phone: "601 567 8901", distance: "2.1 km", rating: 4.6, materials: ["Plástico","Cartón","Papel","Tetrapack","Aluminio"] },
+  { id: 5, name: "EcoStation Chapinero", address: "Cll 67 #4-30, Bogotá",      open: true,  hours: "Lun-Vie 7:00–18:00", phone: "601 678 9012", distance: "2.5 km", rating: 4.3, materials: ["Electrónicos","Metal","Vidrio"] },
+  { id: 6, name: "Punto Ambiental Suba", address: "Cra 91 #140-22, Bogotá",    open: false, hours: "Mar-Sáb 9:00–17:00", phone: "601 789 0123", distance: "3.1 km", rating: 4.0, materials: ["Orgánico","Plástico","Papel"] },
 ];
 
 // ── Roles ─────────────────────────────────────────────────────────────────────
 export const ROLES_CFG = {
-  "Admin":      { color: "#1e40af", bg: "#dbeafe", icon: "bi-shield-lock-fill"  },
-  "Encargado":  { color: "#0f766e", bg: "#ccfbf1", icon: "bi-shop"              },
-  "Reciclador": { color: "#16a34a", bg: "#dcfce7", icon: "bi-recycle"           },
-  "Validador":  { color: "#7c3aed", bg: "#ede9fe", icon: "bi-patch-check-fill"  },
-  "Empresa":    { color: "#c2410c", bg: "#ffedd5", icon: "bi-building"          },
+  "Admin":      { color: "#1e40af", bg: "#dbeafe", icon: "bi-shield-lock-fill" },
+  "Encargado":  { color: "#0f766e", bg: "#ccfbf1", icon: "bi-shop"             },
+  "Reciclador": { color: "#16a34a", bg: "#dcfce7", icon: "bi-recycle"          },
+  "Validador":  { color: "#7c3aed", bg: "#ede9fe", icon: "bi-patch-check-fill" },
+  "Empresa":    { color: "#c2410c", bg: "#ffedd5", icon: "bi-building"         },
 };
 
 export const ZONAS = [
@@ -111,17 +111,19 @@ export const CHART_DATA = [
 // ── Estado inicial de la app ───────────────────────────────────────────────────
 export const INITIAL_STATE = {
   pts: 3250,
+  encargados: [],
+  aliados: [],
   entregas: [
-    { id: 1, material: "Plástico (PET)", icon: "bi-bag",      punto: "Punto Verde Centro", fecha: "2025-07-10", peso: 2.5, pts: 75, estado: "Validada"  },
-    { id: 2, material: "Cartón",         icon: "bi-box-seam", punto: "EcoPunto Norte",     fecha: "2025-07-08", peso: 3.0, pts: 60, estado: "Pendiente" },
-    { id: 3, material: "Vidrio",         icon: "bi-cup-straw",punto: "Supermercado Verde", fecha: "2025-07-05", peso: 1.5, pts: 37, estado: "Validada"  },
-    { id: 4, material: "Aluminio",       icon: "bi-cup",      punto: "Punto Verde Centro", fecha: "2025-07-01", peso: 0.8, pts: 32, estado: "Validada"  },
+    { id: 1, material: "Plástico (PET)", icon: "bi-bag",       punto: "Punto Verde Centro", fecha: "2025-07-10", peso: 2.5, pts: 75, estado: "Validada"  },
+    { id: 2, material: "Cartón",         icon: "bi-box-seam",  punto: "EcoPunto Norte",     fecha: "2025-07-08", peso: 3.0, pts: 60, estado: "Pendiente" },
+    { id: 3, material: "Vidrio",         icon: "bi-cup-straw", punto: "Supermercado Verde", fecha: "2025-07-05", peso: 1.5, pts: 37, estado: "Validada"  },
+    { id: 4, material: "Aluminio",       icon: "bi-cup",       punto: "Punto Verde Centro", fecha: "2025-07-01", peso: 0.8, pts: 32, estado: "Validada"  },
   ],
   historial: [
-    { id: 1, desc: "Ganaste 75 puntos", sub: "Entrega de Plástico", tiempo: "Hace 2 días",   icon: "bi-star-fill"  },
-    { id: 2, desc: "Ganaste 60 puntos", sub: "Entrega de Cartón",   tiempo: "Hace 4 días",   icon: "bi-star-fill"  },
-    { id: 3, desc: "Canje realizado",   sub: "Café gratis",         tiempo: "Hace 1 semana", icon: "bi-gift-fill"  },
-    { id: 4, desc: "Ganaste 37 puntos", sub: "Entrega de Vidrio",   tiempo: "Hace 1 semana", icon: "bi-star-fill"  },
+    { id: 1, desc: "Ganaste 75 puntos", sub: "Entrega de Plástico", tiempo: "Hace 2 días",   icon: "bi-star-fill" },
+    { id: 2, desc: "Ganaste 60 puntos", sub: "Entrega de Cartón",   tiempo: "Hace 4 días",   icon: "bi-star-fill" },
+    { id: 3, desc: "Canje realizado",   sub: "Café gratis",         tiempo: "Hace 1 semana", icon: "bi-gift-fill" },
+    { id: 4, desc: "Ganaste 37 puntos", sub: "Entrega de Vidrio",   tiempo: "Hace 1 semana", icon: "bi-star-fill" },
   ],
   iaHist:   [],
   iaResult: null,

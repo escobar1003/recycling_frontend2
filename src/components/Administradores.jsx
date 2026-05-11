@@ -51,6 +51,8 @@ export default function Administradores({ state, dispatch, showToast }) {
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim())) e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
@@ -251,14 +253,16 @@ export default function Administradores({ state, dispatch, showToast }) {
 
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold text-dark">
-                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono
+                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono *
                     </label>
                     <input
                       value={form.telefono}
-                      onChange={e => set("telefono", e.target.value)}
-                      placeholder="Ej: 300 123 4567"
-                      className="form-control form-control-sm rounded-3"
+                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="Ej: 3001234567"
+                      maxLength={10}
+                      className={`form-control form-control-sm rounded-3 ${errors.telefono ? "is-invalid" : ""}`}
                     />
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
                   </div>
 
                   <div className="col-12">

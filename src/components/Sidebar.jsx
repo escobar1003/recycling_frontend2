@@ -4,7 +4,6 @@ import { NavLink, useLocation } from "react-router-dom";
 const USUARIOS_SUB = [
   { path: "/usuarios",        icon: "bi-recycle",           title: "Usuarios" },
   { path: "/encargados",      icon: "bi-person-badge-fill", title: "Encargados" },
-  { path: "/aliados",         icon: "bi-handshake-fill",    title: "Aliados" },
   { path: "/administradores", icon: "bi-shield-lock-fill",  title: "Administradores" },
 ];
 
@@ -21,8 +20,9 @@ const CATALOGOS = [
 ];
 
 const NAV = [
-  { path: "/dashboard",  icon: "bi-house-fill", title: "Dashboard" },
-  { path: "/materiales", icon: "bi-recycle",    title: "Materiales" },
+  { path: "/dashboard",  icon: "bi-house-fill",     title: "Dashboard" },
+  { path: "/materiales", icon: "bi-recycle",        title: "Materiales" },
+  { path: "/aliados",    icon: "bi-shop",            title: "Supermercado" },
 ];
 
 const USUARIOS_PATHS = USUARIOS_SUB.map(u => u.path);
@@ -55,7 +55,7 @@ export default function Sidebar({ onLogout }) {
       {/* Nav */}
       <nav className="flex-grow-1 py-2 px-2 d-flex flex-column gap-1 overflow-y-auto">
 
-        {/* Items fijos */}
+        {/* Items fijos (Dashboard, Materiales, Supermercado) */}
         {NAV.map(n => (
           <NavLink
             key={n.path}
