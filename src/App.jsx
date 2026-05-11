@@ -134,10 +134,7 @@ export default function App() {
 
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
-            <Route path="/ia" element={<ClasificadorIA {...shared} />} />
-            <Route path="/recompensas" element={<Recompensas {...shared} />} />
-            <Route path="/puntos" element={<MisPuntos state={state} />} />
-            <Route path="/mapa" element={<Mapa showToast={showToast} />} />
+           
 
             <Route path="/*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
