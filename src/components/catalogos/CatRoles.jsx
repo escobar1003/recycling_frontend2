@@ -46,6 +46,7 @@ if (cargando) return <p className="p-4 text-muted">Cargando roles...</p>
       icono="bi-key-fill"
       campos={CAMPOS}
       datos={datos}
+      idKey="idRol"
       onGuardar={onGuardar}
       onEliminar={onEliminar}
     />

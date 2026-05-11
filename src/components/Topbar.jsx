@@ -1,4 +1,23 @@
-export default function Topbar({ navigate }) {
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Topbar({ pts, setView }) {
+  const [foto, setFoto] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedFoto = localStorage.getItem("perfilFoto");
+    if (savedFoto) setFoto(savedFoto);
+
+    const handler = (e) => {
+      setFoto(e.detail);
+      localStorage.setItem("perfilFoto", e.detail);
+    };
+
+    window.addEventListener("perfilFoto", handler);
+    return () => window.removeEventListener("perfilFoto", handler);
+  }, []);
+
   return (
     <nav
       className="navbar bg-white border-bottom px-3 py-2"
@@ -15,55 +34,58 @@ export default function Topbar({ navigate }) {
           </small>
         </a>
 
-        {/* BUSCADOR */}
-        <div className="input-group mx-2" style={{ maxWidth: 400 }}>
-          <span className="input-group-text bg-white border-end-0">
-            <i className="bi bi-search text-muted"></i>
-          </span>
-          <input
-            type="text"
-            className="form-control border-start-0 bg-white"
-            placeholder="Buscar..."
-          />
+        <div className="d-flex align-items-center gap-2"></div>
+
+        <div className="position-relative d-inline-block">
+          <div className="d-flex align-items-center justify-content-end gap-2">
+
+            {/* PERFIL (foto dinámica) */}
+            <div
+              className="rounded-circle bg-success-subtle border border-success d-flex align-items-center justify-content-center fw-bold text-success"
+              role="button"
+              onClick={() => navigate("/perfil")}
+              title="Mi perfil"
+              style={{ width: 42, height: 42 }}
+            >
+              {foto ? (
+                <img
+                  src={foto}
+                  alt="perfil"
+                  className="rounded-circle"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                "AG"
+              )}
+            </div>
+
+            {/* NOTIFICACIONES */}
+            <div className="position-relative">
+              <button
+                className="btn border rounded-circle"
+                style={{ color: "#16a34a", borderColor: "#16a34a" }}
+              >
+                <i className="bi bi-bell-fill"></i>
+              </button>
+
+              <span
+                className="position-absolute top-0 start-100 translate-middle badge rounded-pill border border-white"
+                style={{ background: "#facc15", color: "#111111", fontSize: 10 }}
+              >
+                3
+              </span>
+            </div>
+
+            {/* PERFIL (iniciales) */}
+           
+
+          </div>
         </div>
 
-        {/* ICONOS DERECHA */}
-        <div className="d-flex align-items-center gap-3">
-
-          {/* NOTIFICACIONES */}
-          <div className="position-relative">
-            <button
-              className="btn border rounded-circle"
-              style={{ color: "#16a34a", borderColor: "#16a34a" }}
-            >
-              <i className="bi bi-bell-fill"></i>
-            </button>
-
-            <span
-              className="position-absolute top-0 start-100 translate-middle badge rounded-pill border border-white"
-              style={{ background: "#facc15", color: "#111111", fontSize: 10 }}
-            >
-              3
-            </span>
-          </div>
-
-          {/* PERFIL */}
-          <div
-            className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-            style={{
-              width: 38,
-              height: 38,
-              background: "#16a34a",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/perfil")}
-            title="Mi perfil"
-          >
-            AG
-          </div>
-
-        </div>
       </div>
     </nav>
   );

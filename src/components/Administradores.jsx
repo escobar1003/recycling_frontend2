@@ -60,6 +60,7 @@ export default function Administradores({ state, dispatch, showToast }) {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
 
+
     try {
       const resp = await crearAdmin({
         nombre:   form.nombre.trim(),
@@ -89,6 +90,20 @@ export default function Administradores({ state, dispatch, showToast }) {
     } catch (err) {
       showToast("Error al crear administrador: " + err.message, "error");
     }
+
+    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+    dispatch({
+      type: "ADD_USER",
+      payload: {
+        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
+        telefono: form.telefono.trim(), rol: "Admin",
+        pts: 0, activo: form.activo,
+        av: initials, fechaAlta: new Date().toLocaleDateString("es-CO"),
+      },
+    });
+    showToast(`Administrador "${form.nombre.trim()}" creado`);
+    setModal(false); setForm(EMPTY_FORM); setErrors({});
+
   };
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
@@ -133,42 +148,38 @@ export default function Administradores({ state, dispatch, showToast }) {
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
 
   return (
-    <div className="container-fluid px-0">
+    <div className="panel-page">
 
-      {/* ── Header ── */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      {/* ── ENCABEZADO ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
         <div>
-          <h5 className="fw-bold mb-0 text-dark">
-            <i className="bi bi-shield-lock me-2 text-success"></i>
+          <h4 className="panel-title">
+            <i className="bi bi-shield-lock" style={{ color: "var(--verde)", marginRight: 8 }}></i>
             Gestión de administradores
-          </h5>
-          <small className="text-muted">
+          </h4>
+          <span className="panel-subtitle">
             {admins.length} administrador{admins.length !== 1 ? "es" : ""} registrado{admins.length !== 1 ? "s" : ""}
-          </small>
+          </span>
         </div>
-        <button
-          className="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-2"
-          onClick={() => setModal(true)}
-        >
+        <button className="btn-panel primary" onClick={() => setModal(true)}>
           <i className="bi bi-person-plus"></i>
           Nuevo administrador
         </button>
       </div>
 
-      {/* ── Buscador ── */}
-      <div className="mb-3">
-        <div className="input-group input-group-sm" style={{ maxWidth: 380 }}>
-          <span className="input-group-text bg-white border-end-0">
-            <i className="bi bi-search text-secondary"></i>
-          </span>
+      {/* ── BUSCADOR ── */}
+      <div style={{ marginBottom: 16 }}>
+        <div className="search-box" style={{ maxWidth: 380 }}>
+          <i className="bi bi-search"></i>
           <input
-            className="form-control border-start-0 rounded-end-3"
             placeholder="Buscar por nombre, correo o zona..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            style={{ width: "100%" }}
           />
         </div>
       </div>
+
 
       {/* ── Indicador de carga ── */}
       {loading && (
@@ -188,6 +199,16 @@ export default function Administradores({ state, dispatch, showToast }) {
             onEliminar={handleEliminar}
           />
         </div>
+
+      {/* ── TABLA ── */}
+      <div className="panel-table-wrap">
+        <TablaUsuarios
+          lista={filtered}
+          onToggle={handleToggle}
+          onVer={setViewUser}
+          onEliminar={handleEliminar}
+        />
+
       </div>
 
       <ModalDetalle
@@ -197,8 +218,9 @@ export default function Administradores({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
-      {/* ── Modal nuevo administrador ── */}
+      {/* ── MODAL NUEVO ADMINISTRADOR ── */}
       {modal && (
+
         <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
           <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div className="modal-content rounded-4 border-0 shadow">
@@ -217,10 +239,40 @@ export default function Administradores({ state, dispatch, showToast }) {
                       Nuevo administrador
                     </h6>
                     <small className="text-muted">Acceso total al sistema</small>
-                  </div>
+
+        <div
+          className="panel-modal-bg"
+          onClick={ev => { if (ev.target === ev.currentTarget) cerrarModal(); }}
+        >
+          <div className="panel-modal">
+
+            {/* Header */}
+            <div className="panel-modal-head">
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {/* Avatar preview */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: "50%",
+                  background: "var(--verde-claro)", border: "1px solid var(--gris-borde)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 700, fontSize: "0.85rem", color: "var(--verde)",
+                  flexShrink: 0,
+                }}>
+                  {avatarPreview}
                 </div>
-                <button type="button" className="btn-close" onClick={cerrarModal} />
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--negro)" }}>
+                    <i className="bi bi-shield-lock" style={{ color: "var(--verde)", marginRight: 6 }}></i>
+                    Nuevo administrador
+
+                  </div>
+                  <div style={{ fontSize: "0.72rem", color: "var(--gris-texto)" }}>Acceso total al sistema</div>
+                </div>
               </div>
+              <button className="btn-icon" onClick={cerrarModal}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+
 
               <div className="modal-body p-4">
                 <div className="row g-3">
@@ -278,11 +330,88 @@ export default function Administradores({ state, dispatch, showToast }) {
                           {form.activo ? "Activo" : "Inactivo"}
                         </span>
                         <Toggle checked={form.activo} onChange={v => set("activo", v)} />
+
+            {/* Body */}
+            <div className="panel-modal-body">
+              <div className="panel-modal-grid">
+
+                <div>
+                  <label className="panel-label">
+                    <i className="bi bi-person" style={{ marginRight: 4 }}></i>Nombre completo *
+                  </label>
+                  <input
+                    className="panel-input"
+                    value={form.nombre}
+                    onChange={e => set("nombre", e.target.value)}
+                    placeholder="Ej: Ana García"
+                    style={errors.nombre ? { borderColor: "var(--rojo)" } : {}}
+                  />
+                  {errors.nombre && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--rojo)", marginTop: 2, display: "block" }}>
+                      {errors.nombre}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="panel-label">
+                    <i className="bi bi-envelope" style={{ marginRight: 4 }}></i>Correo electrónico *
+                  </label>
+                  <input
+                    type="email"
+                    className="panel-input"
+                    value={form.email}
+                    onChange={e => set("email", e.target.value)}
+                    placeholder="admin@ejemplo.com"
+                    style={errors.email ? { borderColor: "var(--rojo)" } : {}}
+                  />
+                  {errors.email && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--rojo)", marginTop: 2, display: "block" }}>
+                      {errors.email}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="panel-label">
+                    <i className="bi bi-telephone" style={{ marginRight: 4 }}></i>Teléfono
+                  </label>
+                  <input
+                    className="panel-input"
+                    value={form.telefono}
+                    onChange={e => set("telefono", e.target.value)}
+                    placeholder="Ej: 300 123 4567"
+                  />
+                </div>
+
+                {/* Estado toggle — ocupa columna completa */}
+                <div className="full">
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 14px", borderRadius: 6,
+                    background: "#fafafa", border: "1px solid var(--gris-borde)",
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: "0.82rem", color: "var(--negro)" }}>Estado inicial</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--gris-texto)" }}>
+                        El administrador podrá acceder si está activo
+
                       </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        className="panel-badge"
+                        style={{
+                          background: form.activo ? "var(--verde-claro)" : "#f0f0f0",
+                          color: form.activo ? "var(--verde)" : "#aaa",
+                        }}
+                      >
+                        {form.activo ? "Activo" : "Inactivo"}
+                      </span>
+                      <Toggle checked={form.activo} onChange={v => set("activo", v)} />
                     </div>
                   </div>
                 </div>
-              </div>
 
               <div className="modal-footer border-top gap-2">
                 <button className="btn btn-outline-secondary btn-sm rounded-3 flex-fill" onClick={cerrarModal}>
@@ -292,11 +421,22 @@ export default function Administradores({ state, dispatch, showToast }) {
                   <i className="bi bi-check-lg me-1"></i>Crear administrador
                 </button>
               </div>
-
             </div>
+
+            {/* Footer */}
+            <div className="panel-modal-foot">
+              <button className="btn-panel ghost" onClick={cerrarModal}>
+                <i className="bi bi-x"></i> Cancelar
+              </button>
+              <button className="btn-panel primary" onClick={guardar}>
+                <i className="bi bi-check-lg"></i> Crear administrador
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }

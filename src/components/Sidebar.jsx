@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 const USUARIOS_SUB = [
   { path: "/usuarios",        icon: "bi-recycle",           title: "Usuarios" },
@@ -29,12 +29,21 @@ const USUARIOS_PATHS = USUARIOS_SUB.map(u => u.path);
 
 export default function Sidebar({ onLogout }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isCatalogActive  = location.pathname.startsWith("/catalogos");
   const isUsuariosActive = USUARIOS_PATHS.some(p => location.pathname.startsWith(p));
 
   const [catalogosOpen, setCatalogosOpen] = useState(isCatalogActive);
   const [usuariosOpen,  setUsuariosOpen]  = useState(isUsuariosActive);
+  const handleLogout = () => {
+  localStorage.clear();
+
+  navigate("/login", { replace: true });
+
+  window.location.reload();
+};
+
 
   return (
     <div
@@ -182,6 +191,7 @@ export default function Sidebar({ onLogout }) {
       {/* Salir */}
       <div className="px-2 py-2 pb-3">
         <button
+          onClick={handleLogout}
           className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
           style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
           onClick={onLogout}

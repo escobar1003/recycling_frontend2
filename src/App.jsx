@@ -2,7 +2,8 @@ import { useReducer, useCallback, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { INITIAL_STATE } from "./constants/data";
 import { cerrarSesion } from "./services/api";
-import ForgotPassword from './components/RecuperarContraseña';
+import ForgotPassword from "./components/RecuperarContraseña";
+
 
 import "./styles/panel.css";
 import Login           from "./components/Login";
@@ -12,30 +13,34 @@ import Topbar          from "./components/Topbar";
 import ToastContainer  from "./components/ToastContainer";
 
 import Dashboard       from "./components/Dashboard";
+
 import ClasificadorIA  from "./components/ClasificadorIA";
 import Recompensas     from "./components/Recompensas";
 import MisPuntos       from "./components/MisPuntos";
 import Mapa            from "./components/Mapa";
 import ImpactoEco      from "./components/ImpactoEco";
+
+
+
+
 import Usuarios        from "./components/Usuarios";
 import Administradores from "./components/Administradores";
-import Aliados         from "./components/Aliados";
-import Encargados      from "./components/Encargados";
-import Materiales      from "./components/Materiales";
-import Perfil          from "./components/Perfil";
+import Aliados from "./components/Aliados";
+import Encargados from "./components/Encargados";
+import Materiales from "./components/Materiales";
+import Perfil from "./components/Perfil";
 
-import CatRoles              from "./components/catalogos/CatRoles";
-import CatEstadosPuntos      from "./components/catalogos/CatEstadosPuntos";
-import CatEstadosMateriales  from "./components/catalogos/CatEstadosMateriales";
-import CatEstadosEntregas    from "./components/catalogos/CatEstadosEntregas";
-import CatEstadosAliados     from "./components/catalogos/CatEstadosAliados";
-import CatEstadosCanjes      from "./components/catalogos/CatEstadosCanjes";
-import CatEstadosUsuarios    from "./components/catalogos/CatEstadosUsuarios";
+import CatRoles from "./components/catalogos/CatRoles";
+import CatEstadosPuntos from "./components/catalogos/CatEstadosPuntos";
+import CatEstadosAliados from "./components/catalogos/CatEstadosAliados";
+import CatEstadosCanjes from "./components/catalogos/CatEstadosCanjes";
+import CatEstadosUsuarios from "./components/catalogos/CatEstadosUsuarios";
 import CatEstadosRecompensas from "./components/catalogos/CatEstadosRecompensas";
-import CatTiposRecompensa    from "./components/catalogos/CatTiposRecompensa";
+import CatTiposRecompensa from "./components/catalogos/CatTiposRecompensa";
 
 function reducer(state, { type, payload }) {
   switch (type) {
+    
     case "ADD_ENTREGA":    return { ...state, entregas:  [payload, ...state.entregas] };
     case "ADD_HISTORIAL":  return { ...state, historial: [payload, ...state.historial] };
     case "ADD_PTS":        return { ...state, pts: state.pts + payload };
@@ -65,20 +70,38 @@ function reducer(state, { type, payload }) {
     case "DEL_ENCARGADO":    return { ...state, encargados: (state.encargados || []).filter(u => u.id !== payload) };
 
     default: return state;
+
+    case "ADD_ENTREGA":
+      return { ...state, entregas: [payload, ...state.entregas] };
+    case "ADD_HISTORIAL":
+      return { ...state, historial: [payload, ...state.historial] };
+    case "ADD_PTS":
+      return { ...state, pts: state.pts + payload };
+    case "SET_PTS":
+      return { ...state, pts: payload };
+    default:
+      return state;
+      
   }
 }
 
 function useToast() {
   const [toasts, setToasts] = useState([]);
+
   const showToast = useCallback((msg, type = "success") => {
     const id = Date.now();
-    setToasts(t => [...t, { id, msg, type }]);
+    setToasts((t) => [...t, { id, msg, type }]);
   }, []);
-  const remove = useCallback(id => setToasts(t => t.filter(x => x.id !== id)), []);
+
+  const remove = useCallback((id) => {
+    setToasts((t) => t.filter((x) => x.id !== id));
+  }, []);
+
   return { toasts, showToast, remove };
 }
 
 export default function App() {
+
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
@@ -86,6 +109,12 @@ export default function App() {
   const [state, dispatch]             = useReducer(reducer, INITIAL_STATE);
   const { toasts, showToast, remove } = useToast();
   const navigate                      = useNavigate();
+
+  const [user, setUser] = useState(null);
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const { toasts, showToast, remove } = useToast();
+  const navigate = useNavigate();
+
 
   const handleLogin = (usuarioData) => {
     localStorage.setItem("user", JSON.stringify(usuarioData));
@@ -96,19 +125,28 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await cerrarSesion();
+
     } catch (_) {
       // Aunque falle el logout en backend, limpiamos el estado local
     }
     localStorage.removeItem("user");
+
+    } catch (_) {}
+
     setUser(null);
     navigate("/");
   };
 
-  // ── Rutas públicas (sin sesión) ──────────────────────────────────────
+  // ───────── RUTAS SIN LOGIN ─────────
   if (!user) {
     return (
       <Routes>
+
         <Route path="/"         element={<Login onLogin={handleLogin} />} />
+
+        <Route path="/"         element={<LandingPage />} />
+        <Route path="/login"    element={<Login onLogin={handleLogin} />} />
+
         <Route path="/registro" element={<Registro />} />
         <Route path="/forgot"   element={<ForgotPassword />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
@@ -116,21 +154,33 @@ export default function App() {
     );
   }
 
+
   // ── Rutas privadas (con sesión) ──────────────────────────────────────
+
+
   const shared = { state, dispatch, showToast, navigate, user };
 
+  // ───────── RUTAS CON LOGIN ─────────
   return (
     <div className="app-shell">
       <Sidebar user={user} onLogout={handleLogout} />
+
       <div className="main-content">
-        <Topbar pts={state.pts} navigate={navigate} user={user} onLogout={handleLogout} />
+        <Topbar
+          pts={state.pts}
+          navigate={navigate}
+          user={user}
+          onLogout={handleLogout}
+        />
+
         <div className="page-area">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            <Route path="/dashboard"       element={<Dashboard       {...shared} />} />
-            <Route path="/usuarios"        element={<Usuarios        {...shared} />} />
+            <Route path="/dashboard" element={<Dashboard {...shared} />} />
+            <Route path="/usuarios" element={<Usuarios {...shared} />} />
             <Route path="/administradores" element={<Administradores {...shared} />} />
+
             <Route path="/aliados"         element={<Aliados         {...shared} />} />
             <Route path="/encargados"      element={<Encargados      {...shared} />} />
             <Route path="/materiales"      element={<Materiales      {...shared} />} />
@@ -153,9 +203,32 @@ export default function App() {
             <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+            <Route path="/aliados" element={<Aliados {...shared} />} />
+            <Route path="/encargados" element={<Encargados {...shared} />} />
+            <Route path="/materiales" element={<Materiales {...shared} />} />
+
+            <Route path="/catalogos/roles" element={<CatRoles {...shared} />} />
+            <Route path="/catalogos/estados-puntos" element={<CatEstadosPuntos {...shared} />} />
+            <Route path="/catalogos/estados-aliados" element={<CatEstadosAliados {...shared} />} />
+            <Route path="/catalogos/estados-canjes" element={<CatEstadosCanjes {...shared} />} />
+            <Route path="/catalogos/estados-usuarios" element={<CatEstadosUsuarios {...shared} />} />
+            <Route path="/catalogos/estados-recompensas" element={<CatEstadosRecompensas {...shared} />} />
+            <Route path="/catalogos/tipos-recompensa"    element={<CatTiposRecompensa    {...shared} />} />
+
+          
+
+
+            <Route path="/perfil"      element={<Perfil         state={state} showToast={showToast} user={user} />} />
+
+           
+
+            <Route path="/*" element={<Navigate to="/dashboard" replace />} />
+
           </Routes>
         </div>
       </div>
+
       <ToastContainer toasts={toasts} remove={remove} />
     </div>
   );
