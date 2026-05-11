@@ -15,6 +15,7 @@ export default function CrudCatalogo({
   icono,
   campos = [],
   datos: datosIniciales = [],
+  idKey = "id",
   onGuardar,
   onEliminar,
 }) {
@@ -55,7 +56,7 @@ export default function CrudCatalogo({
 const guardar = async () => {
   if (!validar()) return;
   if (editandoId !== null) {
-    await onGuardar?.({ ...form, id: editandoId });
+    await onGuardar?.({ ...form, [idKey]: editandoId });
   } else {
     await onGuardar?.(form);
   }
@@ -65,7 +66,7 @@ const guardar = async () => {
   // ── Editar ───────────────────────────────────────────────────────────────
   const editar = item => {
     setForm(campos.reduce((acc, c) => ({ ...acc, [c.key]: item[c.key] ?? "" }), {}));
-    setEditandoId(item.idRol ?? item.id);
+    setEditandoId(item[idKey]);
     setMostrarForm(true);
     setError("");
   };
@@ -220,7 +221,7 @@ const guardar = async () => {
                 </tr>
               ) : (
                 datosFiltrados.map((item, idx) => (
-                  <tr key={item.idRol ?? item.id ?? item.nombre}>
+                  <tr key={item[idKey]?? item.nombre}>
                     <td className="ps-4 text-muted small">{idx + 1}</td>
                     {campos.map(c => (
                       <td key={c.key} className="small fw-semibold">{item[c.key] ?? "—"}</td>
@@ -236,7 +237,7 @@ const guardar = async () => {
                         </button>
                         <button
                           className="btn btn-outline-danger btn-sm rounded-3"
-                          onClick={() => setConfirmDelete(item.idRol ?? item.id)}
+                          onClick={() => setConfirmDelete(item[idKey])}
                           title="Eliminar"
                         >
                           <i className="bi bi-trash-fill" />

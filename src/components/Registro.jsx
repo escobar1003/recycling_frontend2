@@ -15,45 +15,31 @@ function Registro() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const validar = async () => {
-    setError("");
-    if (nombre.trim() === "") return setError("Nombre requerido");
-    if (usuario.trim() === "") return setError("Usuario requerido");
-    if (correo.trim() === "") return setError("Correo requerido");
-    if (password.trim() === "") return setError("Contraseña requerida");
-    if (confirmar.trim() === "") return setError("Confirmación requerida");
+const validar = async (e) => {
+  if (e && e.preventDefault) e.preventDefault();
+  setError("");
 
-    if (!correo.includes("@") || !correo.includes(".com")) {
-      return setError("Correo inválido");
-    }
+  if (nombre.trim() === "") return setError("Nombre requerido");
+  if (usuario.trim() === "") return setError("Usuario requerido");
+  if (correo.trim() === "") return setError("Correo requerido");
+  if (password.trim() === "") return setError("Contraseña requerida");
+  if (confirmar.trim() === "") return setError("Confirmación requerida");
+  if (password !== confirmar) return setError("Las contraseñas no coinciden");
 
-    if (password !== confirmar) {
-      return setError("La contraseña no coincide");
-    }
+  try {
+    await registrarse({
+      nombre,
+      usuario,
+      correo,
+      password
+    });
 
-    if (!terminos) {
-      return setError("Debes aceptar términos y condiciones");
-    }
-
-    if (origen.trim() === "") {
-      return setError("Selecciona cómo te enteraste de nosotros");
-    }
-
-    setLoading(true);
-    try {
-      await registrarse({
-        nombre:   nombre.trim(),
-        correo:   correo.trim(),
-        password: password,
-        telefono: undefined,
-      });
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Error al crear la cuenta");
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert("¡Cuenta creada correctamente!");
+    navigate("/");
+  } catch (err) {
+    setError(err.message || "Error al registrar usuario");
+  }
+};
 
   return (
     <div className="container-fluid">
@@ -237,32 +223,12 @@ function Registro() {
 
               <br />
 
-              <div className="d-flex align-items-center my-3 w-100">
-                <div className="flex-grow-1 border-top border-2 border-dark"></div>
-                <span className="px-3 fw-semibold text-dark">
-                  O continúa con
-                </span>
-                <div className="flex-grow-1 border-top border-2 border-dark"></div>
-              </div>
+             
 
             </div>
 
             {/* GOOGLE FACEBOOK */}
-            <div className="d-flex justify-content-center align-items-center gap-3">
-
-              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
-                <i className="bi bi-google me-2 text-danger"></i>
-                Google
-              </button>
-
-              <button className="btn btn-light text-dark rounded-pill px-4 py-2">
-                <i className="bi bi-facebook me-2 text-primary"></i>
-                Facebook
-              </button>
-
-            </div>
-
-            <br />
+            
 
             <div className="d-flex justify-content-center align-items-center gap-2">
               <span className="fw-light text-secondary">
