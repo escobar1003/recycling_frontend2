@@ -244,13 +244,24 @@ export async function actualizarRecompensa(id, datos) { return request(`/api/adm
 export async function eliminarRecompensa(id)          { return request(`/api/admin/recompensas/${id}`, { method: 'DELETE' }); }
 
 // ── Roles ─────────────────────────────────────────────────────
-export async function getRoles()                { return request('/api/admin/roles'); }
-export async function crearRol(datos)           { return request('/api/admin/roles', { method: 'POST', body: JSON.stringify(datos) }); }
-export async function actualizarRol(id, datos)  { return request(`/api/admin/roles/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
-export async function eliminarRol(id)           { return request(`/api/admin/roles/${id}`, { method: 'DELETE' }); }
+export async function getRoles()               { return request('/api/admin/roles'); }
+export async function crearRol(datos)          { return request('/api/admin/roles', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarRol(id, datos) { return request(`/api/admin/roles/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarRol(id)          { return request(`/api/admin/roles/${id}`, { method: 'DELETE' }); }
 
-// ── Estados Materiales ─────────────────────────────────────────
-export async function getEstadosMateriales()                { return request('/api/admin/estados-materiales'); }
-export async function crearEstadoMaterial(datos)            { return request('/api/admin/estados-materiales', { method: 'POST', body: JSON.stringify(datos) }); }
-export async function actualizarEstadoMaterial(id, datos)   { return request(`/api/admin/estados-materiales/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
-export async function eliminarEstadoMaterial(id)            { return request(`/api/admin/estados-materiales/${id}`, { method: 'DELETE' }); }
+// ── Encargados ────────────────────────────────────────────────
+export async function getEncargados()                { return request('/api/admin/encargados'); }
+export async function getEncargado(id)               { return request(`/api/admin/encargados/${id}`); }
+export async function crearEncargado(datos)          { return request('/api/admin/encargados', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarEncargado(id, datos) { return request(`/api/admin/encargados/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarEncargado(id)          { return request(`/api/admin/encargados/${id}`, { method: 'DELETE' }); }
+
+// ── Entregas (admin) ──────────────────────────────────────────
+export async function getEntregasAdmin()                        { return request('/api/admin/entregas'); }
+export async function getEntregaAdmin(id)                       { return request(`/api/admin/entregas/${id}`); }
+export async function actualizarEstadoEntregaAdmin(id, idEstadoEntrega) {
+  return request(`/api/admin/entregas/${id}/estado`, {
+    method: 'PUT',
+    body: JSON.stringify({ idEstadoEntrega }),
+  });
+}

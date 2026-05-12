@@ -57,7 +57,7 @@ export default function Perfil({ state, showToast }) {
 
       }
     };
-
+    //foto localstorage
     const fotoGuardada = localStorage.getItem("perfilFoto");
 
     cargarPerfil();

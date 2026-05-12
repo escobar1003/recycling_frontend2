@@ -195,8 +195,57 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     <i className="bi bi-recycle" style={{ color: "var(--verde)", marginRight: 6 }}></i>
                     Nuevo usuario
                   </div>
-                  <div style={{ fontSize: "0.72rem", color: "var(--gris-texto)" }}>
-                    Registra un nuevo usuario reciclador
+                </div>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Nombre completo *</label>
+                    <input
+                      value={form.nombre} onChange={e => set("nombre", e.target.value)}
+                      placeholder="Ej: Carlos Ruiz"
+                      className={`form-control form-control-sm bg-light ${errors.nombre ? "is-invalid" : ""}`}
+                    />
+                    {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Correo electrónico *</label>
+                    <input
+                      type="email" value={form.email} onChange={e => set("email", e.target.value)}
+                      placeholder="correo@ejemplo.com"
+                      className={`form-control form-control-sm bg-light ${errors.email ? "is-invalid" : ""}`}
+                    />
+                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Teléfono *</label>
+                    <input
+                      value={form.telefono}
+                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="Ej: 3001234567"
+                      maxLength={10}
+                      className={`form-control form-control-sm bg-light ${errors.telefono ? "is-invalid" : ""}`}
+                    />
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
+                  </div>
+
+                  <div className="col-12">
+                    <div className="alert alert-success small fw-semibold mb-0">
+                      <i className="bi bi-info-circle me-1"></i> {rolDesc["Usuario"]}
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="d-flex align-items-center justify-content-between p-3 rounded bg-light border">
+                      <div>
+                        <div className="fw-bold small">Estado inicial</div>
+                        <div className="text-muted small">El usuario podra acceder de inmediato si esta activo</div>
+                      </div>
+                      <div className="d-flex align-items-center gap-2">
+                        <span className={`small fw-semibold ${form.activo ? "text-success" : "text-secondary"}`}>
+                          {form.activo ? "Activo" : "Inactivo"}
+                        </span>
+                        <Toggle checked={form.activo} onChange={v => set("activo", v)} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
