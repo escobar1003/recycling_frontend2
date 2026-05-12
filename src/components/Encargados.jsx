@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import { ZONAS, ALL_POINTS } from "../constants/data";
-import { Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
+import { useEffect, useState } from "react";
 import {
   getEncargados,
   crearEncargado,
@@ -24,96 +22,129 @@ export default function Encargados({
   state,
   dispatch,
   showToast,
-
-  // Gestión encargados
-  tab,
-  setTab,
-  modal,
-  setModal,
-  form,
-  setForm,
-  errors,
-  setErrors,
-  search,
-  setSearch,
-  viewUser,
-  setViewUser,
-  loading,
-  setLoading,
-
-  // Entregas
-  entregas,
-  setEntregas,
-  loadingEntregas,
-  setLoadingEntregas,
 }) {
 
-  // ─────────────────────────────
+  // =========================
+  // STATES
+  // =========================
+  const [tab, setTab] = useState("encargados");
+  const [modal, setModal] = useState(false);
+
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
+
+  const [search, setSearch] = useState("");
+
+  const [viewUser, setViewUser] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
+  const [entregas, setEntregas] = useState([]);
+  const [loadingEntregas, setLoadingEntregas] =
+    useState(false);
+
+  // =========================
   // CARGAR ENCARGADOS
-  // ─────────────────────────────
+  // =========================
   useEffect(() => {
     getEncargados()
       .then((data) => {
-        const lista = (data.encargados ?? []).map((u) => ({
-          id: u.idEncargado,
-          nombre: u.nombre,
-          email: u.correo,
-          telefono: u.telefono ?? "",
-          rol: "Encargado",
-          zona: u.zona ?? "",
-          puntoAsignado: u.puntoAsignado ?? "",
-          pts: 0,
-          activo: u.idEstado === 1,
 
-          av: (u.nombre ?? "")
-            .trim()
-            .split(" ")
-            .slice(0, 2)
-            .map((w) => w[0]?.toUpperCase() ?? "")
-            .join(""),
+        const lista = (data.encargados ?? []).map(
+          (u) => ({
+            id: u.idEncargado,
 
-          fechaAlta: u.fechaRegistro
-            ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
-            : "—",
-        }));
+            nombre: u.nombre || "",
+
+            email: u.correo || "",
+
+            telefono: u.telefono || "",
+
+            rol: "Encargado",
+
+            zona: u.zona || "",
+
+            puntoAsignado:
+              u.puntoAsignado || "",
+
+            pts: 0,
+
+            activo: u.idEstado === 1,
+
+            av: (u.nombre || "")
+              .trim()
+              .split(" ")
+              .slice(0, 2)
+              .map(
+                (w) =>
+                  w?.[0]?.toUpperCase() || ""
+              )
+              .join(""),
+
+            fechaAlta: u.fechaRegistro
+              ? new Date(
+                  u.fechaRegistro
+                ).toLocaleDateString("es-CO")
+              : "—",
+          })
+        );
 
         dispatch({
           type: "SET_ENCARGADOS",
           payload: lista,
         });
       })
-      .catch(() => {
-        showToast("No se pudieron cargar los encargados", "error");
+
+      .catch((err) => {
+        console.log(err);
+
+        showToast(
+          "No se pudieron cargar los encargados",
+          "error"
+        );
       })
+
       .finally(() => {
         setLoading(false);
       });
+
   }, []);
 
-  // ─────────────────────────────
+  // =========================
   // CARGAR ENTREGAS
-  // ─────────────────────────────
+  // =========================
   useEffect(() => {
+
     if (tab !== "entregas") return;
 
     setLoadingEntregas(true);
 
     getEntregasAdmin()
+
       .then((data) => {
-        setEntregas(data.entregas ?? []);
+        setEntregas(data.entregas || []);
       })
+
       .catch(() => {
-        showToast("No se pudieron cargar las entregas", "error");
+        showToast(
+          "No se pudieron cargar las entregas",
+          "error"
+        );
       })
+
       .finally(() => {
         setLoadingEntregas(false);
       });
+
   }, [tab]);
 
-  // ─────────────────────────────
+  // =========================
   // HELPERS
-  // ─────────────────────────────
+  // =========================
+  const encargados = state?.encargados || [];
+
   const set = (key, value) => {
+
     setForm((prev) => ({
       ...prev,
       [key]: value,
@@ -125,128 +156,178 @@ export default function Encargados({
     }));
   };
 
-  const encargados = state.encargados || [];
-
-  // ─────────────────────────────
-  // VALIDAR FORMULARIO
-  // ─────────────────────────────
+  // =========================
+  // VALIDAR
+  // =========================
   const validate = () => {
+
     const e = {};
 
-    if (!form.nombre.trim()) {
+    if (!form.nombre?.trim()) {
       e.nombre = "El nombre es obligatorio";
     }
 
-    if (!form.email.trim()) {
+    if (!form.email?.trim()) {
+
       e.email = "El correo es obligatorio";
+
     } else if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email)
-    ) {
-      e.email = "Correo inválido";
-    } else if (
-      encargados.some(
-        (u) => u.email === form.email.trim()
+      !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(
+        form.email
       )
     ) {
+
+      e.email = "Correo inválido";
+
+    } else if (
+      encargados.some(
+        (u) =>
+          u.email === form.email.trim()
+      )
+    ) {
+
       e.email = "Este correo ya existe";
     }
 
-    if (!form.telefono.trim()) {
-      e.telefono = "El teléfono es obligatorio";
-    } else if (
-      !/^\d{10}$/.test(form.telefono.trim())
-    ) {
+    if (!form.telefono?.trim()) {
+
       e.telefono =
-        "El teléfono debe tener exactamente 10 dígitos";
+        "El teléfono es obligatorio";
+
+    } else if (
+      !/^\d{10}$/.test(
+        form.telefono.trim()
+      )
+    ) {
+
+      e.telefono =
+        "El teléfono debe tener 10 dígitos";
     }
 
     return e;
   };
 
-  // ─────────────────────────────
-  // GUARDAR ENCARGADO
-  // ─────────────────────────────
+  // =========================
+  // GUARDAR
+  // =========================
   const guardar = async () => {
+
     const e = validate();
 
-    if (Object.keys(e).length) {
+    if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
 
     try {
+
       const resp = await crearEncargado({
         nombre: form.nombre.trim(),
         correo: form.email.trim(),
         telefono: form.telefono.trim(),
-        zona: form.zona || undefined,
+        zona: form.zona,
         puntoAsignado:
-          form.puntoAsignado || undefined,
+          form.puntoAsignado,
       });
-
-      const initials = form.nombre
-        .trim()
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0].toUpperCase())
-        .join("");
 
       dispatch({
         type: "ADD_ENCARGADO",
+
         payload: {
           id:
-            resp.encargado?.idEncargado ??
+            resp?.encargado?.idEncargado ||
             Date.now(),
 
-          nombre: form.nombre.trim(),
-          email: form.email.trim(),
-          telefono: form.telefono.trim(),
+          nombre: form.nombre,
+
+          email: form.email,
+
+          telefono: form.telefono,
+
           rol: "Encargado",
+
           zona: form.zona,
-          puntoAsignado: form.puntoAsignado,
-          pts: 0,
+
+          puntoAsignado:
+            form.puntoAsignado,
+
           activo: true,
-          av: initials,
+
+          pts: 0,
+
+          av: form.nombre
+            .split(" ")
+            .slice(0, 2)
+            .map(
+              (w) =>
+                w?.[0]?.toUpperCase() || ""
+            )
+            .join(""),
 
           fechaAlta:
-            new Date().toLocaleDateString("es-CO"),
+            new Date().toLocaleDateString(
+              "es-CO"
+            ),
         },
       });
 
       showToast(
-        `Encargado "${form.nombre.trim()}" registrado`
+        "Encargado creado correctamente"
       );
 
       setModal(false);
+
       setForm(EMPTY_FORM);
+
       setErrors({});
+
     } catch (err) {
+
       showToast(
-        "Error al registrar encargado: " +
-          err.message,
+        err.message,
         "error"
       );
     }
   };
 
-  // ─────────────────────────────
-  // CERRAR MODAL
-  // ─────────────────────────────
-  const cerrarModal = () => {
-    setModal(false);
-    setForm(EMPTY_FORM);
-    setErrors({});
+  // =========================
+  // ELIMINAR
+  // =========================
+  const handleEliminar = async (id) => {
+
+    try {
+
+      await eliminarEncargado(id);
+
+      dispatch({
+        type: "DEL_ENCARGADO",
+        payload: id,
+      });
+
+      showToast(
+        "Encargado eliminado"
+      );
+
+    } catch (err) {
+
+      showToast(
+        err.message,
+        "error"
+      );
+    }
   };
 
-  // ─────────────────────────────
-  // ACTIVAR / DESACTIVAR
-  // ─────────────────────────────
+  // =========================
+  // TOGGLE
+  // =========================
   const handleToggle = async (
     id,
     nombre,
     estadoActual
   ) => {
+
     try {
+
       await actualizarEncargado(id, {
         idEstado: estadoActual ? 2 : 1,
       });
@@ -258,183 +339,164 @@ export default function Encargados({
 
       showToast(
         estadoActual
-          ? `${nombre} ha sido desactivado`
-          : `${nombre} ha sido activado`,
-        estadoActual ? "error" : "success"
+          ? "Encargado desactivado"
+          : "Encargado activado"
       );
+
     } catch (err) {
+
       showToast(
-        "Error al cambiar estado: " +
-          err.message,
+        err.message,
         "error"
       );
     }
   };
 
-  // ─────────────────────────────
-  // GUARDAR CAMBIOS
-  // ─────────────────────────────
-  const handleSave = (u) => {
-    dispatch({
-      type: "UPDATE_ENCARGADO",
-      payload: u,
-    });
-  };
+  // =========================
+  // FILTRO
+  // =========================
+  const filtered = encargados.filter(
+    (u) => {
 
-  // ─────────────────────────────
-  // ELIMINAR
-  // ─────────────────────────────
-  const handleEliminar = async (id) => {
-    try {
-      await eliminarEncargado(id);
+      const q = search.toLowerCase();
 
-      dispatch({
-        type: "DEL_ENCARGADO",
-        payload: id,
-      });
+      return (
+        (u.nombre || "")
+          .toLowerCase()
+          .includes(q) ||
 
-      showToast(
-        "Encargado eliminado",
-        "error"
-      );
+        (u.email || "")
+          .toLowerCase()
+          .includes(q) ||
 
-      if (viewUser?.id === id) {
-        setViewUser(null);
-      }
-    } catch (err) {
-      showToast(
-        "Error al eliminar: " + err.message,
-        "error"
+        (u.zona || "")
+          .toLowerCase()
+          .includes(q)
       );
     }
-  };
+  );
 
-  // ─────────────────────────────
-  // CAMBIAR ESTADO ENTREGA
-  // ─────────────────────────────
-  const handleCambiarEstado = async (
-    entrega
-  ) => {
-
-    const nuevoEstado =
-      entrega.idEstadoEntrega === 1
-        ? 2
-        : 1;
-
-    try {
-      await actualizarEstadoEntregaAdmin(
-        entrega.idEntrega,
-        nuevoEstado
-      );
-
-      setEntregas((prev) =>
-        prev.map((e) =>
-          e.idEntrega === entrega.idEntrega
-            ? {
-                ...e,
-                idEstadoEntrega: nuevoEstado,
-
-                estadoEntrega: {
-                  ...e.estadoEntrega,
-                  nombre:
-                    nuevoEstado === 2
-                      ? "Validada"
-                      : "Pendiente",
-                },
-              }
-            : e
-        )
-      );
-
-      showToast(
-        nuevoEstado === 2
-          ? "Entrega validada"
-          : "Entrega marcada como pendiente",
-        "success"
-      );
-    } catch (err) {
-      showToast(
-        "Error al cambiar estado: " +
-          err.message,
-        "error"
-      );
-    }
-  };
-
-  // ─────────────────────────────
-  // FILTRAR
-  // ─────────────────────────────
-  const filtered = encargados.filter((u) => {
-    const q = search.toLowerCase();
-
+  // =========================
+  // LOADING
+  // =========================
+  if (loading) {
     return (
-      u.nombre.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      (u.zona || "")
-        .toLowerCase()
-        .includes(q) ||
-      (u.puntoAsignado || "")
-        .toLowerCase()
-        .includes(q)
+      <div className="p-4">
+        Cargando encargados...
+      </div>
     );
-  });
+  }
 
-  // ─────────────────────────────
-  // AVATAR
-  // ─────────────────────────────
-  const avatarPreview =
-    form.nombre
-      .trim()
-      .split(" ")
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() || "")
-      .join("") || "?";
-
+  // =========================
+  // RENDER
+  // =========================
   return (
     <div className="panel-page">
 
-      {/* ENCABEZADO */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: 8,
-          marginBottom: 16,
+          marginBottom: 20,
         }}
       >
+
         <div>
-          <h4 className="panel-title">
-            <i
-              className="bi bi-shop"
-              style={{
-                color: "var(--verde)",
-                marginRight: 8,
-              }}
-            ></i>
+          <h2>Encargados</h2>
 
-            Encargados
-          </h4>
-
-          <span className="panel-subtitle">
-            {encargados.length} encargado
-            {encargados.length !== 1 ? "s" : ""}
-            {" "}registrado
-            {encargados.length !== 1 ? "s" : ""}
-          </span>
+          <p>
+            {filtered.length} registrados
+          </p>
         </div>
 
-        {tab === "encargados" && (
-          <button
-            className="btn-panel primary"
-            onClick={() => setModal(true)}
-          >
-            <i className="bi bi-person-badge"></i>
+        <button
+          className="btn-panel primary"
+          onClick={() => setModal(true)}
+        >
+          Nuevo encargado
+        </button>
+      </div>
 
-            Nuevo encargado
-          </button>
-        )}
+      <input
+        type="text"
+        placeholder="Buscar..."
+        value={search}
+        onChange={(e) =>
+          setSearch(e.target.value)
+        }
+        className="input-panel"
+        style={{
+          marginBottom: 20,
+          width: "100%",
+        }}
+      />
+
+      <div className="table-responsive">
+
+        <table className="table">
+
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Zona</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            {filtered.map((u) => (
+              <tr key={u.id}>
+
+                <td>{u.nombre}</td>
+
+                <td>{u.email}</td>
+
+                <td>{u.telefono}</td>
+
+                <td>{u.zona}</td>
+
+                <td>
+                  {u.activo
+                    ? "Activo"
+                    : "Inactivo"}
+                </td>
+
+                <td>
+
+                  <button
+                    onClick={() =>
+                      handleToggle(
+                        u.id,
+                        u.nombre,
+                        u.activo
+                      )
+                    }
+                  >
+                    Toggle
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleEliminar(u.id)
+                    }
+                  >
+                    Eliminar
+                  </button>
+
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+
+        </table>
+
       </div>
 
     </div>

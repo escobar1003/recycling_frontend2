@@ -191,6 +191,30 @@ export async function actualizarEstadoEntrega(id, idEstadoEntrega) {
     body: JSON.stringify({ idEstadoEntrega }),
   });
 }
+// ── Estados de materiales ───────────────────────────────────
+export async function getEstadosMateriales() {
+  return request('/api/admin/estados-materiales');
+}
+
+export async function crearEstadoMaterial(datos) {
+  return request('/api/admin/estados-materiales', {
+    method: 'POST',
+    body: JSON.stringify(datos),
+  });
+}
+
+export async function actualizarEstadoMaterial(id, datos) {
+  return request(`/api/admin/estados-materiales/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(datos),
+  });
+}
+
+export async function eliminarEstadoMaterial(id) {
+  return request(`/api/admin/estados-materiales/${id}`, {
+    method: 'DELETE',
+  });
+}
 
 /** GET /api/aliado/clasificaciones */
 export async function getClasificaciones() {

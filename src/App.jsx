@@ -17,11 +17,7 @@ import ToastContainer from "./components/ToastContainer";
 
 import Dashboard from "./components/Dashboard";
 
-import ClasificadorIA from "./components/ClasificadorIA";
-import Recompensas from "./components/Recompensas";
-import MisPuntos from "./components/MisPuntos";
-import Mapa from "./components/Mapa";
-import ImpactoEco from "./components/ImpactoEco";
+
 
 import Usuarios from "./components/Usuarios";
 import Administradores from "./components/Administradores";
@@ -230,17 +226,16 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+  try {
+    await cerrarSesion();
+  } catch (_) {}
 
-    try {
-      await cerrarSesion();
-    } catch (_) {}
+  localStorage.removeItem("user");
 
-    localStorage.removeItem("user");
+  setUser(null);
 
-    setUser(null);
-
-    navigate("/");
-  };
+  navigate("/login");
+};
 
   // ───────── RUTAS PÚBLICAS ─────────
   if (!user) {
@@ -346,30 +341,8 @@ export default function App() {
               element={<Materiales {...shared} />}
             />
 
-            <Route
-              path="/ia"
-              element={<ClasificadorIA {...shared} />}
-            />
-
-            <Route
-              path="/recompensas"
-              element={<Recompensas {...shared} />}
-            />
-
-            <Route
-              path="/puntos"
-              element={<MisPuntos state={state} />}
-            />
-
-            <Route
-              path="/mapa"
-              element={<Mapa showToast={showToast} />}
-            />
-
-            <Route
-              path="/eco"
-              element={<ImpactoEco state={state} />}
-            />
+            
+          
 
             <Route
               path="/perfil"
