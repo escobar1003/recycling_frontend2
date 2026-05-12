@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { ZONAS, ALL_POINTS, MAT_CFG } from "../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "./UserShared";
-import { getPuntos } from "../services/api";
+import {
+  getEncargados,
+  crearEncargado,
+  actualizarEncargado,
+  eliminarEncargado,
+  getEntregasAdmin,
+  actualizarEstadoEntregaAdmin,
+} from "../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -17,27 +24,51 @@ export default function Encargados({ state, dispatch, showToast }) {
   const [errors,   setErrors]   = useState({});
   const [search,   setSearch]   = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [loading,  setLoading]  = useState(true);
 
   // ── Estado entregas ──
-  const [modalEntrega,       setModalEntrega]       = useState(false);
-  const [mat,                setMat]                = useState(Object.keys(MAT_CFG)[0]);
-  const [fecha,              setFecha]              = useState(new Date().toISOString().split("T")[0]);
-  const [peso,               setPeso]               = useState("");
-  const [puntos,             setPuntos]             = useState([]);
-  const [puntoSeleccionado,  setPuntoSeleccionado]  = useState("");
+  const [entregas,        setEntregas]        = useState([]);
+  const [loadingEntregas, setLoadingEntregas] = useState(false);
 
+  // ── Cargar encargados del backend ──
   useEffect(() => {
-    getPuntos()
+    getEncargados()
       .then(data => {
-        setPuntos(data);
-        if (data.length > 0) setPuntoSeleccionado(data[0].nombre);
+        const lista = (data.encargados ?? []).map(u => ({
+          id:            u.idEncargado,
+          nombre:        u.nombre,
+          email:         u.correo,
+          telefono:      u.telefono ?? "",
+          rol:           "Encargado",
+          zona:          u.zona ?? "",
+          puntoAsignado: u.puntoAsignado ?? "",
+          pts:           0,
+          activo:        u.idEstado === 1,
+          av:            (u.nombre ?? "").trim().split(" ").slice(0, 2)
+                           .map(w => w[0]?.toUpperCase() ?? "").join(""),
+          fechaAlta:     u.fechaRegistro
+                           ? new Date(u.fechaRegistro).toLocaleDateString("es-CO")
+                           : "—",
+        }));
+        dispatch({ type: "SET_ENCARGADOS", payload: lista });
       })
-      .catch(() => showToast("No se cargaron los puntos del servidor", "error"));
+      .catch(() => showToast("No se pudieron cargar los encargados", "error"))
+      .finally(() => setLoading(false));
   }, []);
+
+  // ── Cargar entregas cuando se cambia al tab ──
+  useEffect(() => {
+    if (tab !== "entregas") return;
+    setLoadingEntregas(true);
+    getEntregasAdmin()
+      .then(data => setEntregas(data.entregas ?? []))
+      .catch(() => showToast("No se pudieron cargar las entregas", "error"))
+      .finally(() => setLoadingEntregas(false));
+  }, [tab]);
 
   // ── Helpers encargados ──
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
-  const encargados = state.usuarios.filter(u => u.rol === "Encargado");
+  const encargados = state.encargados || [];
 
   const validate = () => {
     const e = {};
@@ -45,44 +76,93 @@ export default function Encargados({ state, dispatch, showToast }) {
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email))
                              e.email  = "Correo inválido (debe tener @ y dominio)";
-    else if (state.usuarios.some(u => u.email === form.email.trim()))
+    else if (encargados.some(u => u.email === form.email.trim()))
                              e.email  = "Este correo ya existe";
-    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.trim()))
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim()))
                              e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-    dispatch({
-      type: "ADD_USER",
-      payload: {
-        id: Date.now(), nombre: form.nombre.trim(), email: form.email.trim(),
-        telefono: form.telefono.trim(), rol: "Encargado",
-        zona: form.zona, puntoAsignado: form.puntoAsignado,
-        pts: 0, activo: form.activo, av: initials,
-        fechaAlta: new Date().toLocaleDateString("es-CO"),
-      },
-    });
-    showToast(`Encargado "${form.nombre.trim()}" registrado`);
-    setModal(false); setForm(EMPTY_FORM); setErrors({});
+    try {
+      const resp = await crearEncargado({
+        nombre:        form.nombre.trim(),
+        correo:        form.email.trim(),
+        telefono:      form.telefono.trim() || undefined,
+        zona:          form.zona || undefined,
+        puntoAsignado: form.puntoAsignado || undefined,
+      });
+      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+      dispatch({
+        type: "ADD_ENCARGADO",
+        payload: {
+          id:            resp.encargado?.idEncargado ?? Date.now(),
+          nombre:        form.nombre.trim(),
+          email:         form.email.trim(),
+          telefono:      form.telefono.trim(),
+          rol:           "Encargado",
+          zona:          form.zona,
+          puntoAsignado: form.puntoAsignado,
+          pts:           0,
+          activo:        true,
+          av:            initials,
+          fechaAlta:     new Date().toLocaleDateString("es-CO"),
+        },
+      });
+      showToast(`Encargado "${form.nombre.trim()}" registrado`);
+      setModal(false); setForm(EMPTY_FORM); setErrors({});
+    } catch (err) {
+      showToast("Error al registrar encargado: " + err.message, "error");
+    }
   };
 
-  const cerrarModal    = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
-  const handleToggle   = (id, nombre, estadoActual) => {
-    dispatch({ type: "TOGGLE_USER", payload: id });
-    showToast(
-      estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
-      estadoActual ? "error" : "success"
-    );
+  const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
+
+  const handleToggle = async (id, nombre, estadoActual) => {
+    try {
+      await actualizarEncargado(id, { idEstado: estadoActual ? 2 : 1 });
+      dispatch({ type: "TOGGLE_ENCARGADO", payload: id });
+      showToast(
+        estadoActual ? `${nombre} ha sido desactivado` : `${nombre} ha sido activado`,
+        estadoActual ? "error" : "success"
+      );
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
-  const handleSave     = (u) => dispatch({ type: "UPDATE_USER", payload: u });
-  const handleEliminar = (id) => {
-    dispatch({ type: "DEL_USER", payload: id });
-    showToast("Encargado eliminado", "error");
-    if (viewUser?.id === id) setViewUser(null);
+
+  const handleSave     = (u) => dispatch({ type: "UPDATE_ENCARGADO", payload: u });
+
+  const handleEliminar = async (id) => {
+    try {
+      await eliminarEncargado(id);
+      dispatch({ type: "DEL_ENCARGADO", payload: id });
+      showToast("Encargado eliminado", "error");
+      if (viewUser?.id === id) setViewUser(null);
+    } catch (err) {
+      showToast("Error al eliminar: " + err.message, "error");
+    }
+  };
+
+  // ── Cambiar estado de una entrega ──
+  const handleCambiarEstado = async (entrega) => {
+    const nuevoEstado = entrega.idEstadoEntrega === 1 ? 2 : 1;
+    try {
+      await actualizarEstadoEntregaAdmin(entrega.idEntrega, nuevoEstado);
+      setEntregas(prev =>
+        prev.map(e =>
+          e.idEntrega === entrega.idEntrega
+            ? { ...e, idEstadoEntrega: nuevoEstado, estadoEntrega: { ...e.estadoEntrega, nombre: nuevoEstado === 2 ? "Validada" : "Pendiente" } }
+            : e
+        )
+      );
+      showToast(nuevoEstado === 2 ? "Entrega validada" : "Entrega marcada como pendiente", "success");
+    } catch (err) {
+      showToast("Error al cambiar estado: " + err.message, "error");
+    }
   };
 
   const filtered = encargados.filter(u => {
@@ -97,31 +177,6 @@ export default function Encargados({ state, dispatch, showToast }) {
 
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
-
-  // ── Helper entregas ──
-  const registrarEntrega = () => {
-    const p = parseFloat(peso);
-    if (!p || p <= 0) { showToast("Ingresa un peso válido", "error"); return; }
-    const cfg = MAT_CFG[mat] || { pts: 20, icon: "bi-recycle" };
-    const pts = Math.round(p * cfg.pts);
-    dispatch({
-      type: "ADD_ENTREGA",
-      payload: {
-        id: Date.now(), material: mat, icon: cfg.icon,
-        punto: puntoSeleccionado, fecha, peso: p, pts, estado: "Pendiente",
-      },
-    });
-    dispatch({
-      type: "ADD_HISTORIAL",
-      payload: {
-        id: Date.now(), desc: `Ganaste ${pts} puntos`,
-        sub: `Entrega de ${mat}`, tiempo: "Ahora", icon: "bi-star-fill",
-      },
-    });
-    dispatch({ type: "ADD_PTS", payload: pts });
-    showToast(`Entrega registrada — +${pts} pts`);
-    setModalEntrega(false); setPeso("");
-  };
 
   return (
     <div className="container-fluid px-0">
@@ -143,15 +198,6 @@ export default function Encargados({ state, dispatch, showToast }) {
             onClick={() => setModal(true)}
           >
             <i className="bi bi-person-badge"></i>Nuevo encargado
-          </button>
-        )}
-        {tab === "entregas" && (
-          <button
-            className="btn btn-sm rounded-3 d-flex align-items-center gap-2 fw-semibold"
-            style={{ background: "#16a34a", color: "#fff", fontSize: 12 }}
-            onClick={() => setModalEntrega(true)}
-          >
-            <i className="bi bi-plus-lg"></i>Nueva entrega
           </button>
         )}
       </div>
@@ -197,6 +243,13 @@ export default function Encargados({ state, dispatch, showToast }) {
             </div>
           </div>
 
+          {loading && (
+            <div className="text-center py-3 text-muted small">
+              <div className="spinner-border spinner-border-sm text-success me-2"></div>
+              Cargando encargados del servidor...
+            </div>
+          )}
+
           <div className="card border rounded-3 shadow-none">
             <div className="card-body p-0">
               <TablaUsuarios
@@ -221,65 +274,97 @@ export default function Encargados({ state, dispatch, showToast }) {
       {tab === "entregas" && (
         <div className="card border-0 rounded-3 shadow-sm">
           <div className="card-body p-0">
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
-                <thead className="table-light border-bottom">
-                  <tr>
-                    {[
-                      ["bi-recycle",      "Material"],
-                      ["bi-geo-alt",      "Punto de entrega"],
-                      ["bi-calendar",     "Fecha"],
-                      ["bi-speedometer2", "Peso"],
-                      ["bi-star",         "Puntos"],
-                      ["bi-check-circle", "Estado"],
-                    ].map(([ic, h]) => (
-                      <th key={h} className="ps-4 py-3 fw-semibold text-muted text-uppercase border-0" style={{ fontSize: 11 }}>
-                        <i className={`bi ${ic} me-1`}></i>{h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.entregas.length === 0 ? (
+
+            {loadingEntregas && (
+              <div className="text-center py-4 text-muted small">
+                <div className="spinner-border spinner-border-sm text-success me-2"></div>
+                Cargando entregas...
+              </div>
+            )}
+
+            {!loadingEntregas && (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
+                  <thead className="table-light border-bottom">
                     <tr>
-                      <td colSpan={6} className="text-center text-muted py-5">
-                        <i className="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
-                        <span className="small">No hay entregas registradas</span>
-                      </td>
+                      {[
+                        ["bi-recycle",      "Material"],
+                        ["bi-geo-alt",      "Punto de entrega"],
+                        ["bi-calendar",     "Fecha"],
+                        ["bi-speedometer2", "Peso"],
+                        ["bi-star",         "Puntos"],
+                        ["bi-check-circle", "Estado"],
+                        ["bi-gear",         "Acción"],
+                      ].map(([ic, h]) => (
+                        <th key={h} className="ps-4 py-3 fw-semibold text-muted text-uppercase border-0" style={{ fontSize: 11 }}>
+                          <i className={`bi ${ic} me-1`}></i>{h}
+                        </th>
+                      ))}
                     </tr>
-                  ) : state.entregas.map(e => (
-                    <tr key={e.id}>
-                      <td className="ps-4">
-                        <div className="d-flex align-items-center gap-2">
-                          <i className={`bi ${e.icon}`} style={{ color: "#16a34a", fontSize: 16 }}></i>
-                          <span className="fw-semibold text-dark">{e.material}</span>
-                        </div>
-                      </td>
-                      <td className="text-secondary">{e.punto}</td>
-                      <td className="text-secondary">{e.fecha}</td>
-                      <td className="fw-semibold text-dark">{e.peso} kg</td>
-                      <td>
-                        <span className="badge rounded-pill fw-semibold"
-                          style={{ background: "#facc15", color: "#111111", fontSize: 11 }}>
-                          +{e.pts} pts
-                        </span>
-                      </td>
-                      <td>
-                        <span className="badge rounded-pill fw-normal"
-                          style={{
-                            fontSize: 10,
-                            background: e.estado === "Validada" ? "#16a34a" : "#f3f4f6",
-                            color:      e.estado === "Validada" ? "#fff"    : "#6b7280",
-                          }}>
-                          <i className={`bi ${e.estado === "Validada" ? "bi-check-circle" : "bi-clock"} me-1`}></i>
-                          {e.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {entregas.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="text-center text-muted py-5">
+                          <i className="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                          <span className="small">No hay entregas registradas</span>
+                        </td>
+                      </tr>
+                    ) : entregas.map(e => {
+                      const estadoNombre = e.estadoEntrega?.nombre ?? "Pendiente";
+                      const validada = estadoNombre === "Validada";
+                      return (
+                        <tr key={e.idEntrega}>
+                          <td className="ps-4">
+                            <span className="fw-semibold text-dark">
+                              {e.detalles?.map(d => d.material?.nombre).join(", ") || "—"}
+                            </span>
+                          </td>
+                          <td className="text-secondary">{e.puntoReciclaje?.nombre ?? "—"}</td>
+                          <td className="text-secondary">
+                            {e.fechaEntrega
+                              ? new Date(e.fechaEntrega).toLocaleDateString("es-CO")
+                              : "—"}
+                          </td>
+                          <td className="fw-semibold text-dark">{e.pesoTotal} kg</td>
+                          <td>
+                            <span className="badge rounded-pill fw-semibold"
+                              style={{ background: "#facc15", color: "#111111", fontSize: 11 }}>
+                              +{e.puntosTotales} pts
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge rounded-pill fw-normal"
+                              style={{
+                                fontSize: 10,
+                                background: validada ? "#16a34a" : "#f3f4f6",
+                                color:      validada ? "#fff"    : "#6b7280",
+                              }}>
+                              <i className={`bi ${validada ? "bi-check-circle" : "bi-clock"} me-1`}></i>
+                              {estadoNombre}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm rounded-3 fw-semibold"
+                              style={{
+                                fontSize: 11,
+                                background: validada ? "#f3f4f6" : "#16a34a",
+                                color:      validada ? "#6b7280" : "#fff",
+                                border: "none",
+                              }}
+                              onClick={() => handleCambiarEstado(e)}
+                            >
+                              {validada ? "Marcar pendiente" : "Validar"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -324,7 +409,7 @@ export default function Encargados({ state, dispatch, showToast }) {
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label fw-bold small text-secondary">Teléfono *</label>
                     <input value={form.telefono}
                       onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
                       placeholder="Ej: 3001234567"
@@ -374,86 +459,6 @@ export default function Encargados({ state, dispatch, showToast }) {
                 </button>
                 <button className="btn btn-success flex-fill fw-bold" onClick={guardar}>
                   <i className="bi bi-shop me-1"></i>Registrar encargado
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══ Modal nueva entrega ══ */}
-      {modalEntrega && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content rounded-4 border-0 shadow">
-              <div className="modal-header border-bottom">
-                <h6 className="modal-title fw-bold text-dark">
-                  <i className="bi bi-box-seam me-2" style={{ color: "#16a34a" }}></i>Nueva entrega
-                </h6>
-                <button type="button" className="btn-close" onClick={() => setModalEntrega(false)} />
-              </div>
-
-              <div className="modal-body p-4">
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold text-dark">
-                    <i className="bi bi-recycle me-1 text-secondary"></i>Material
-                  </label>
-                  <select className="form-select form-select-sm rounded-3" value={mat} onChange={e => setMat(e.target.value)}>
-                    {Object.keys(MAT_CFG).map(m => <option key={m}>{m}</option>)}
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold text-dark">
-                    <i className="bi bi-geo-alt me-1 text-secondary"></i>Punto de entrega
-                    {puntos.length === 0 && (
-                      <span className="text-muted fw-normal ms-1" style={{ fontSize: 11 }}>(cargando...)</span>
-                    )}
-                  </label>
-                  <select
-                    className="form-select form-select-sm rounded-3"
-                    value={puntoSeleccionado}
-                    onChange={e => setPuntoSeleccionado(e.target.value)}
-                    disabled={puntos.length === 0}
-                  >
-                    {puntos.length === 0
-                      ? <option>Cargando puntos...</option>
-                      : puntos.map(p => <option key={p.id} value={p.nombre}>{p.nombre}</option>)
-                    }
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold text-dark">
-                    <i className="bi bi-calendar me-1 text-secondary"></i>Fecha
-                  </label>
-                  <input type="date" className="form-control form-control-sm rounded-3"
-                    value={fecha} onChange={e => setFecha(e.target.value)} />
-                </div>
-
-                <div className="mb-1">
-                  <label className="form-label small fw-semibold text-dark">
-                    <i className="bi bi-speedometer2 me-1 text-secondary"></i>Peso (kg)
-                  </label>
-                  <div className="input-group input-group-sm">
-                    <input type="number" className="form-control rounded-start-3"
-                      value={peso} onChange={e => setPeso(e.target.value)}
-                      placeholder="Ej: 2.5" min="0" step="0.1" />
-                    <span className="input-group-text rounded-end-3 text-muted">kg</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-footer border-top gap-2">
-                <button className="btn btn-sm rounded-3 flex-fill fw-semibold"
-                  style={{ background: "#f3f4f6", color: "#111111", border: "1px solid #e5e7eb", fontSize: 12 }}
-                  onClick={() => setModalEntrega(false)}>
-                  <i className="bi bi-x me-1"></i>Cancelar
-                </button>
-                <button className="btn btn-sm rounded-3 flex-fill fw-semibold"
-                  style={{ background: "#16a34a", color: "#fff", border: "none", fontSize: 12 }}
-                  onClick={registrarEntrega}>
-                  <i className="bi bi-check-lg me-1"></i>Registrar entrega
                 </button>
               </div>
             </div>

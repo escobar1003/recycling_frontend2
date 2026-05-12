@@ -48,12 +48,12 @@ export default function Aliados({ state, dispatch, showToast }) {
 
   const validate = () => {
     const e = {};
-    if (!form.nombre.trim())        e.nombre        = "El nombre del contacto es obligatorio";
-    if (!form.nombreEntidad.trim()) e.nombreEntidad  = "El nombre del supermercado es obligatorio";
-    if (!form.email.trim())         e.email         = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email)) e.email = "Correo inválido (debe tener @ y dominio)";
+    if (!form.nombre.trim())        e.nombre       = "El nombre del contacto es obligatorio";
+    if (!form.nombreEntidad.trim()) e.nombreEntidad = "El nombre del supermercado es obligatorio";
+    if (!form.email.trim())         e.email        = "El correo es obligatorio";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido (Ej: correo@ejemplo.com)";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
-    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.trim()))
+    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\s/g, "")))
       e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
@@ -203,16 +203,13 @@ export default function Aliados({ state, dispatch, showToast }) {
 
               <div className="modal-header border-bottom">
                 <div className="d-flex align-items-center gap-3">
-                  <div
-                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
-                    style={{ width: 44, height: 44, fontSize: 15 }}
-                  >
+                  <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold bg-light border text-dark"
+                    style={{ width: 44, height: 44, fontSize: 15 }}>
                     {avatarPreview}
                   </div>
                   <div>
                     <h6 className="modal-title fw-bold mb-0 text-dark">
-                      <i className="bi bi-shop me-2 text-success"></i>
-                      Nuevo supermercado
+                      <i className="bi bi-shop me-2 text-success"></i>Nuevo supermercado
                     </h6>
                     <small className="text-muted">Registra un supermercado como punto de acopio</small>
                   </div>
@@ -221,7 +218,6 @@ export default function Aliados({ state, dispatch, showToast }) {
               </div>
 
               <div className="modal-body p-4">
-
                 <p className="small fw-semibold text-muted text-uppercase mb-2" style={{ letterSpacing: 1 }}>
                   <i className="bi bi-building me-1"></i>Datos del supermercado
                 </p>
@@ -277,12 +273,15 @@ export default function Aliados({ state, dispatch, showToast }) {
                     </label>
                     <input
                       value={form.telefono}
-                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      onChange={e => set("telefono", e.target.value)}
                       placeholder="Ej: 3001234567"
                       maxLength={10}
                       className={`form-control form-control-sm rounded-3 ${errors.telefono ? "is-invalid" : ""}`}
                     />
-                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
+                    {errors.telefono
+                      ? <div className="invalid-feedback">{errors.telefono}</div>
+                      : <div className="form-text">10 dígitos, solo números</div>
+                    }
                   </div>
 
                   <div className="col-md-6">

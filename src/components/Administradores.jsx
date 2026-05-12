@@ -16,6 +16,7 @@ export default function Administradores({ state, dispatch, showToast }) {
   const [viewUser, setViewUser] = useState(null);
   const [loading,  setLoading]  = useState(true);
 
+  // ── Cargar admins del backend al montar ──────────────────────
   useEffect(() => {
     getAdmins()
       .then(data => {
@@ -48,16 +49,17 @@ export default function Administradores({ state, dispatch, showToast }) {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido (Ej: correo@ejemplo.com)";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
-    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\s/g, "")))
-      e.telefono = "El teléfono debe tener exactamente 10 dígitos";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim())) e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
   const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
     try {
       const resp = await crearAdmin({
         nombre:   form.nombre.trim(),
@@ -65,6 +67,7 @@ export default function Administradores({ state, dispatch, showToast }) {
         password: "Temporal123!",
         telefono: form.telefono.trim() || undefined,
       });
+
       const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
       dispatch({
         type: "ADD_USER",
@@ -80,6 +83,7 @@ export default function Administradores({ state, dispatch, showToast }) {
           fechaAlta: new Date().toLocaleDateString("es-CO"),
         },
       });
+
       showToast(`Administrador "${form.nombre.trim()}" creado`);
       setModal(false); setForm(EMPTY_FORM); setErrors({});
     } catch (err) {
@@ -131,6 +135,7 @@ export default function Administradores({ state, dispatch, showToast }) {
   return (
     <div className="container-fluid px-0">
 
+      {/* ── Header ── */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h5 className="fw-bold mb-0 text-dark">
@@ -150,6 +155,7 @@ export default function Administradores({ state, dispatch, showToast }) {
         </button>
       </div>
 
+      {/* ── Buscador ── */}
       <div className="mb-3">
         <div className="input-group input-group-sm" style={{ maxWidth: 380 }}>
           <span className="input-group-text bg-white border-end-0">
@@ -164,6 +170,7 @@ export default function Administradores({ state, dispatch, showToast }) {
         </div>
       </div>
 
+      {/* ── Indicador de carga ── */}
       {loading && (
         <div className="text-center py-3 text-muted small">
           <div className="spinner-border spinner-border-sm text-success me-2"></div>
@@ -171,6 +178,7 @@ export default function Administradores({ state, dispatch, showToast }) {
         </div>
       )}
 
+      {/* ── Tabla ── */}
       <div className="card border rounded-3 shadow-none">
         <div className="card-body p-0">
           <TablaUsuarios
@@ -189,6 +197,7 @@ export default function Administradores({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
+      {/* ── Modal nuevo administrador ── */}
       {modal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,.4)", zIndex: 9000 }}>
           <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -244,19 +253,16 @@ export default function Administradores({ state, dispatch, showToast }) {
 
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold text-dark">
-                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono
+                      <i className="bi bi-telephone me-1 text-secondary"></i>Teléfono *
                     </label>
                     <input
                       value={form.telefono}
-                      onChange={e => set("telefono", e.target.value)}
+                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
                       placeholder="Ej: 3001234567"
                       maxLength={10}
                       className={`form-control form-control-sm rounded-3 ${errors.telefono ? "is-invalid" : ""}`}
                     />
-                    {errors.telefono
-                      ? <div className="invalid-feedback">{errors.telefono}</div>
-                      : <div className="form-text">10 dígitos, solo números</div>
-                    }
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
                   </div>
 
                   <div className="col-12">

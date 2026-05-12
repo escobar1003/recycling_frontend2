@@ -5,7 +5,7 @@ import { getUsuarios, actualizarUsuario, eliminarUsuario } from "../services/api
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
-  rol: "Usuario", activo: true,
+  rol: "Usuario",  activo: true,
 };
 
 export default function Usuarios({ state, dispatch, showToast }) {
@@ -48,16 +48,17 @@ export default function Usuarios({ state, dispatch, showToast }) {
     const e = {};
     if (!form.nombre.trim()) e.nombre = "El nombre es obligatorio";
     if (!form.email.trim())  e.email  = "El correo es obligatorio";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido (Ej: correo@ejemplo.com)";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Correo inválido";
     else if (state.usuarios.some(u => u.email === form.email.trim())) e.email = "Este correo ya existe";
-    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\s/g, "")))
-      e.telefono = "El teléfono debe tener exactamente 10 dígitos";
+    if (!form.telefono.trim())   e.telefono = "El teléfono es obligatorio";
+    else if (!/^\d{10}$/.test(form.telefono.trim())) e.telefono = "El teléfono debe tener exactamente 10 dígitos";
     return e;
   };
 
   const guardar = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
     try {
       const { registrarse } = await import("../services/api");
       const resp = await registrarse({
@@ -66,6 +67,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         password: "Temporal123!",
         telefono: form.telefono.trim() || undefined,
       });
+
       const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
       dispatch({
         type: "ADD_USER",
@@ -81,6 +83,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
           fechaAlta: new Date().toLocaleDateString("es-CO"),
         },
       });
+
       showToast(`Usuario "${form.nombre.trim()}" registrado`);
       setModal(false); setForm(EMPTY_FORM); setErrors({});
     } catch (err) {
@@ -103,7 +106,9 @@ export default function Usuarios({ state, dispatch, showToast }) {
     }
   };
 
-  const handleSave = (updatedUser) => dispatch({ type: "UPDATE_USER", payload: updatedUser });
+  const handleSave = (updatedUser) => {
+    dispatch({ type: "UPDATE_USER", payload: updatedUser });
+  };
 
   const handleEliminar = (id) => {
     dispatch({ type: "DEL_USER", payload: id });
@@ -123,8 +128,11 @@ export default function Usuarios({ state, dispatch, showToast }) {
   const avatarPreview = form.nombre.trim().split(" ").slice(0, 2)
     .map(w => w[0]?.toUpperCase() || "").join("") || "?";
 
+  const cfg = getRolCfg("Usuario");
+
   return (
     <div>
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4 className="fw-bold m-0">
           <i className="bi bi-recycle me-2 text-success"></i>Gestion de usuarios
@@ -134,6 +142,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         </button>
       </div>
 
+      {/* Buscador */}
       <div className="d-flex flex-wrap gap-2 mb-3">
         <div className="input-group w-auto">
           <span className="input-group-text bg-white">
@@ -148,6 +157,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         </div>
       </div>
 
+      {/* Indicador de carga */}
       {loading && (
         <div className="text-center py-3 text-muted small">
           <div className="spinner-border spinner-border-sm text-success me-2"></div>
@@ -155,6 +165,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         </div>
       )}
 
+      {/* Tabla */}
       <TablaUsuarios
         lista={filtered}
         onToggle={handleToggle}
@@ -162,6 +173,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         onEliminar={handleEliminar}
       />
 
+      {/* Modal editar */}
       <ModalDetalle
         user={viewUser}
         onClose={() => setViewUser(null)}
@@ -169,6 +181,7 @@ export default function Usuarios({ state, dispatch, showToast }) {
         showToast={showToast}
       />
 
+      {/* Modal nuevo usuario */}
       {modal && (
         <div className="modal d-block" style={{background:"rgba(0,0,0,.45)",zIndex:9000}}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -211,17 +224,15 @@ export default function Usuarios({ state, dispatch, showToast }) {
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-bold small text-secondary">Teléfono</label>
+                    <label className="form-label fw-bold small text-secondary">Teléfono *</label>
                     <input
-                      value={form.telefono} onChange={e => set("telefono", e.target.value)}
+                      value={form.telefono}
+                      onChange={e => set("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))}
                       placeholder="Ej: 3001234567"
                       maxLength={10}
                       className={`form-control form-control-sm bg-light ${errors.telefono ? "is-invalid" : ""}`}
                     />
-                    {errors.telefono
-                      ? <div className="invalid-feedback">{errors.telefono}</div>
-                      : <div className="form-text">10 dígitos, solo números</div>
-                    }
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
                   </div>
 
                   <div className="col-12">
