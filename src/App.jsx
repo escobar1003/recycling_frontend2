@@ -199,7 +199,7 @@ export default function App() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
+    const saved = sessionStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -215,11 +215,8 @@ export default function App() {
   } = useToast();
 
   const handleLogin = (usuarioData) => {
-    localStorage.setItem(
-      "user",
-      JSON.stringify(usuarioData)
-    );
-
+    sessionStorage.setItem("user", JSON.stringify(usuarioData));
+    
     setUser(usuarioData);
 
     navigate("/dashboard");
@@ -230,7 +227,7 @@ export default function App() {
     await cerrarSesion();
   } catch (_) {}
 
-  localStorage.removeItem("user");
+  sessionStorage.removeItem("user");
 
   setUser(null);
 
