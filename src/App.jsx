@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Registro from "./components/Registro";
 import ForgotPassword from "./components/RecuperarContraseña";
 import LandingPage from "./components/LandingPage";
+import RecyclingDashboard from "./components/ENCARGADOS/Historialdeentregas";
 
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
@@ -258,6 +259,11 @@ export default function App() {
         />
 
         <Route
+         path="/historial-entregas"
+         element={<RecyclingDashboard {...shared} />}
+/>
+
+        <Route
           path="/forgot"
           element={<ForgotPassword />}
         />
@@ -305,14 +311,15 @@ export default function App() {
               path="/"
               element={
                 <Navigate
-                  to="/dashboard"
+                  to="/RecyclingDashboard"
+
                   replace
                 />
               }
             />
 
             <Route
-              path="/dashboard"
+              path="/RecyclingDashboard"
               element={<Dashboard {...shared} />}
             />
 

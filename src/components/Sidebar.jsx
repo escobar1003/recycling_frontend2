@@ -14,6 +14,7 @@ const CATALOGOS = [
   { path: "/catalogos/estados-entregas",    icon: "bi-box-seam-fill",     title: "Estados entregas" },
   { path: "/catalogos/estados-aliados",     icon: "bi-handshake-fill",    title: "Estados aliados" },
   { path: "/catalogos/estados-canjes",      icon: "bi-arrow-left-right",  title: "Estados canjes" },
+  { path: "/historial-entregas",            icon: "bi-box-seam-fill",     title: "Historial entregas" }, 
   { path: "/catalogos/estados-usuarios",    icon: "bi-person-check-fill", title: "Estados usuarios" },
   { path: "/catalogos/estados-recompensas", icon: "bi-gift-fill",         title: "Estados recompensas" },
   { path: "/catalogos/tipos-recompensa",    icon: "bi-tag-fill",          title: "Tipos de recompensa" },
@@ -205,11 +206,10 @@ export default function Sidebar({ onLogout }) {
       {/* Salir */}
       <div className="px-2 py-2 pb-3">
         <button
-          onClick={handleLogout}
-          className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
-          style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
-          onClick={onLogout}
-        >
+         onClick={onLogout} 
+         className="btn d-flex align-items-center gap-2 w-100 px-3 py-2 rounded-2 border-0"
+         style={{ fontSize: 13, background: "#fff3f3", color: "#dc2626" }}
+>
           <i className="bi bi-box-arrow-left" style={{ fontSize: 15 }} />
           Salir
         </button>
