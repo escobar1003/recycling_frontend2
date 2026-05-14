@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { ADMIN_PROFILE } from "../constants/data";
-import { RolBadge } from "./UserShared";
-import { getPerfil, actualizarPerfil } from "../services/api";
+import { ADMIN_PROFILE } from "../../constants/data";
+import { RolBadge } from "../../components/UserShared";
+import { getPerfil, actualizarPerfil } from "../../services/api";
 
 export default function Perfil({ state, showToast }) {
 
