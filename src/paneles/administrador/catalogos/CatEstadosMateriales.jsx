@@ -1,7 +1,7 @@
 // src/components/catalogos/CatEstadosMateriales.jsx
 import{ useState, useEffect } from "react";
 import CrudCatalogo from "./CrudCatalogo";
-import {getEstadosMateriales, crearEstadoMaterial, actualizarEstadoMaterial, eliminarEstadoMaterial} from "../../services/api";
+import {getEstadosMateriales, crearEstadoMaterial, actualizarEstadoMaterial, eliminarEstadoMaterial} from "../../../services/api";
 
 const CAMPOS = [
   { key: "nombre",      label: "Nombre del estado", placeholder: "Ej: Reciclable" },

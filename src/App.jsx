@@ -23,15 +23,15 @@ import Encargados from "./paneles/administrador/Encargados";
 import Materiales from "./paneles/administrador/Materiales";
 import Perfil from "./paneles/administrador/Perfil";
 
-import CatRoles from "./components/catalogos/CatRoles";
-import CatEstadosPuntos from "./components/catalogos/CatEstadosPuntos";
-import CatEstadosAliados from "./components/catalogos/CatEstadosAliados";
-import CatEstadosCanjes from "./components/catalogos/CatEstadosCanjes";
-import CatEstadosUsuarios from "./components/catalogos/CatEstadosUsuarios";
-import CatEstadosRecompensas from "./components/catalogos/CatEstadosRecompensas";
-import CatTiposRecompensa from "./components/catalogos/CatTiposRecompensa";
-import CatEstadosMateriales from "./components/catalogos/CatEstadosMateriales";
-import CatEstadosEntregas from "./components/catalogos/CatEstadosEntregas";
+import CatRoles from "./paneles/administrador/catalogos/CatRoles";
+import CatEstadosPuntos from "./paneles/administrador/catalogos/CatEstadosPuntos";
+import CatEstadosAliados from "./paneles/administrador/catalogos/CatEstadosAliados";
+import CatEstadosCanjes from "./paneles/administrador/catalogos/CatEstadosCanjes";
+import CatEstadosUsuarios from "./paneles/administrador/catalogos/CatEstadosUsuarios";
+import CatEstadosRecompensas from "./paneles/administrador/catalogos/CatEstadosRecompensas";
+import CatTiposRecompensa from "./paneles/administrador/catalogos/CatTiposRecompensa";
+import CatEstadosMateriales from "./paneles/administrador/catalogos/CatEstadosMateriales";
+import CatEstadosEntregas from "./paneles/administrador/catalogos/CatEstadosEntregas";
 
 function reducer(state, { type, payload }) {
   switch (type) {
