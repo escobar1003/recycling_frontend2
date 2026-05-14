@@ -7,7 +7,6 @@ const ROLES = [
   { value: "usuario",      label: "Usuario",        icon: "bi-person-fill"       },
   { value: "administrador",label: "Administrador",  icon: "bi-shield-lock-fill"  },
   { value: "encargado",    label: "Encargado",      icon: "bi-shop"              },
-  { value: "supermercado", label: "Supermercado",   icon: "bi-bag-fill"          },
 ];
 
 // ─────────────────────────────────────────────
