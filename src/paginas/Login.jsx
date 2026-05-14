@@ -3,17 +3,28 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { iniciarSesion } from "../services/api";
 import fondoReciclaje from '../components/imagenes/fondo_reciclaje.png'
 
+const ROLES = [
+  { value: "usuario",      label: "Usuario",        icon: "bi-person-fill"       },
+  { value: "administrador",label: "Administrador",  icon: "bi-shield-lock-fill"  },
+  { value: "encargado",    label: "Encargado",      icon: "bi-shop"              },
+  { value: "supermercado", label: "Supermercado",   icon: "bi-bag-fill"          },
+];
+
 // ─────────────────────────────────────────────
 // FORMULARIO DE LOGIN
 // ─────────────────────────────────────────────
 function LoginForm({ onLogin }) {
-  const [correo, setCorreo] = useState("");
+  const [correo,     setCorreo]     = useState("");
   const [contraseña, setContraseña] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [rol,        setRol]        = useState("usuario");
+  const [error,      setError]      = useState("");
+  const [loading,    setLoading]    = useState(false);
+  const [showPass,   setShowPass]   = useState(false);
+  const [remember,   setRemember]   = useState(false);
+  const [dropOpen,   setDropOpen]   = useState(false);
   const navigate = useNavigate();
+
+  const rolActual = ROLES.find(r => r.value === rol);
 
   const validar = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -33,15 +44,19 @@ function LoginForm({ onLogin }) {
 
     try {
       const data = await iniciarSesion(correo.trim(), contraseña);
-
       const usuario = data.usuario ?? data;
 
-      // 🔥 guardar usuario en localStorage
       localStorage.setItem("usuario", JSON.stringify(usuario));
+      sessionStorage.setItem("user", JSON.stringify(usuario));
 
-      if (onLogin) onLogin(usuario);
+      if (onLogin) onLogin({ ...usuario, rolSeleccionado: rol });
 
-      navigate("/dashboard");
+      // Redirigir según rol seleccionado
+      if (rol === "encargado") {
+        navigate("/encargado/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
 
     } catch (err) {
       setError(err.message || "Error al iniciar sesión");
@@ -91,6 +106,44 @@ function LoginForm({ onLogin }) {
               {error && (
                 <div className="alert alert-danger py-2 text-center">{error}</div>
               )}
+
+              {/* ── Selector de rol ── */}
+              <div className="mb-3">
+                <label className="form-label">Iniciar sesión como</label>
+                <div className="dropdown">
+                  <button
+                    type="button"
+                    className="btn btn-outline-success w-100 d-flex align-items-center justify-content-between"
+                    onClick={() => setDropOpen(o => !o)}
+                  >
+                    <span>
+                      <i className={`bi ${rolActual.icon} me-2`}></i>
+                      {rolActual.label}
+                    </span>
+                    <i className={`bi bi-chevron-${dropOpen ? "up" : "down"}`}></i>
+                  </button>
+
+                  {dropOpen && (
+                    <ul
+                      className="dropdown-menu show w-100 shadow-sm border-0"
+                      style={{ zIndex: 1000 }}
+                    >
+                      {ROLES.map(r => (
+                        <li key={r.value}>
+                          <button
+                            type="button"
+                            className={`dropdown-item d-flex align-items-center gap-2 py-2 ${rol === r.value ? "active bg-success" : ""}`}
+                            onClick={() => { setRol(r.value); setDropOpen(false); }}
+                          >
+                            <i className={`bi ${r.icon}`}></i>
+                            {r.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
 
               {/* Email */}
               <div className="mb-3">
@@ -205,28 +258,28 @@ function LoginForm({ onLogin }) {
 // FORMULARIO DE REGISTRO
 // ─────────────────────────────────────────────
 function RegistroForm() {
-  const [nombre, setNombre] = useState("");
-  const [usuario, setUsuario] = useState("");
-  const [correo, setCorreo] = useState("");
+  const [nombre,   setNombre]   = useState("");
+  const [usuario,  setUsuario]  = useState("");
+  const [correo,   setCorreo]   = useState("");
   const [password, setPassword] = useState("");
-  const [confirmar, setConfirmar] = useState("");
+  const [confirmar,setConfirmar]= useState("");
   const [terminos, setTerminos] = useState(false);
-  const [origen, setOrigen] = useState("");
-  const [error, setError] = useState("");
+  const [origen,   setOrigen]   = useState("");
+  const [error,    setError]    = useState("");
   const navigate = useNavigate();
 
   const validar = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     setError("");
 
-    if (nombre.trim() === "") return setError("Nombre requerido");
-    if (usuario.trim() === "") return setError("Usuario requerido");
-    if (correo.trim() === "") return setError("Correo requerido");
-    if (password.trim() === "") return setError("Contraseña requerida");
+    if (nombre.trim() === "")    return setError("Nombre requerido");
+    if (usuario.trim() === "")   return setError("Usuario requerido");
+    if (correo.trim() === "")    return setError("Correo requerido");
+    if (password.trim() === "")  return setError("Contraseña requerida");
     if (confirmar.trim() === "") return setError("Confirmación requerida");
-    if (password !== confirmar) return setError("Las contraseñas no coinciden");
-    if (!terminos) return setError("Debes aceptar términos y condiciones");
-    if (origen.trim() === "") return setError("Selecciona cómo te enteraste de nosotros");
+    if (password !== confirmar)  return setError("Las contraseñas no coinciden");
+    if (!terminos)               return setError("Debes aceptar términos y condiciones");
+    if (origen.trim() === "")    return setError("Selecciona cómo te enteraste de nosotros");
 
     alert("¡Cuenta creada correctamente!");
     navigate("/");
@@ -241,7 +294,6 @@ function RegistroForm() {
 
         <div className="col-md-6 d-flex justify-content-center align-items-center">
           <div className="w-100 p-4">
-
             <form className="bg-white text-dark p-3 rounded" onSubmit={validar} noValidate>
 
               <div className="text-center mb-2">
@@ -251,20 +303,14 @@ function RegistroForm() {
               </div>
 
               <h1 className="text-center text-dark">Crear cuenta</h1>
-
               <h2 className="text-center fw-light text-success fs-5">Es rápido y fácil</h2>
-
               <br />
 
               {error && (
                 <div className="alert alert-danger py-2 text-center">{error}</div>
               )}
 
-              {/* resto igual sin cambios */}
-              {/* ... (todo tu formulario igual) ... */}
-
             </form>
-
           </div>
         </div>
       </div>
@@ -278,9 +324,9 @@ function RegistroForm() {
 export default function Login({ onLogin }) {
   return (
     <Routes>
-      <Route path="/" element={<LoginForm onLogin={onLogin} />} />
+      <Route path="/"         element={<LoginForm onLogin={onLogin} />} />
       <Route path="/Registro" element={<RegistroForm />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*"         element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
