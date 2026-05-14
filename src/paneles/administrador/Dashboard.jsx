@@ -1,7 +1,7 @@
 // Dashboard.jsx
 import { useEffect, useRef } from "react";
 import { Chart, registerables } from "chart.js";
-import { CHART_DATA } from "../constants/data";
+import { CHART_DATA } from "../../constants/data";
 
 Chart.register(...registerables);
 

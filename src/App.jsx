@@ -6,25 +6,22 @@ import { cerrarSesion } from "./services/api";
 
 import "./styles/panel.css";
 
-import Login from "./components/Login";
-import Registro from "./components/Registro";
-import ForgotPassword from "./components/RecuperarContraseña";
-import LandingPage from "./components/LandingPage";
+import Login from "./paginas/Login";
+import Registro from "./paginas/Registro";
+import ForgotPassword from "./paginas/RecuperarContraseña";
+import LandingPage from "./paginas/LandingPage";
 
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import ToastContainer from "./components/ToastContainer";
 
-import Dashboard from "./components/Dashboard";
-
-
-
-import Usuarios from "./components/Usuarios";
-import Administradores from "./components/Administradores";
-import Aliados from "./components/Aliados";
-import Encargados from "./components/Encargados";
-import Materiales from "./components/Materiales";
-import Perfil from "./components/Perfil";
+import Dashboard from "./paneles/administrador/Dashboard";
+import Usuarios from "./paneles/administrador/Usuarios";
+import Administradores from "./paneles/administrador/Administradores";
+import Aliados from "./paneles/administrador/Aliados";
+import Encargados from "./paneles/administrador/Encargados";
+import Materiales from "./paneles/administrador/Materiales";
+import Perfil from "./paneles/administrador/Perfil";
 
 import CatRoles from "./components/catalogos/CatRoles";
 import CatEstadosPuntos from "./components/catalogos/CatEstadosPuntos";
@@ -33,7 +30,6 @@ import CatEstadosCanjes from "./components/catalogos/CatEstadosCanjes";
 import CatEstadosUsuarios from "./components/catalogos/CatEstadosUsuarios";
 import CatEstadosRecompensas from "./components/catalogos/CatEstadosRecompensas";
 import CatTiposRecompensa from "./components/catalogos/CatTiposRecompensa";
-
 import CatEstadosMateriales from "./components/catalogos/CatEstadosMateriales";
 import CatEstadosEntregas from "./components/catalogos/CatEstadosEntregas";
 

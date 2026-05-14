@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { iniciarSesion } from "../services/api";
-import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
+import fondoReciclaje from '../components/imagenes/fondo_reciclaje.png'
 
 // ─────────────────────────────────────────────
 // FORMULARIO DE LOGIN

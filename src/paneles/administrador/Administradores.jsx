@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Toggle, ModalDetalle, TablaUsuarios } from "./UserShared";
+import { Toggle, ModalDetalle, TablaUsuarios } from "../../components/UserShared";
 import {
   getAdmins,
   crearAdmin,
   actualizarAdmin,
   eliminarAdmin,
-} from "../services/api";
+} from "../../services/api";
 
 const EMPTY_FORM = {
   nombre: "",

@@ -1,7 +1,7 @@
 // src/components/LandingPage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import heroImage from "./imagenes/hero.png";
+import heroImage from '../components/imagenes/hero.png'
 
 export default function LandingPage() {
   return (

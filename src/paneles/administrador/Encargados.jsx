@@ -4,7 +4,7 @@ import {
   crearEncargado,
   actualizarEncargado,
   eliminarEncargado,
-} from "../services/api";
+} from "../../services/api";
 
 // ─────────────────────────────────────────────
 // TOGGLE

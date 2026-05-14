@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { ZONAS } from "../constants/data";
+import { ZONAS } from "../../constants/data";
 import {
   Toggle,
   ModalDetalle,
   TablaUsuarios,
-} from "./UserShared";
+}  from "../../components/UserShared";
 
 import {
   getAliados,
   crearAliado,
   actualizarAliado,
   eliminarAliado,
-} from "../services/api";
+} from "../../services/api";
 
 const EMPTY_FORM = {
   nombre: "",

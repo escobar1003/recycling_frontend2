@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registrarse } from "../services/api";
-import fondoReciclaje from "./imagenes/fondo_reciclaje.png";
+import fondoReciclaje from '../components/imagenes/fondo_reciclaje.png'
 
 function Registro() {
   const [nombre, setNombre] = useState("");
