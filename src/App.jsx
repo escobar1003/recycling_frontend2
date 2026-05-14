@@ -6,10 +6,10 @@ import { cerrarSesion } from "./services/api";
 
 import "./styles/panel.css";
 
-import Login from "./components/Login";
-import Registro from "./components/Registro";
-import ForgotPassword from "./components/RecuperarContraseña";
-import LandingPage from "./components/LandingPage";
+import Login from "./paginas/Login";
+import Registro from "./paginas/Registro";
+import ForgotPassword from "./paginas/RecuperarContraseña";
+import LandingPage from "./paginas/LandingPage";
 
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
