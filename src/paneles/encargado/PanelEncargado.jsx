@@ -1,21 +1,20 @@
-// src/paneles/encargado/PanelEncargado.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Sidebar           from "./Sidebar";
 import VistaDashboard    from "./VistaDashboard";
 import RegistrarEntrega  from "./RegistrarEntrega";
 import HistorialEntregas from "./HistorialdeEntregas";
+import Canjes            from "./Canjes";
 import Av                from "./Av";
 
 const ENCARGADO = { nombre: "María López", punto: "Punto Verde Centro", av: "ML" };
 
 const NAV = [
-  { key: "dashboard",  icon: "bi-house-door-fill",    label: "Dashboard"          },
-  { key: "control",    icon: "bi-grid-fill",           label: "Panel de control"   },
-  { key: "registrar",  icon: "bi-plus-circle-fill",    label: "Registrar entrega"  },
-  { key: "historial",  icon: "bi-clock-history",       label: "Historial entregas" },
-  { key: "canjes",     icon: "bi-gift-fill",            label: "Canjes"             },
-  { key: "reportes",   icon: "bi-bar-chart-line-fill",  label: "Reportes"           },
+  { key: "dashboard",  path: "dashboard",  icon: "bi-house-door-fill",    label: "Dashboard"          },
+  { key: "control",    path: "control",    icon: "bi-grid-fill",           label: "Panel de control"   },
+  { key: "registrar",  path: "registrar",  icon: "bi-plus-circle-fill",    label: "Registrar entrega"  },
+  { key: "historial",  path: "historial",  icon: "bi-clock-history",       label: "Historial entregas" },
+  { key: "canjes",     path: "canjes",     icon: "bi-gift-fill",           label: "Canjes"             },
+  { key: "reportes",   path: "reportes",   icon: "bi-bar-chart-line-fill", label: "Reportes"           },
 ];
 
 function VistaPlaceholder({ icon, label }) {
@@ -29,8 +28,17 @@ function VistaPlaceholder({ icon, label }) {
 }
 
 export default function PanelEncargado({ onLogout }) {
-  const [active, setActive] = useState("dashboard");
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
+  // Determina cuál nav está activo según la URL actual
+  const activeKey = NAV.find(n => location.pathname.includes(n.path))?.key || "dashboard";
+  const tituloActivo = NAV.find(n => n.key === activeKey)?.label || "Dashboard";
+
+  const handleNav = (key) => {
+    const item = NAV.find(n => n.key === key);
+    if (item) navigate(`/encargado/${item.path}`);
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem("user");
@@ -39,25 +47,12 @@ export default function PanelEncargado({ onLogout }) {
     navigate("/login");
   };
 
-  const renderVista = () => {
-    switch (active) {
-      case "dashboard":  return <VistaDashboard />;
-      case "control":    return <VistaPlaceholder icon="bi-grid"           label="Panel de control"      />;
-      case "registrar":  return <RegistrarEntrega />;
-      case "historial":  return <HistorialEntregas />;
-      case "canjes":     return <VistaPlaceholder icon="bi-gift"           label="Canjes"                />;
-      case "reportes":   return <VistaPlaceholder icon="bi-bar-chart-line" label="Reportes"              />;
-      default:           return <VistaDashboard />;
-    }
-  };
-
-  const tituloActivo = NAV.find(n => n.key === active)?.label || "Dashboard";
-
   return (
     <div className="d-flex" style={{ minHeight: "100vh", background: "#f8f9fa", fontFamily: "'Segoe UI', sans-serif" }}>
-      <Sidebar active={active} onNav={setActive} encargado={ENCARGADO} onLogout={handleLogout} />
+      <Sidebar active={activeKey} onNav={handleNav} encargado={ENCARGADO} onLogout={handleLogout} />
 
-      <main style={{ marginLeft: 230, flex: 1, padding: 28, overflowY: "auto" }}>
+      {/* ── sin overflow en main para que sticky y dropdowns funcionen bien ── */}
+      <main style={{ marginLeft: 230, flex: 1, padding: 28 }}>
         <div className="d-flex align-items-center justify-content-between mb-4">
           <div>
             <div className="fw-black text-dark" style={{ fontSize: 22 }}>{tituloActivo}</div>
@@ -76,7 +71,16 @@ export default function PanelEncargado({ onLogout }) {
           </div>
         </div>
 
-        {renderVista()}
+        <Routes>
+          <Route index                  element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard"       element={<VistaDashboard />} />
+          <Route path="control"         element={<VistaPlaceholder icon="bi-grid"           label="Panel de control" />} />
+          <Route path="registrar"       element={<RegistrarEntrega />} />
+          <Route path="historial"       element={<HistorialEntregas />} />
+          <Route path="canjes"          element={<Canjes />} />
+          <Route path="reportes"        element={<VistaPlaceholder icon="bi-bar-chart-line" label="Reportes" />} />
+          <Route path="*"               element={<Navigate to="dashboard" replace />} />
+        </Routes>
       </main>
     </div>
   );
