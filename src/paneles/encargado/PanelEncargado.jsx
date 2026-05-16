@@ -4,6 +4,8 @@ import VistaDashboard    from "./VistaDashboard";
 import RegistrarEntrega  from "./RegistrarEntrega";
 import HistorialEntregas from "./HistorialdeEntregas";
 import Canjes            from "./Canjes";
+import PanelControl      from "./PanelControl";
+import Reportes          from "./Reportes";
 import Av                from "./Av";
 
 const ENCARGADO = { nombre: "María López", punto: "Punto Verde Centro", av: "ML" };
@@ -17,22 +19,11 @@ const NAV = [
   { key: "reportes",   path: "reportes",   icon: "bi-bar-chart-line-fill", label: "Reportes"           },
 ];
 
-function VistaPlaceholder({ icon, label }) {
-  return (
-    <div className="card border border-2 border-dark rounded-3 shadow-sm text-center p-5">
-      <i className={`bi ${icon} text-secondary`} style={{ fontSize: 52 }} />
-      <div className="fw-black text-secondary mt-3" style={{ fontSize: 17 }}>{label}</div>
-      <div className="text-secondary mt-1" style={{ fontSize: 13 }}>Esta sección está en construcción</div>
-    </div>
-  );
-}
-
 export default function PanelEncargado({ onLogout }) {
   const navigate  = useNavigate();
   const location  = useLocation();
 
-  // Determina cuál nav está activo según la URL actual
-  const activeKey = NAV.find(n => location.pathname.includes(n.path))?.key || "dashboard";
+  const activeKey    = NAV.find(n => location.pathname.includes(n.path))?.key || "dashboard";
   const tituloActivo = NAV.find(n => n.key === activeKey)?.label || "Dashboard";
 
   const handleNav = (key) => {
@@ -51,7 +42,6 @@ export default function PanelEncargado({ onLogout }) {
     <div className="d-flex" style={{ minHeight: "100vh", background: "#f8f9fa", fontFamily: "'Segoe UI', sans-serif" }}>
       <Sidebar active={activeKey} onNav={handleNav} encargado={ENCARGADO} onLogout={handleLogout} />
 
-      {/* ── sin overflow en main para que sticky y dropdowns funcionen bien ── */}
       <main style={{ marginLeft: 230, flex: 1, padding: 28 }}>
         <div className="d-flex align-items-center justify-content-between mb-4">
           <div>
@@ -72,14 +62,14 @@ export default function PanelEncargado({ onLogout }) {
         </div>
 
         <Routes>
-          <Route index                  element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard"       element={<VistaDashboard />} />
-          <Route path="control"         element={<VistaPlaceholder icon="bi-grid"           label="Panel de control" />} />
-          <Route path="registrar"       element={<RegistrarEntrega />} />
-          <Route path="historial"       element={<HistorialEntregas />} />
-          <Route path="canjes"          element={<Canjes />} />
-          <Route path="reportes"        element={<VistaPlaceholder icon="bi-bar-chart-line" label="Reportes" />} />
-          <Route path="*"               element={<Navigate to="dashboard" replace />} />
+          <Route index            element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<VistaDashboard />} />
+          <Route path="control"   element={<PanelControl />} />
+          <Route path="registrar" element={<RegistrarEntrega />} />
+          <Route path="historial" element={<HistorialEntregas />} />
+          <Route path="canjes"    element={<Canjes />} />
+          <Route path="reportes"  element={<Reportes />} />
+          <Route path="*"         element={<Navigate to="dashboard" replace />} />
         </Routes>
       </main>
     </div>
