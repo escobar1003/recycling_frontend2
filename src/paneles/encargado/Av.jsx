@@ -22,4 +22,3 @@ export default function Av({ text, size = 36, bg = "#198754", color = "#fff", st
     </div>
   );
 }
-
