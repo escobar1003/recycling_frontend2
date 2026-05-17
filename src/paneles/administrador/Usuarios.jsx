@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ALL_POINTS, ZONAS } from "../../constants/data";
 import { getRolCfg, Toggle, rolDesc, ModalDetalle, TablaUsuarios } from "../../components/UserShared";
-import { getUsuarios, actualizarUsuario, eliminarUsuario } from "../../services/api";
+import { getUsuarios, actualizarUsuario, eliminarUsuario, registrarse } from "../../services/api";
 
 const EMPTY_FORM = {
   nombre: "", email: "", telefono: "",
@@ -44,37 +44,37 @@ export default function Usuarios({ state, dispatch, showToast }) {
   };
 
   const guardar = async () => {
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    try {
-      const { registrarse } = await import("../services/api");
-      const resp = await registrarse({
+  const e = validate();
+  if (Object.keys(e).length) { setErrors(e); return; }
+  try {
+    const resp = await registrarse({
+      nombre:   form.nombre.trim(),
+      correo:   form.email.trim(),
+      password: "Temporal123!",
+      telefono: form.telefono.trim() || undefined,
+    });
+
+    const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
+    dispatch({
+      type: "ADD_USER",
+      payload: {
+        id:       resp.usuario?.idUsuario ?? Date.now(),
         nombre:   form.nombre.trim(),
-        correo:   form.email.trim(),
-        password: "Temporal123!",
-        telefono: form.telefono.trim() || undefined,
-      });
-      const initials = form.nombre.trim().split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("");
-      dispatch({
-        type: "ADD_USER",
-        payload: {
-          id:       resp.usuario?.idUsuario ?? Date.now(),
-          nombre:   form.nombre.trim(),
-          email:    form.email.trim(),
-          telefono: form.telefono.trim(),
-          rol:      "Usuario",
-          pts:      0,
-          activo:   true,
-          av:       initials,
-          fechaAlta: new Date().toLocaleDateString("es-CO"),
-        },
-      });
-      showToast(`Usuario "${form.nombre.trim()}" registrado`);
-      setModal(false); setForm(EMPTY_FORM); setErrors({});
-    } catch (err) {
-      showToast("Error al registrar: " + err.message, "error");
-    }
-  };
+        email:    form.email.trim(),
+        telefono: form.telefono.trim(),
+        rol:      "Usuario",
+        pts:      0,
+        activo:   true,
+        av:       initials,
+        fechaAlta: new Date().toLocaleDateString("es-CO"),
+      },
+    });
+    showToast(`Usuario "${form.nombre.trim()}" registrado`);
+    setModal(false); setForm(EMPTY_FORM); setErrors({});
+  } catch (err) {
+    showToast("Error al registrar: " + err.message, "error");
+  }
+};
 
   const cerrarModal = () => { setModal(false); setForm(EMPTY_FORM); setErrors({}); };
 
