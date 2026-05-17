@@ -289,3 +289,8 @@ export async function actualizarEstadoEntregaAdmin(id, idEstadoEntrega) {
     body: JSON.stringify({ idEstadoEntrega }),
   });
 }
+// ── Estados de Puntos ─────────────────────────────────────────
+export async function getEstadosPuntos()               { return request('/api/admin/estados-puntos'); }
+export async function crearEstadosPunto(datos)          { return request('/api/admin/estados-puntos', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarEstadosPunto(id, datos) { return request(`/api/admin/estados-puntos/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarEstadosPunto(id)          { return request(`/api/admin/estados-puntos/${id}`, { method: 'DELETE' }); }
