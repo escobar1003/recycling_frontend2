@@ -294,3 +294,16 @@ export async function getEstadosPuntos()               { return request('/api/ad
 export async function crearEstadosPunto(datos)          { return request('/api/admin/estados-puntos', { method: 'POST', body: JSON.stringify(datos) }); }
 export async function actualizarEstadosPunto(id, datos) { return request(`/api/admin/estados-puntos/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
 export async function eliminarEstadosPunto(id)          { return request(`/api/admin/estados-puntos/${id}`, { method: 'DELETE' }); }
+
+// ── Estados de Entregas ───────────────────────────────────────
+export async function getEstadosEntregas()                { return request('/api/admin/estados-entregas'); }
+export async function crearEstadosEntrega(datos)           { return request('/api/admin/estados-entregas', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarEstadosEntrega(id, datos)  { return request(`/api/admin/estados-entregas/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarEstadosEntrega(id)           { return request(`/api/admin/estados-entregas/${id}`, { method: 'DELETE' }); }
+
+// ── Estados de Aliados ────────────────────────────────────────
+export async function getEstadosAliados()                { return request('/api/admin/estados-aliados'); }
+export async function crearEstadosAliado(datos)           { return request('/api/admin/estados-aliados', { method: 'POST', body: JSON.stringify(datos) }); }
+export async function actualizarEstadosAliado(id, datos)  { return request(`/api/admin/estados-aliados/${id}`, { method: 'PUT', body: JSON.stringify(datos) }); }
+export async function eliminarEstadosAliado(id)           { return request(`/api/admin/estados-aliados/${id}`, { method: 'DELETE' }); }
+
